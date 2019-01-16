@@ -7,46 +7,25 @@
 """Helper functions to use the Lithium reducer.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
+import gzip
 import io
-import logging
-import os
+from pathlib import Path
 import re
+from shlex import quote
 import shutil
+import subprocess
 import sys
 import tempfile
 
 from lithium.interestingness.utils import file_contains_str
-from past.builtins import range
-from shellescape import quote
 
 from . import file_manipulation
 from ..js.inspect_shell import testJsShellOrXpcshell
 from ..js.js_interesting import JS_OVERALL_MISMATCH
 from ..js.js_interesting import JS_VG_AMISS
+from .logging_helpers import get_logger
 
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
-
-FUNFUZZ_LOG = logging.getLogger(__name__)
-FUNFUZZ_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-FUNFUZZ_LOG.addHandler(LOG_HANDLER)
-
+LOG_LITHIUM_HELPERS = get_logger(__name__)
 runlithiumpy = [sys.executable, "-u", "-m", "lithium"]  # pylint: disable=invalid-name
 
 # Status returns for runLithium and many_timed_runs
@@ -67,11 +46,11 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
     (lithResult, lithDetails) = reduction_strat(  # pylint: disable=invalid-name
         logPrefix, infilename, lithArgs, targetTime, suspiciousLevel)
 
-    FUNFUZZ_LOG.info("")
-    FUNFUZZ_LOG.info("Done running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:")
-    FUNFUZZ_LOG.info(" ".join(quote(str(x)) for x in [sys.executable, "-u", "-m", "lithium",
-                                                      "--strategy=check-only"] + lithArgs))
-    FUNFUZZ_LOG.info("")
+    LOG_LITHIUM_HELPERS.info("")
+    LOG_LITHIUM_HELPERS.info("Done running Lithium on the part in between DDBEGIN and DDEND. To reproduce, run:")
+    LOG_LITHIUM_HELPERS.info(" ".join(quote(str(x)) for x in [sys.executable, "-u", "-m", "lithium",
+                                                              "--strategy=check-only"] + lithArgs))
+    LOG_LITHIUM_HELPERS.info("")
 
     # pylint: disable=literal-comparison
     if (bisectRepo is not "none" and targetTime >= 3 * 60 * 60 and
@@ -82,11 +61,11 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
             ["-p", " ".join(engineFlags + [str(infilename)])] +
             ["-i"] + [str(x) for x in itest]
         )
-        FUNFUZZ_LOG.info(" ".join(quote(str(x)) for x in autobisectCmd))
-        autobisect_log = (logPrefix.parent / (logPrefix.stem + "-autobisect")).with_suffix(".txt")
+        LOG_LITHIUM_HELPERS.info(" ".join(quote(str(x)) for x in autobisectCmd))
+        autobisect_log = (logPrefix.parent / f"{logPrefix.stem}-autobisect").with_suffix(".txt")
         with io.open(str(autobisect_log), "w", encoding="utf-8", errors="replace") as f:
             subprocess.run(autobisectCmd, stderr=subprocess.STDOUT, stdout=f)
-        FUNFUZZ_LOG.info("Done running autobisectjs. Log: %s", autobisect_log)
+        LOG_LITHIUM_HELPERS.info("Done running autobisectjs. Log: %s", autobisect_log)
 
         with io.open(str(autobisect_log), "r", encoding="utf-8", errors="replace") as f:
             lines = f.readlines()
@@ -105,25 +84,29 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
     """
     deletableLithTemp = None  # pylint: disable=invalid-name
     if targetTime:
-        # FIXME: this could be based on whether bot has a remoteHost  # pylint: disable=fixme
         # loop is being used by bot
         deletableLithTemp = tempfile.mkdtemp(prefix="fuzzbot-lithium")  # pylint: disable=invalid-name
-        lithArgs = ["--maxruntime=" + str(targetTime), "--tempdir=" + deletableLithTemp] + lithArgs
+        lithArgs = [f"--maxruntime={targetTime}", f"--tempdir={deletableLithTemp}"] + lithArgs
     else:
         # loop is being run standalone
-        lithtmp = logPrefix.parent / (logPrefix.stem + "-lith-tmp")
+        lithtmp = logPrefix.parent / f"{logPrefix.stem}-lith-tmp"
         Path.mkdir(lithtmp)
-        lithArgs = ["--tempdir=" + str(lithtmp)] + lithArgs
-    lithlogfn = (logPrefix.parent / (logPrefix.stem + "-lith-out")).with_suffix(".txt")
-    FUNFUZZ_LOG.info("Preparing to run Lithium, log file %s", lithlogfn)
-    FUNFUZZ_LOG.info(" ".join(quote(str(x)) for x in runlithiumpy + lithArgs))
+        lithArgs = [f"--tempdir={lithtmp}"] + lithArgs
+    lithlogfn = (logPrefix.parent / f"{logPrefix.stem}-lith-out").with_suffix(".txt")
+    LOG_LITHIUM_HELPERS.info("Preparing to run Lithium, log file %s", lithlogfn)
+    LOG_LITHIUM_HELPERS.info(" ".join(quote(str(x)) for x in runlithiumpy + lithArgs))
     with io.open(str(lithlogfn), "w", encoding="utf-8", errors="replace") as f:
         subprocess.run(runlithiumpy + lithArgs, stderr=subprocess.STDOUT, stdout=f)
-    FUNFUZZ_LOG.info("Done running Lithium")
+    LOG_LITHIUM_HELPERS.info("Done running Lithium")
     if deletableLithTemp:
         shutil.rmtree(deletableLithTemp)
     r = readLithiumResult(lithlogfn)  # pylint: disable=invalid-name
-    subprocess.run(["gzip", "-f", str(lithlogfn)], check=True)
+
+    with open(lithlogfn, "rb") as f_in:  # Replace the old gzip subprocess call
+        with gzip.open(lithlogfn.with_suffix(".txt.gz"), "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    lithlogfn.unlink()
+
     return r
 
 
@@ -131,9 +114,9 @@ def readLithiumResult(lithlogfn):  # pylint: disable=invalid-name,missing-docstr
     # pylint: disable=missing-return-type-doc
     with io.open(str(lithlogfn), "r", encoding="utf-8", errors="replace") as f:
         for line in f:
-            if "Lithium result" in line:
-                FUNFUZZ_LOG.info(line.rstrip())
-            if "Lithium result: interesting" in line:
+            if line.startswith("Lithium result"):
+                LOG_LITHIUM_HELPERS.info(line.rstrip())
+            if line.startswith("Lithium result: interesting"):  # pylint: disable=no-else-return
                 return LITH_RETESTED_STILL_INTERESTING, None
             elif "Lithium result: succeeded, reduced to: " in line:
                 # pylint: disable=invalid-name
@@ -152,7 +135,6 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
 
     # This is an array because Python does not like assigning to upvars.
     reductionCount = [0]  # pylint: disable=invalid-name
-    backup_file = (logPrefix.parent / (logPrefix.stem + "-backup"))
 
     def lith_reduce(strategy):
         """Lithium reduction commands accepting various strategies.
@@ -166,19 +148,18 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         reductionCount[0] += 1
         # Remove empty elements
         full_lith_args = [x for x in (strategy + lithArgs) if x]
-        FUNFUZZ_LOG.info(" ".join(quote(str(x)) for x in [sys.executable, "-u", "-m", "lithium"] + full_lith_args))
+        LOG_LITHIUM_HELPERS.info(
+            " ".join(quote(str(x)) for x in [sys.executable, "-u", "-m", "lithium"] + full_lith_args))
 
         desc = "-chars" if strategy == "--char" else "-lines"
         (lith_result, lith_details) = run_lithium(
-            full_lith_args, (logPrefix.parent / ("%s-%s%s" % (logPrefix.stem, reductionCount[0], desc))), targetTime)
-        if lith_result == LITH_FINISHED:
-            shutil.copy2(str(infilename), str(backup_file))
+            full_lith_args, (logPrefix.parent / f"{logPrefix.stem}-{reductionCount[0]}{desc}"), targetTime)
 
         return lith_result, lith_details
 
-    FUNFUZZ_LOG.info("")
-    FUNFUZZ_LOG.info("Running the first line reduction...")
-    FUNFUZZ_LOG.info("")
+    LOG_LITHIUM_HELPERS.info("")
+    LOG_LITHIUM_HELPERS.info("Running the first line reduction...")
+    LOG_LITHIUM_HELPERS.info("")
     # Step 1: Run the first instance of line reduction.
     lith_result, lith_details = lith_reduce([])
 
@@ -211,9 +192,9 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         with io.open(str(infilename), "w", encoding="utf-8", errors="replace") as f:
             f.write(infileContents)
 
-        FUNFUZZ_LOG.info("")
-        FUNFUZZ_LOG.info("Running 1 instance of 1-line reduction after moving tryItOut and count=X...")
-        FUNFUZZ_LOG.info("")
+        LOG_LITHIUM_HELPERS.info("")
+        LOG_LITHIUM_HELPERS.info("Running 1 instance of 1-line reduction after moving tryItOut and count=X...")
+        LOG_LITHIUM_HELPERS.info("")
         # --chunksize=1: Reduce only individual lines, for only 1 round.
         lith_result, lith_details = lith_reduce(["--chunksize=1"])
 
@@ -232,16 +213,16 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
 
         with io.open(str(infilename), "w", encoding="utf-8", errors="replace") as f:
             f.writelines(intendedLines)
-        FUNFUZZ_LOG.info("")
-        FUNFUZZ_LOG.info("Running 1 instance of 2-line reduction after moving count=X to its own line...")
-        FUNFUZZ_LOG.info("")
+        LOG_LITHIUM_HELPERS.info("")
+        LOG_LITHIUM_HELPERS.info("Running 1 instance of 2-line reduction after moving count=X to its own line...")
+        LOG_LITHIUM_HELPERS.info("")
         lith_result, lith_details = lith_reduce(["--chunksize=2"])
 
     # Step 4: Run 1 instance of 2-line reduction again, e.g. to remove pairs of STRICT_MODE lines.
     if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
-        FUNFUZZ_LOG.info("")
-        FUNFUZZ_LOG.info("Running 1 instance of 2-line reduction again...")
-        FUNFUZZ_LOG.info("")
+        LOG_LITHIUM_HELPERS.info("")
+        LOG_LITHIUM_HELPERS.info("Running 1 instance of 2-line reduction again...")
+        LOG_LITHIUM_HELPERS.info("")
         lith_result, lith_details = lith_reduce(["--chunksize=2"])
 
     isLevOverallMismatchAsmJsAvailable = (lev == JS_OVERALL_MISMATCH and  # pylint: disable=invalid-name
@@ -249,9 +230,9 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
     # Step 5 (not always run): Run character reduction within interesting lines.
     if lith_result == LITH_FINISHED and origNumOfLines <= 50 and targetTime is None and \
             lev >= JS_OVERALL_MISMATCH and not isLevOverallMismatchAsmJsAvailable:
-        FUNFUZZ_LOG.info("")
-        FUNFUZZ_LOG.info("Running character reduction...")
-        FUNFUZZ_LOG.info("")
+        LOG_LITHIUM_HELPERS.info("")
+        LOG_LITHIUM_HELPERS.info("Running character reduction...")
+        LOG_LITHIUM_HELPERS.info("")
         lith_result, lith_details = lith_reduce(["--char"])
 
     # Step 6: Run line reduction after activating SECOND DDBEGIN with a 1-line offset.
@@ -267,24 +248,16 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         with io.open(str(infilename), "w", encoding="utf-8", errors="replace") as f:
             f.writelines(infileContents)
 
-        FUNFUZZ_LOG.info("")
-        FUNFUZZ_LOG.info("Running line reduction with a 1-line offset...")
-        FUNFUZZ_LOG.info("")
+        LOG_LITHIUM_HELPERS.info("")
+        LOG_LITHIUM_HELPERS.info("Running line reduction with a 1-line offset...")
+        LOG_LITHIUM_HELPERS.info("")
         lith_result, lith_details = lith_reduce([])
 
     # Step 7: Run line reduction for a final time.
     if lith_result == LITH_FINISHED and origNumOfLines <= 50 and hasTryItOut and lev >= JS_VG_AMISS:
-        FUNFUZZ_LOG.info("")
-        FUNFUZZ_LOG.info("Running the final line reduction...")
-        FUNFUZZ_LOG.info("")
+        LOG_LITHIUM_HELPERS.info("")
+        LOG_LITHIUM_HELPERS.info("Running the final line reduction...")
+        LOG_LITHIUM_HELPERS.info("")
         lith_result, lith_details = lith_reduce([])
-
-    # Restore from backup if testcase can no longer be reproduced halfway through reduction.
-    if lith_result != LITH_FINISHED:
-        # Probably can move instead of copy the backup, once this has stabilised.
-        if backup_file.is_file():
-            shutil.copy2(str(backup_file), str(infilename))
-        else:
-            FUNFUZZ_LOG.info("DEBUG! backup_file is supposed to be: %s", backup_file)
 
     return lith_result, lith_details

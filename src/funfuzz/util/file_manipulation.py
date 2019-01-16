@@ -7,26 +7,11 @@
 """Functions dealing with files and their contents.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
 import io
-import logging
-import sys
 
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
+from .logging_helpers import get_logger
 
-FUNFUZZ_LOG = logging.getLogger(__name__)
-FUNFUZZ_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-FUNFUZZ_LOG.addHandler(LOG_HANDLER)
+LOG_FILE_MANIPULATION = get_logger(__name__)
 
 
 def amiss(log_prefix):  # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
@@ -34,15 +19,15 @@ def amiss(log_prefix):  # pylint: disable=missing-param-doc,missing-return-doc,m
     which are signs of malloc being unhappy (double free, out-of-memory, etc).
     """
     found_something = False
-    err_log = (log_prefix.parent / (log_prefix.stem + "-err")).with_suffix(".txt")
+    err_log = (log_prefix.parent / f"{log_prefix.stem}-err").with_suffix(".txt")
     with io.open(str(err_log), "r", encoding="utf-8", errors="replace") as f:
         for line in f:
             line = line.strip("\x07").rstrip("\n")
             if (line.find("szone_error") != -1 or
                     line.find("malloc_error_break") != -1 or
                     line.find("MallocHelp") != -1):
-                FUNFUZZ_LOG.info("")
-                FUNFUZZ_LOG.info(line)
+                LOG_FILE_MANIPULATION.info("")
+                LOG_FILE_MANIPULATION.info(line)
                 found_something = True
                 break  # Don't flood the log with repeated malloc failures
 

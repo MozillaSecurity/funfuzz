@@ -7,48 +7,27 @@
 """Check whether a testcase causes an interesting result in a shell.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
-from builtins import object
 import io
-import logging
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+from pathlib import Path
 import platform
+from shlex import quote
+import shutil
+import subprocess
 import sys
 
 from FTB.ProgramConfiguration import ProgramConfiguration
-import FTB.Signatures.CrashInfo as CrashInfo
-import lithium.interestingness.timed_run as timed_run
-from past.builtins import range
-from shellescape import quote
-from whichcraft import which  # Once we are fully on Python 3.5+, whichcraft can be removed in favour of shutil.which
+import FTB.Signatures.CrashInfo as Crash_Info
+import lithium.interestingness.timed_run as timedrun
 
 from . import inspect_shell
 from ..util import create_collector
 from ..util import file_manipulation
 from ..util import os_ops
+from ..util.logging_helpers import get_logger
 
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
-
-FUNFUZZ_LOG = logging.getLogger(__name__)
-FUNFUZZ_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-FUNFUZZ_LOG.addHandler(LOG_HANDLER)
+LOG_JS_INTERESTING = get_logger(__name__)
 
 # Levels of unhappiness.
 # These are in order from "most expected to least expected" rather than "most ok to worst".
@@ -78,8 +57,7 @@ gOptions = ""  # pylint: disable=invalid-name
 VALGRIND_ERROR_EXIT_CODE = 77
 
 
-class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instance-attributes,too-few-public-methods
-
+class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attributes,too-few-public-methods
     # options dict should include: timeout, knownPath, collector, valgrind, shellIsDeterministic
     def __init__(self, options, runthis, logPrefix, in_compare_jit, env=None):  # pylint: disable=too-complex
         # pylint: disable=too-many-arguments,too-many-branches,too-many-locals,too-many-statements
@@ -97,21 +75,21 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         if options.valgrind:
             runthis = (
                 inspect_shell.constructVgCmdList(errorCode=VALGRIND_ERROR_EXIT_CODE) +
-                valgrindSuppressions() +
+                [f"--suppressions={filename}" for filename in "valgrind_suppressions.txt"] +
                 runthis)
 
         timed_run_kw = {"env": (env or os.environ)}
-        if not platform.system() == "Windows":
+        if not (platform.system() == "Windows" or
+                # We cannot set a limit for RLIMIT_AS for ASan binaries
+                inspect_shell.queryBuildConfiguration(options.jsengine, "asan")):
             timed_run_kw["preexec_fn"] = set_ulimit
 
         lithium_logPrefix = str(logPrefix).encode("utf-8")
-        # Total hack to make Python 2/3 work with Lithium
-        if sys.version_info.major == 3 and isinstance(lithium_logPrefix, b"".__class__):
-            # pylint: disable=redefined-variable-type
+        if isinstance(lithium_logPrefix, b"".__class__):
             lithium_logPrefix = lithium_logPrefix.decode("utf-8", errors="replace")
 
         # logPrefix should be a string for timed_run in Lithium version 0.2.1 to work properly, apparently
-        runinfo = timed_run.timed_run(
+        runinfo = timedrun.timed_run(
             [str(x) for x in runthis],  # Convert all Paths/bytes to strings for Lithium
             options.timeout,
             lithium_logPrefix,
@@ -123,23 +101,23 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
 
         # FuzzManager expects a list of strings rather than an iterable, so bite the
         # bullet and "readlines" everything into memory.
-        out_log = (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt")
+        out_log = (logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")
         with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
             out = f.readlines()
-        err_log = (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt")
+        err_log = (logPrefix.parent / f"{logPrefix.stem}-err").with_suffix(".txt")
         with io.open(str(err_log), "r", encoding="utf-8", errors="replace") as f:
             err = f.readlines()
 
         if options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
             issues.append("valgrind reported an error")
             lev = max(lev, JS_VG_AMISS)
-            valgrindErrorPrefix = "==" + str(runinfo.pid) + "=="
+            valgrindErrorPrefix = f"=={runinfo.pid}=="
             for line in err:
                 if valgrindErrorPrefix and valgrindErrorPrefix in line:
                     issues.append(line.rstrip())
-        elif runinfo.sta == timed_run.CRASHED:
+        elif runinfo.sta == timedrun.CRASHED:
             if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
-                crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
+                crash_log = (logPrefix.parent / f"{logPrefix.stem}-crash").with_suffix(".txt")
                 with io.open(str(crash_log), "r", encoding="utf-8", errors="replace") as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
         elif file_manipulation.amiss(logPrefix):
@@ -158,21 +136,22 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
         # Copy non-crash issues to where FuzzManager's "AssertionHelper" can see it.
         if lev != JS_FINE:
             for issue in issues:
-                err.append("[Non-crash bug] " + issue)
+                err.append(f"[Non-crash bug] {issue}")
 
         activated = False  # Turn on when trying to report *reliable* testcases that do not have a coredump
         # On Linux, fall back to run testcase via gdb using --args if core file data is unavailable
         # Note that this second round of running uses a different fuzzSeed as the initial if default jsfunfuzz is run
         # We should separate this out, i.e. running jsfunfuzz within a debugger, only if core dumps cannot be generated
-        if activated and platform.system() == "Linux" and which("gdb") and not auxCrashData and not in_compare_jit:
-            FUNFUZZ_LOG.info("No core file found on Linux - falling back to run via gdb")
+        if (activated and platform.system() == "Linux" and
+                shutil.which("gdb") and not auxCrashData and not in_compare_jit):
+            LOG_JS_INTERESTING.info("No core file found on Linux - falling back to run via gdb")
             extracted_gdb_cmds = ["-ex", "run"]
             with io.open(str(Path(__file__).parent.parent / "util" / "gdb_cmds.txt"), "r",
                          encoding="utf-8", errors="replace") as f:
                 for line in f:
                     if line.rstrip() and "#" not in line and "echo" not in line:
                         extracted_gdb_cmds.append("-ex")
-                        extracted_gdb_cmds.append("%s" % line.rstrip())
+                        extracted_gdb_cmds.append(f"{line.rstrip()}")
             no_main_log_gdb_log = subprocess.run(
                 (["gdb", "-n", "-batch"] + extracted_gdb_cmds + ["--args"] +
                  [str(x) for x in runthis]),
@@ -183,12 +162,12 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
             auxCrashData = no_main_log_gdb_log.stdout
 
         # Finally, make a CrashInfo object and parse stack traces for asan/crash/assertion bugs
-        crashInfo = CrashInfo.CrashInfo.fromRawCrashData(out, err, pc, auxCrashData=auxCrashData)
+        crashInfo = Crash_Info.CrashInfo.fromRawCrashData(out, err, pc, auxCrashData=auxCrashData)
 
         create_collector.printCrashInfo(crashInfo)
         # We only care about crashes and assertion failures on shells with no symbols
         # Note that looking out for the Assertion failure message is highly SpiderMonkey-specific
-        if not isinstance(crashInfo, CrashInfo.NoCrashInfo) or \
+        if not isinstance(crashInfo, Crash_Info.NoCrashInfo) or \
                 "Assertion failure: " in str(crashInfo.rawStderr) or \
                 "Segmentation fault" in str(crashInfo.rawStderr) or \
                 "Bus error" in str(crashInfo.rawStderr):
@@ -200,17 +179,17 @@ class ShellResult(object):  # pylint: disable=missing-docstring,too-many-instanc
                 create_collector.printMatchingSignature(match)
                 lev = JS_FINE
         except UnicodeDecodeError:  # Sometimes FM throws due to unicode issues
-            FUNFUZZ_LOG.warning("FuzzManager is throwing a UnicodeDecodeError, signature matching skipped")
+            LOG_JS_INTERESTING.warning("FuzzManager is throwing a UnicodeDecodeError, signature matching skipped")
             match = False
 
-        FUNFUZZ_LOG.info("%s | %s", logPrefix, summaryString(issues, lev, runinfo.elapsedtime))
+        LOG_JS_INTERESTING.info("%s | %s", logPrefix, summaryString(issues, lev, runinfo.elapsedtime))
 
         if lev != JS_FINE:
-            summary_log = (logPrefix.parent / (logPrefix.stem + "-summary")).with_suffix(".txt")
+            summary_log = (logPrefix.parent / f"{logPrefix.stem}-summary").with_suffix(".txt")
             with io.open(str(summary_log), "w", encoding="utf-8", errors="replace") as f:
-                f.writelines(["Number: " + str(logPrefix) + "\n",
-                              "Command: " + " ".join(quote(str(x)) for x in runthis) + "\n"] +
-                             ["Status: " + i + "\n" for i in issues])
+                f.writelines([f"Number: {logPrefix}\n",
+                              f'Command: {" ".join(quote(str(x)) for x in runthis)}\n'] +
+                             [f"Status: {i}\n" for i in issues])
 
         self.lev = lev
         self.out = out
@@ -231,9 +210,12 @@ def understoodJsfunfuzzExit(out, err):  # pylint: disable=invalid-name,missing-d
             return True
 
     for line in out:
-        if "It's looking good!" in line or "jsfunfuzz broke its own scripting environment: " in line:
+        # Note that "jsfunfuzz broke its own scripting environment: " is not currently generated in error-reporting.js
+        if line.startswith("It's looking good!") or line.startswith("jsfunfuzz broke its own scripting environment: "):
             return True
         if "Found a bug: " in line:
+            return True
+        if line.startswith("calling: "):  # Working wasm testcases show this in stdout
             return True
 
     return False
@@ -242,7 +224,7 @@ def understoodJsfunfuzzExit(out, err):  # pylint: disable=invalid-name,missing-d
 def hitMemoryLimit(err):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc,missing-return-type-doc
     # pylint: disable=missing-type-doc
     """Return True iff stderr text indicates that the shell hit a memory limit."""
-    if "ReportOverRecursed called" in err:
+    if "ReportOverRecursed called" in err:  # pylint: disable=no-else-return
         # --enable-more-deterministic
         return "ReportOverRecursed called"
     elif "ReportOutOfMemory called" in err:
@@ -268,8 +250,8 @@ def oomed(err):  # pylint: disable=missing-docstring,missing-return-doc,missing-
 
 def summaryString(issues, level, elapsedtime):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
-    amissDetails = "" if (not issues) else (" | " + repr(issues[:5]) + " ")  # pylint: disable=invalid-name
-    return "%5.1fs | %d | %s%s" % (elapsedtime, level, JS_LEVEL_NAMES[level], amissDetails)
+    amissDetails = "" if (not issues) else f" | {issues[:5]!r} "  # pylint: disable=invalid-name
+    return f"{elapsedtime:5.1f}s | {level} | {JS_LEVEL_NAMES[level]}{amissDetails}"
 
 
 def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
@@ -278,36 +260,13 @@ def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
             f.truncate(maxSize)
 
 
-def valgrindSuppressions():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-    # pylint: disable=missing-return-type-doc
-    return ["--suppressions=" + filename for filename in "valgrind_suppressions.txt"]
-
-
-def deleteLogs(logPrefix):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
-    """Whoever might call baseLevel should eventually call this function (unless a bug was found)."""
-    # If this turns up a WindowsError on Windows, remember to have excluded fuzzing locations in
-    # the search indexer, anti-virus realtime protection and backup applications.
-    (logPrefix.parent / (logPrefix.stem + "-out")).with_suffix(".txt").unlink()
-    (logPrefix.parent / (logPrefix.stem + "-err")).with_suffix(".txt").unlink()
-    crash_log = (logPrefix.parent / (logPrefix.stem + "-crash")).with_suffix(".txt")
-    if crash_log.is_file():
-        crash_log.unlink()
-    valgrind_xml = (logPrefix.parent / (logPrefix.stem + "-vg")).with_suffix(".xml")
-    if valgrind_xml.is_file():
-        valgrind_xml.unlink()
-    # pylint: disable=fixme
-    # FIXME: in some cases, subprocesses gzips a core file only for us to delete it immediately.
-    core_gzip = (logPrefix.parent / (logPrefix.stem + "-core")).with_suffix(".gz")
-    if core_gzip.is_file():
-        core_gzip.unlink()
-
-
 def set_ulimit():
     """Sets appropriate resource limits for the JS shell when on POSIX."""
     try:
         import resource  # pylint: disable=import-error
 
         # log.debug("Limit address space to 2GB (or 1GB on ARM boards such as ODROID)")
+        # We cannot set a limit for RLIMIT_AS for ASan binaries
         giga_byte = 2**30
         resource.setrlimit(resource.RLIMIT_AS, (2 * giga_byte, 2 * giga_byte))  # pylint: disable=no-member
 
@@ -343,11 +302,12 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
         raise Exception("Not enough positional arguments")
     options.knownPath = args[0]
     options.jsengineWithArgs = [Path(args[1]).resolve()] + args[2:-1] + [Path(args[-1]).resolve()]
-    assert options.jsengineWithArgs[0].is_file()  # js shell
+    options.jsengine = options.jsengineWithArgs[0]  # options.jsengine is needed as it is present in compare_jit
+    assert options.jsengine.is_file()  # js shell
     assert options.jsengineWithArgs[-1].is_file()  # testcase
     options.collector = create_collector.make_collector()
     options.shellIsDeterministic = inspect_shell.queryBuildConfiguration(
-        options.jsengineWithArgs[0], "more-deterministic")
+        options.jsengine, "more-deterministic")
 
     return options
 
@@ -368,8 +328,8 @@ def interesting(_args, cwd_prefix):  # pylint: disable=missing-docstring,missing
     options = gOptions
     # options, runthis, logPrefix, in_compare_jit
     res = ShellResult(options, options.jsengineWithArgs, cwd_prefix, False)
-    out_log = (cwd_prefix.parent / (cwd_prefix.stem + "-out")).with_suffix(".txt")
-    err_log = (cwd_prefix.parent / (cwd_prefix.stem + "-err")).with_suffix(".txt")
+    out_log = (cwd_prefix.parent / f"{cwd_prefix.stem}-out").with_suffix(".txt")
+    err_log = (cwd_prefix.parent / f"{cwd_prefix.stem}-err").with_suffix(".txt")
     truncateFile(out_log, 1000000)
     truncateFile(err_log, 1000000)
     return res.lev >= gOptions.minimumInterestingLevel
@@ -380,15 +340,15 @@ def main():  # pylint: disable=missing-docstring
     options = parseOptions(sys.argv[1:])
     cwd_prefix = Path.cwd() / "m"
     res = ShellResult(options, options.jsengineWithArgs, cwd_prefix, False)  # pylint: disable=no-member
-    FUNFUZZ_LOG.info(res.lev)
+    LOG_JS_INTERESTING.info(res.lev)
     if options.submit:  # pylint: disable=no-member
         if res.lev >= options.minimumInterestingLevel:  # pylint: disable=no-member
             testcaseFilename = options.jsengineWithArgs[-1]  # pylint: disable=invalid-name,no-member
-            FUNFUZZ_LOG.info("Submitting %s", testcaseFilename)
+            LOG_JS_INTERESTING.info("Submitting %s", testcaseFilename)
             quality = 0
             options.collector.submit(res.crashInfo, str(testcaseFilename), quality)  # pylint: disable=no-member
         else:
-            FUNFUZZ_LOG.info("Not submitting (not interesting)")
+            LOG_JS_INTERESTING.info("Not submitting (not interesting)")
 
 
 if __name__ == "__main__":

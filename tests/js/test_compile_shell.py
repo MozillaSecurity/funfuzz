@@ -6,12 +6,11 @@
 
 """Test the compile_shell.py file."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
+from functools import lru_cache
 import logging
 import os
+from pathlib import Path
 import platform
-import sys
 import unittest
 
 import pytest
@@ -19,26 +18,7 @@ import pytest
 from funfuzz import js
 from funfuzz import util
 
-if sys.version_info.major == 2:
-    from functools32 import lru_cache  # pylint: disable=import-error
-    import logging_tz  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from functools import lru_cache  # pylint: disable=no-name-in-module
-    from pathlib import Path  # pylint: disable=import-error
-
-FUNFUZZ_TEST_LOG = logging.getLogger(__name__)
-FUNFUZZ_TEST_LOG.setLevel(logging.DEBUG)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-FUNFUZZ_TEST_LOG.addHandler(LOG_HANDLER)
-logging.getLogger("flake8").setLevel(logging.WARNING)
+LOG_TEST_COMPILE_SHELL = util.logging_helpers.get_logger(__name__, level=logging.DEBUG)
 
 
 class CompileShellTests(unittest.TestCase):
@@ -72,11 +52,11 @@ class CompileShellTests(unittest.TestCase):
         file_name = None
         if default_parameters_debug in build_opts:
             # Test compilation of a debug shell with determinism, valgrind and OOM breakpoint support.
-            file_name = "js-dbg-optDisabled-64-dm-vg-oombp-linux-" + hg_hash_of_default
+            file_name = f"js-dbg-optDisabled-64-dm-vg-oombp-linux-{hg_hash_of_default}"
         elif "--disable-debug --disable-profiling --without-intl-api" in build_opts:
             # Test compilation of an opt shell with both profiling and Intl support disabled.
             # This set of builds should also have the following: 32-bit with ARM, with asan, and with clang
-            file_name = "js-64-profDisabled-intlDisabled-linux-" + hg_hash_of_default
+            file_name = f"js-64-profDisabled-intlDisabled-linux-{hg_hash_of_default}"
 
         js_bin_path = self.shell_cache / file_name / file_name
         if platform.system() == "Windows":

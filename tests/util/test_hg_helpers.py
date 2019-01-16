@@ -6,46 +6,19 @@
 
 """Test the hg_helpers.py file."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
 import logging
-import sys
+from pathlib import Path
 import unittest
 
 import pytest
 
 from funfuzz.util import hg_helpers
+from funfuzz.util.logging_helpers import get_logger
 
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-
-FUNFUZZ_TEST_LOG = logging.getLogger(__name__)
-FUNFUZZ_TEST_LOG.setLevel(logging.DEBUG)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-FUNFUZZ_TEST_LOG.addHandler(LOG_HANDLER)
-logging.getLogger("flake8").setLevel(logging.WARNING)
+LOG_TEST_HG_HELPERS = get_logger(__name__, level=logging.DEBUG)
 
 
-class TestCase(unittest.TestCase):
-    """"TestCase class for general functions, e.g. backport ones."""
-    if sys.version_info.major == 2:
-        def assertRaisesRegex(self, *args, **kwds):  # pylint: disable=arguments-differ,invalid-name
-            # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc
-            """Adds support for raising exceptions with messages containing desired regex."""
-            return self.assertRaisesRegexp(*args, **kwds)  # pylint: disable=deprecated-method
-
-
-class HgHelpersTests(TestCase):
+class HgHelpersTests(unittest.TestCase):
     """"TestCase class for functions in hg_helpers.py"""
     trees_location = Path.home() / "trees"
 

@@ -17,7 +17,13 @@
 // * tryRunningDirectly(), which uses eval() or new Function().
 //   * This creates the most "interesting" testcases.
 
-var tryRunning = xpcshell ? useGeckoSandbox() : tryRunningDirectly;
+var tryRunning;
+if (xpcshell) {  // Adapted from ternary operator - this longer form helps reducers reduce better
+  tryRunning = useGeckoSandbox();
+} else {
+  tryRunning = tryRunningDirectly;
+}
+
 function fillShellSandbox(sandbox)
 {
   var safeFuns = [
@@ -52,7 +58,8 @@ function useSpidermonkeyShellSandbox(sandboxType)
   switch (sandboxType) {
     case 0:  primarySandbox = evalcx('');
     case 1:  primarySandbox = evalcx('lazy');
-    case 2:  primarySandbox = newGlobal({sameZoneAs: {}}); // same zone
+    case 2:  primarySandbox = newGlobal({sameCompartmentAs: {}});
+    case 3:  primarySandbox = newGlobal({sameZoneAs: {}}); // same zone
     default: primarySandbox = newGlobal(); // new zone
   }
 

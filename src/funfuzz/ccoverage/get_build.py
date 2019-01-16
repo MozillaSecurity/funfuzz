@@ -7,36 +7,18 @@
 """Downloads coverage builds and other coverage utilities, such as grcov.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
 import io
-import logging
+from pathlib import Path
 import platform
-import sys
 import tarfile
 import zipfile
 
 import requests
 
 from ..js.inspect_shell import queryBuildConfiguration
+from ..util.logging_helpers import get_logger
 
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-
-RUN_COV_LOG = logging.getLogger(__name__)
-RUN_COV_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-RUN_COV_LOG.addHandler(LOG_HANDLER)
+LOG_COV_GET_BUILD = get_logger(__name__)
 
 
 def get_coverage_build(dirpath, args):
@@ -49,19 +31,19 @@ def get_coverage_build(dirpath, args):
     Returns:
         Path: Path to the js coverage build
     """
-    RUN_COV_LOG.info("Downloading coverage build zip file into %s from %s", str(dirpath), args.url)
+    LOG_COV_GET_BUILD.info("Downloading coverage build zip file into %s from %s", dirpath, args.url)
     with requests.get(args.url, stream=True) as f:
         build_request_data = io.BytesIO(f.content)
 
-    RUN_COV_LOG.info("Extracting coverage build zip file...")
+    LOG_COV_GET_BUILD.info("Extracting coverage build zip file...")
     build_zip = zipfile.ZipFile(build_request_data)
     extract_folder = dirpath / "cov-build"
     extract_folder.mkdir(parents=True, exist_ok=True)  # Ensure this dir has been created
     # In 3.5 <= Python < 3.6, .extractall does not automatically create intermediate folders that do not exist
     build_zip.extractall(str(extract_folder.resolve()))
-    RUN_COV_LOG.info("Coverage build zip file extracted to this folder: %s", extract_folder.resolve())
+    LOG_COV_GET_BUILD.info("Coverage build zip file extracted to this folder: %s", extract_folder.resolve())
 
-    js_cov_bin_name = "js" + (".exe" if platform.system() == "Windows" else "")
+    js_cov_bin_name = f'js{".exe" if platform.system() == "Windows" else ""}'
     js_cov_bin = extract_folder / "dist" / "bin" / js_cov_bin_name
 
     Path.chmod(js_cov_bin, Path.stat(js_cov_bin).st_mode | 0o111)  # Ensure the js binary is executable
@@ -71,7 +53,7 @@ def get_coverage_build(dirpath, args):
     assert not queryBuildConfiguration(js_cov_bin, "debug")
     assert queryBuildConfiguration(js_cov_bin, "coverage")
 
-    js_cov_fmconf = extract_folder / "dist" / "bin" / (js_cov_bin_name + ".fuzzmanagerconf")
+    js_cov_fmconf = extract_folder / "dist" / "bin" / f"{js_cov_bin_name}.fuzzmanagerconf"
     assert js_cov_fmconf.is_file()
 
     # Check that a coverage build with *.gcno files are present
@@ -95,20 +77,20 @@ def get_grcov(dirpath, args):
         Path: Path to the grcov binary file
     """
     append_os = "win" if platform.system() == "Windows" else ("osx" if platform.system() == "Darwin" else "linux")
-    grcov_filename_with_ext = "grcov-%s-x86_64.tar.bz2" % append_os
+    grcov_filename_with_ext = f"grcov-{append_os}-x86_64.tar.bz2"
 
-    grcov_url = "https://github.com/marco-c/grcov/releases/download/v%s/%s" % (args.grcov_ver, grcov_filename_with_ext)
+    grcov_url = f"https://github.com/marco-c/grcov/releases/download/v{args.grcov_ver}/{grcov_filename_with_ext}"
 
-    RUN_COV_LOG.info("Downloading grcov into %s from %s", str(dirpath), grcov_url)
+    LOG_COV_GET_BUILD.info("Downloading grcov into %s from %s", dirpath, grcov_url)
     with requests.get(grcov_url, allow_redirects=True, stream=True) as grcov_request:
-        RUN_COV_LOG.info("Extracting grcov tarball...")
+        LOG_COV_GET_BUILD.info("Extracting grcov tarball...")
         grcov_bin_folder = dirpath / "grcov-bin"
         grcov_bin_folder.mkdir(parents=True, exist_ok=True)  # Ensure this dir has been created for Python 3.5 reasons
         with tarfile.open(fileobj=io.BytesIO(grcov_request.content), mode="r:bz2") as f:
             f.extractall(str(grcov_bin_folder.resolve()))
 
-    RUN_COV_LOG.info("grcov tarball extracted to this folder: %s", grcov_bin_folder.resolve())
-    grcov_bin = grcov_bin_folder / ("grcov" + (".exe" if platform.system() == "Windows" else ""))
+    LOG_COV_GET_BUILD.info("grcov tarball extracted to this folder: %s", grcov_bin_folder.resolve())
+    grcov_bin = grcov_bin_folder / f'grcov{".exe" if platform.system() == "Windows" else ""}'
     assert grcov_bin.is_file()
 
     return grcov_bin

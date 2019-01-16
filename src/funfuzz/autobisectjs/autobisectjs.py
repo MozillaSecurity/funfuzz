@@ -7,13 +7,12 @@
 """autobisectjs, for bisecting changeset regression windows. Supports Mercurial repositories and SpiderMonkey only.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
-import logging
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
+from pathlib import Path
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -29,27 +28,10 @@ from ..util import s3cache
 from ..util import sm_compile_helpers
 from ..util import subprocesses as sps
 from ..util.lock_dir import LockDir
+from ..util.logging_helpers import get_logger
 
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
-
-AUTOBISECTJS_LOG = logging.getLogger(__name__)
-AUTOBISECTJS_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-AUTOBISECTJS_LOG.addHandler(LOG_HANDLER)
+LOG_ABJS = get_logger("autobisectjs")
+LOG_ABJS_NO_TERMINATOR = get_logger("abjs_no_terminator", terminator="")
 
 
 def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -78,8 +60,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     parser.add_option("-b", "--build",
                       dest="build_options",
                       help=('Specify js shell build options, e.g. -b "--enable-debug --32"'
-                            "(%s -m funfuzz.js.build_options --help)" %
-                            re.search("python.*[2-3]", os.__file__).group(0).replace("/", "")))
+                            "(python3 -m funfuzz.js.build_options --help)"))
 
     parser.add_option("--resetToTipFirst", dest="resetRepoFirst",
                       action="store_true",
@@ -131,7 +112,7 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     (options, args) = parser.parse_args()
     if options.useTreeherderBinaries:
-        AUTOBISECTJS_LOG.error("TBD: Bisection using downloaded shells is temporarily not supported.")
+        LOG_ABJS.error("TBD: Bisection using downloaded shells is temporarily not supported.")
         sys.exit(0)
 
     options.build_options = build_options.parse_shell_opts(options.build_options)
@@ -141,9 +122,9 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     # First check that the testcase is present.
     if "-e 42" not in options.parameters and not Path(options.runtime_params[-1]).expanduser().is_file():
-        AUTOBISECTJS_LOG.error("")
-        AUTOBISECTJS_LOG.error("List of parameters to be passed to the shell is: %s", " ".join(options.paramList))
-        AUTOBISECTJS_LOG.error("")
+        LOG_ABJS.error("")
+        LOG_ABJS.error("List of parameters to be passed to the shell is: %s", " ".join(options.runtime_params))
+        LOG_ABJS.error("")
         raise OSError("Testcase at %s is not present." % options.runtime_params[-1])
 
     assert options.compilationFailedLabel in ("bad", "good", "skip")
@@ -151,14 +132,14 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     extraFlags = []  # pylint: disable=invalid-name
 
     if options.useInterestingnessTests:
-        if len(args) < 1:
-            AUTOBISECTJS_LOG.debug("args are: %s", args)
+        if not args:
+            LOG_ABJS.debug("args are: %s", args)
             parser.error("Not enough arguments.")
         for a in args:  # pylint: disable=invalid-name
             if a.startswith("--flags="):
                 extraFlags = a[8:].split(" ")  # pylint: disable=invalid-name
         options.testAndLabel = externalTestAndLabel(options, args)
-    elif len(args) >= 1:
+    elif args:
         parser.error("Too many arguments.")
     else:
         options.testAndLabel = internalTestAndLabel(options)
@@ -186,8 +167,8 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
     #     raise Exception("endRepo is not a descendant of kbew.earliestKnownWorkingRev for this configuration")
 
     if options.parameters == "-e 42":
-        AUTOBISECTJS_LOG.info("Since no parameters were specified, "
-                              "we're just ensuring the shell does not crash on startup/shutdown.")
+        LOG_ABJS.info("Since no parameters were specified, "
+                      "we're just ensuring the shell does not crash on startup/shutdown.")
 
     if options.nameOfTreeherderBranch != "mozilla-inbound" and not options.useTreeherderBinaries:
         raise Exception("Setting the name of branches only works for treeherder shell bisection.")
@@ -197,7 +178,8 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
 def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,missing-docstring,too-complex
     # pylint: disable=too-many-locals,too-many-statements
-    AUTOBISECTJS_LOG.info("%s | Bisecting on: %s", time.asctime(), str(repo_dir))
+    repo_dir = str(repo_dir)
+    LOG_ABJS.info("%s | Bisecting on: %s", time.asctime(), repo_dir)
 
     hgPrefix = ["hg", "-R", repo_dir]  # pylint: disable=invalid-name
 
@@ -206,7 +188,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
     realStartRepo = sRepo = hg_helpers.get_repo_hash_and_id(repo_dir, repo_rev=options.startRepo)[0]
     # pylint: disable=invalid-name
     realEndRepo = eRepo = hg_helpers.get_repo_hash_and_id(repo_dir, repo_rev=options.endRepo)[0]
-    AUTOBISECTJS_LOG.info("Bisecting in the range %s:%s", sRepo, eRepo)
+    LOG_ABJS.info("Bisecting in the range %s:%s", sRepo, eRepo)
 
     # Refresh source directory (overwrite all local changes) to default tip if required.
     if options.resetRepoFirst:
@@ -217,12 +199,12 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
     # Reset bisect ranges and set skip ranges.
     subprocess.run(hgPrefix + ["bisect", "-r"],
                    check=True,
-                   cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                   cwd=os.getcwd(),
                    timeout=99)
     if options.skipRevs:
         subprocess.run(hgPrefix + ["bisect", "--skip", options.skipRevs],
                        check=True,
-                       cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                       cwd=os.getcwd(),
                        timeout=300)
 
     labels = {}
@@ -236,7 +218,7 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
         mid_bisect_output = subprocess.run(
             hgPrefix + ["bisect", "-U", "-b", eRepo],
             check=True,
-            cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+            cwd=os.getcwd(),
             stdout=subprocess.PIPE,
             timeout=300).stdout.decode("utf-8", errors="replace")
         currRev = hg_helpers.get_cset_hash_from_bisect_msg(
@@ -261,14 +243,16 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
             # bustage would be faster. 20 total skips being roughly the time that the pair of
             # bisections would take.
             if skipCount > 20:
-                AUTOBISECTJS_LOG.warning("Skipped 20 times, stopping autobisectjs.")
+                LOG_ABJS.warning("Skipped 20 times, stopping autobisectjs.")
                 break
-        AUTOBISECTJS_LOG.info("%s (%s) ", label[0], label[1])
+        LOG_ABJS_NO_TERMINATOR.info("%s (%s) ", label[0], label[1])
 
         if iterNum <= 0:
-            AUTOBISECTJS_LOG.info("Finished testing the initial boundary revisions...")
+            LOG_ABJS_NO_TERMINATOR.info("Finished testing the initial boundary revisions...")
         else:
-            AUTOBISECTJS_LOG.info("Bisecting for the n-th round where n is %s and 2^n is %s ...", iterNum, 2**iterNum)
+            LOG_ABJS_NO_TERMINATOR.info("Bisecting for the n-th round where n is %s and 2^n is %s ...",
+                                        iterNum,
+                                        2**iterNum)
         (blamedGoodOrBad, blamedRev, currRev, sRepo, eRepo) = \
             bisectLabel(hgPrefix, options, label[0], currRev, sRepo, eRepo)
 
@@ -280,63 +264,63 @@ def findBlamedCset(options, repo_dir, testRev):  # pylint: disable=invalid-name,
         iterNum += 1
         endTime = time.time()
         oneRunTime = endTime - startTime
-        AUTOBISECTJS_LOG.info("This iteration took %.3f seconds to run.", oneRunTime)
+        LOG_ABJS.info("This iteration took %.3f seconds to run.", oneRunTime)
 
     if blamedRev is not None:
         checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, realStartRepo,
                           realEndRepo)
 
-    AUTOBISECTJS_LOG.info("Resetting bisect")
+    LOG_ABJS.info("Resetting bisect")
     subprocess.run(hgPrefix + ["bisect", "-U", "-r"], check=True)
 
-    AUTOBISECTJS_LOG.info("Resetting working directory")
+    LOG_ABJS.info("Resetting working directory")
     subprocess.run(hgPrefix + ["update", "-C", "-r", "default"],
                    check=True,
-                   cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+                   cwd=os.getcwd(),
                    timeout=999)
     hg_helpers.destroyPyc(repo_dir)
 
-    AUTOBISECTJS_LOG.info(time.asctime())
+    LOG_ABJS.info(time.asctime())
 
 
 def internalTestAndLabel(options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc,too-complex
     """Use autobisectjs without interestingness tests to examine the revision of the js shell."""
-    def inner(shellFilename, _hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-        # pylint: disable=missing-return-type-doc,too-many-return-statements
+    def inner(shellFilename, _hgHash):  # pylint: disable=invalid-name,missing-return-doc,too-many-return-statements
         # pylint: disable=invalid-name
         (stdoutStderr, exitCode) = inspect_shell.testBinary(shellFilename, options.runtime_params,
                                                             options.build_options.runWithVg)
 
-        if (stdoutStderr.find(options.output) != -1) and (options.output != ""):
+        if (stdoutStderr.find(options.output) != -1) and (options.output != ""):  # pylint: disable=no-else-return
             return "bad", "Specified-bad output"
         elif options.watchExitCode is not None and exitCode == options.watchExitCode:
-            return "bad", "Specified-bad exit code " + str(exitCode)
+            return "bad", f"Specified-bad exit code {exitCode}"
         elif options.watchExitCode is None and 129 <= exitCode <= 159:
-            return "bad", "High exit code " + str(exitCode)
+            return "bad", f"High exit code {exitCode}"
         elif exitCode < 0:
             # On Unix-based systems, the exit code for signals is negative, so we check if
             # 128 + abs(exitCode) meets our specified signal exit code.
+            # pylint: disable=no-else-return
             if options.watchExitCode is not None and 128 - exitCode == options.watchExitCode:
-                return "bad", "Specified-bad exit code %s (after converting to signal)" % exitCode
+                return "bad", f"Specified-bad exit code {exitCode} (after converting to signal)"
             elif (stdoutStderr.find(options.output) == -1) and (options.output != ""):
                 return "good", "Bad output, but not the specified one"
             elif options.watchExitCode is not None and 128 - exitCode != options.watchExitCode:
                 return "good", "Negative exit code, but not the specified one"
-            return "bad", "Negative exit code " + str(exitCode)
+            return "bad", f"Negative exit code {exitCode}"
         elif exitCode == 0:
             return "good", "Exit code 0"
-        elif (exitCode == 1 or exitCode == 2) and (    # pylint: disable=too-many-boolean-expressions
-                options.output != "") and (stdoutStderr.find("usage: js [") != -1 or
-                                           stdoutStderr.find("Error: Short option followed by junk") != -1 or
-                                           stdoutStderr.find("Error: Invalid long option:") != -1 or
-                                           stdoutStderr.find("Error: Invalid short option:") != -1):
+        elif exitCode in (1, 2) and options.output != "" and (    # pylint: disable=too-many-boolean-expressions
+                stdoutStderr.find("usage: js [") != -1 or
+                stdoutStderr.find("Error: Short option followed by junk") != -1 or
+                stdoutStderr.find("Error: Invalid long option:") != -1 or
+                stdoutStderr.find("Error: Invalid short option:") != -1):
             return "good", "Exit code 1 or 2 - js shell quits because it does not support a given CLI parameter"
         elif 3 <= exitCode <= 6:
-            return "good", "Acceptable exit code " + str(exitCode)
+            return "good", f"Acceptable exit code {exitCode}"
         elif options.watchExitCode is not None:
-            return "good", "Unknown exit code " + str(exitCode) + ", but not the specified one"
-        return "bad", "Unknown exit code " + str(exitCode)
+            return "good", f"Unknown exit code {exitCode}, but not the specified one"
+        return "bad", f"Unknown exit code {exitCode}"
     return inner
 
 
@@ -346,11 +330,10 @@ def externalTestAndLabel(options, interestingness):  # pylint: disable=invalid-n
     conditionScript = rel_or_abs_import(interestingness[0])  # pylint: disable=invalid-name
     conditionArgPrefix = interestingness[1:]  # pylint: disable=invalid-name
 
-    def inner(shellFilename, hgHash):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
-        # pylint: disable=missing-return-type-doc
+    def inner(shellFilename, hgHash):  # pylint: disable=invalid-name,missing-return-doc
         # pylint: disable=invalid-name
         conditionArgs = conditionArgPrefix + [str(shellFilename)] + options.runtime_params
-        temp_dir = Path(tempfile.mkdtemp(prefix="abExtTestAndLabel-" + hgHash))
+        temp_dir = Path(tempfile.mkdtemp(prefix=f"abExtTestAndLabel-{hgHash}"))
         temp_prefix = temp_dir / "t"
         if hasattr(conditionScript, "init"):
             # Since we're changing the js shell name, call init() again!
@@ -375,7 +358,7 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     hg_parent_output = subprocess.run(
         ["hg", "-R", str(repo_dir)] + ["parent", "--template={node|short},", "-r", blamedRev],
         check=True,
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stdout=subprocess.PIPE,
         timeout=99).stdout.decode("utf-8", errors="replace")
     parents = hg_parent_output.split(",")[:-1]
@@ -386,25 +369,25 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     for p in parents:
         # Ensure we actually tested the parent.
         if labels.get(p) is None:
-            AUTOBISECTJS_LOG.info("")
-            AUTOBISECTJS_LOG.info("Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now.", p)
+            LOG_ABJS.info("")
+            LOG_ABJS.info("Oops! We didn't test rev %s, a parent of the blamed revision! Let's do that now.", p)
             if not hg_helpers.isAncestor(repo_dir, startRepo, p) and \
                     not hg_helpers.isAncestor(repo_dir, endRepo, p):
-                AUTOBISECTJS_LOG.info("We did not test rev %s because it is not a descendant of either %s or %s.",
-                                      p, startRepo, endRepo)
+                LOG_ABJS.info("We did not test rev %s because it is not a descendant of either %s or %s.",
+                              p, startRepo, endRepo)
                 # Note this in case we later decide the bisect result is wrong.
                 missedCommonAncestor = True
             label = testRev(p)
             labels[p] = label
-            AUTOBISECTJS_LOG.info("%s (%s) ", label[0], label[1])
-            AUTOBISECTJS_LOG.info("As expected, the parent's label is the opposite of the blamed rev's label.")
+            LOG_ABJS.info("%s (%s) ", label[0], label[1])
+            LOG_ABJS.info("As expected, the parent's label is the opposite of the blamed rev's label.")
 
         # Check that the parent's label is the opposite of the blamed merge's label.
         if labels[p][0] == "skip":
-            AUTOBISECTJS_LOG.info('Parent rev %s was marked as "skip", so the regression window includes it.',
-                                  p.rstrip())
+            LOG_ABJS.info('Parent rev %s was marked as "skip", so the regression window includes it.',
+                          p.rstrip())
         elif labels[p][0] == blamedGoodOrBad:
-            AUTOBISECTJS_LOG.info("Bisect lied to us! Parent rev %s was also %s!", p, blamedGoodOrBad)
+            LOG_ABJS.info("Bisect lied to us! Parent rev %s was also %s!", p, blamedGoodOrBad)
             bisectLied = True
         else:
             assert labels[p][0] == {"good": "bad", "bad": "good"}[blamedGoodOrBad]
@@ -413,23 +396,22 @@ def checkBlameParents(repo_dir, blamedRev, blamedGoodOrBad, labels, testRev, sta
     if bisectLied:
         if missedCommonAncestor:
             ca = hg_helpers.findCommonAncestor(repo_dir, parents[0], parents[1])
-            AUTOBISECTJS_LOG.info("")
-            AUTOBISECTJS_LOG.info("Bisect blamed the merge because our initial range did not include one "
-                                  "of the parents.")
-            AUTOBISECTJS_LOG.info("The common ancestor of %s and %s is %s.", parents[0], parents[1], ca)
+            LOG_ABJS.info("")
+            LOG_ABJS.info("Bisect blamed the merge because our initial range did not include one of the parents.")
+            LOG_ABJS.info("The common ancestor of %s and %s is %s.", parents[0], parents[1], ca)
             label = testRev(ca)
-            AUTOBISECTJS_LOG.info("%s (%s) ", label[0], label[1])
-            AUTOBISECTJS_LOG.info("Consider re-running autobisectjs with -s %s -e %s", ca, blamedRev)
-            AUTOBISECTJS_LOG.info("in a configuration where earliestWorking is before the common ancestor.")
+            LOG_ABJS.info("%s (%s) ", label[0], label[1])
+            LOG_ABJS.info("Consider re-running autobisectjs with -s %s -e %s", ca, blamedRev)
+            LOG_ABJS.info("in a configuration where earliestWorking is before the common ancestor.")
         else:
-            AUTOBISECTJS_LOG.info("")
-            AUTOBISECTJS_LOG.info("Most likely, bisect's result was unhelpful because one of the")
-            AUTOBISECTJS_LOG.info('tested revisions was marked as "good" or "bad" for the wrong reason.')
-            AUTOBISECTJS_LOG.info("I don't know which revision was incorrectly marked. Sorry.")
+            LOG_ABJS.info("")
+            LOG_ABJS.info("Most likely, bisect's result was unhelpful because one of the")
+            LOG_ABJS.info('tested revisions was marked as "good" or "bad" for the wrong reason.')
+            LOG_ABJS.info("I don't know which revision was incorrectly marked. Sorry.")
     else:
-        AUTOBISECTJS_LOG.info("")
-        AUTOBISECTJS_LOG.info("The bug was introduced by a merge (it was not present on either parent).")
-        AUTOBISECTJS_LOG.info("I don't know which patches from each side of the merge contributed to the bug. Sorry.")
+        LOG_ABJS.info("")
+        LOG_ABJS.info("The bug was introduced by a merge (it was not present on either parent).")
+        LOG_ABJS.info("I don't know which patches from each side of the merge contributed to the bug. Sorry.")
 
 
 def sanitizeCsetMsg(msg, repo):  # pylint: disable=missing-param-doc,missing-return-doc
@@ -441,7 +423,7 @@ def sanitizeCsetMsg(msg, repo):  # pylint: disable=missing-param-doc,missing-ret
         if line.find("<") != -1 and line.find("@") != -1 and line.find(">") != -1:
             line = " ".join(line.split(" ")[:-1])
         elif line.startswith("changeset:") and "mozilla-central" in str(repo):
-            line = "changeset:   https://hg.mozilla.org/mozilla-central/rev/" + line.split(":")[-1]
+            line = f'changeset:   https://hg.mozilla.org/mozilla-central/rev/{line.split(":")[-1]}'
         sanitizedMsgList.append(line)
     return "\n".join(sanitizedMsgList)
 
@@ -452,9 +434,9 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
     """Tell hg what we learned about the revision."""
     assert hgLabel in ("good", "bad", "skip")
     outputResult = subprocess.run(
-        hgPrefix + ["bisect", "-U", "--" + hgLabel, currRev],
+        hgPrefix + ["bisect", "-U", f"--{hgLabel}", currRev],
         check=True,
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stdout=subprocess.PIPE,
         timeout=999).stdout.decode("utf-8", errors="replace")
     outputLines = outputResult.split("\n")
@@ -464,20 +446,20 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
         repo_dir = options.build_options.repo_dir
 
     if re.compile("Due to skipped revisions, the first (good|bad) revision could be any of:").match(outputLines[0]):
-        AUTOBISECTJS_LOG.info("")
-        AUTOBISECTJS_LOG.info(sanitizeCsetMsg(outputResult, repo_dir))
-        AUTOBISECTJS_LOG.info("")
+        LOG_ABJS.info("")
+        LOG_ABJS.info(sanitizeCsetMsg(outputResult, repo_dir))
+        LOG_ABJS.info("")
         return None, None, None, startRepo, endRepo
 
     r = re.compile("The first (good|bad) revision is:")
     m = r.match(outputLines[0])
     if m:
-        AUTOBISECTJS_LOG.info("")
-        AUTOBISECTJS_LOG.info("")
-        AUTOBISECTJS_LOG.info("autobisectjs shows this is probably related to the following changeset:")
-        AUTOBISECTJS_LOG.info("")
-        AUTOBISECTJS_LOG.info(sanitizeCsetMsg(outputResult, repo_dir))
-        AUTOBISECTJS_LOG.info("")
+        LOG_ABJS.info("")
+        LOG_ABJS.info("")
+        LOG_ABJS.info("autobisectjs shows this is probably related to the following changeset:")
+        LOG_ABJS.info("")
+        LOG_ABJS.info(sanitizeCsetMsg(outputResult, repo_dir))
+        LOG_ABJS.info("")
         blamedGoodOrBad = m.group(1)
         blamedRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[1])
         return blamedGoodOrBad, blamedRev, None, startRepo, endRepo
@@ -486,11 +468,11 @@ def bisectLabel(hgPrefix, options, hgLabel, currRev, startRepo, endRepo):  # pyl
         return None, None, None, startRepo, endRepo
 
     # e.g. "Testing changeset 52121:573c5fa45cc4 (440 changesets remaining, ~8 tests)"
-    AUTOBISECTJS_LOG.info(outputLines[0])
+    LOG_ABJS.info(outputLines[0])
 
     currRev = hg_helpers.get_cset_hash_from_bisect_msg(outputLines[0])
     if currRev is None:
-        AUTOBISECTJS_LOG.info("Resetting to default revision...")
+        LOG_ABJS.info("Resetting to default revision...")
         subprocess.run(hgPrefix + ["update", "-C", "default"], check=True)
         hg_helpers.destroyPyc(repo_dir)
         raise Exception("hg did not suggest a changeset to test!")
@@ -546,7 +528,7 @@ def main():
     with LockDir(sm_compile_helpers.get_lock_dir_path(Path.home(), options.nameOfTreeherderBranch, tbox_id="Tbox")
                  if options.useTreeherderBinaries else sm_compile_helpers.get_lock_dir_path(Path.home(), repo_dir)):
         if options.useTreeherderBinaries:
-            AUTOBISECTJS_LOG.error("TBD: We need to switch to the autobisect repository.")
+            LOG_ABJS.error("TBD: We need to switch to the autobisect repository.")
             sys.exit(0)
         else:  # Bisect using local builds
             findBlamedCset(options, repo_dir, compile_shell.makeTestRev(options))

@@ -7,35 +7,16 @@
 """Helper functions involving Mercurial (hg).
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
-from builtins import input
 import configparser
-import logging
 import os
+from pathlib import Path
 import re
+import subprocess
 import sys
 
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
+from .logging_helpers import get_logger
 
-FUNFUZZ_LOG = logging.getLogger(__name__)
-FUNFUZZ_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-FUNFUZZ_LOG.addHandler(LOG_HANDLER)
+LOG_HG_HELPERS = get_logger(__name__)
 
 
 def destroyPyc(repo_dir):  # pylint: disable=invalid-name,missing-docstring
@@ -57,23 +38,23 @@ def ensure_mq_enabled():
         NoOptionError: Raises if an mq entry is not found in [extensions]
     """
     user_hgrc = Path.home() / ".hgrc"
-    assert user_hgrc.is_file()  # pylint: disable=no-member
+    assert user_hgrc.is_file()
 
-    user_hgrc_cfg = configparser.SafeConfigParser()
+    user_hgrc_cfg = configparser.ConfigParser()
     user_hgrc_cfg.read(str(user_hgrc))
 
     try:
         user_hgrc_cfg.get("extensions", "mq")
     except configparser.NoOptionError:
-        FUNFUZZ_LOG.error('Please first enable mq in ~/.hgrc by having "mq =" in [extensions].')
+        LOG_HG_HELPERS.error('Please first enable mq in ~/.hgrc by having "mq =" in [extensions].')
         raise
 
 
 def findCommonAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
     # pylint: disable=missing-return-type-doc
     return subprocess.run(
-        ["hg", "-R", str(repo_dir), "log", "-r", "ancestor(" + a + "," + b + ")", "--template={node|short}"],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        ["hg", "-R", str(repo_dir), "log", "-r", f"ancestor({a},{b})", "--template={node|short}"],
+        cwd=os.getcwd(),
         check=True,
         stdout=subprocess.PIPE,
         timeout=999,
@@ -84,8 +65,8 @@ def isAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing-param-do
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Return true iff |a| is an ancestor of |b|. Throw if |a| or |b| does not exist."""
     return subprocess.run(
-        ["hg", "-R", str(repo_dir), "log", "-r", a + " and ancestor(" + a + "," + b + ")", "--template={node|short}"],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        ["hg", "-R", str(repo_dir), "log", "-r", f"{a} and ancestor({a},{b})", "--template={node|short}"],
+        cwd=os.getcwd(),
         check=True,
         stdout=subprocess.PIPE,
         timeout=999,
@@ -98,8 +79,8 @@ def existsAndIsAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing
     # Note that if |a| is the same as |b|, it will return True
     # Takes advantage of "id(badhash)" being the empty set, in contrast to just "badhash", which is an error
     out = subprocess.run(
-        ["hg", "-R", str(repo_dir), "log", "-r", a + " and ancestor(" + a + "," + b + ")", "--template={node|short}"],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        ["hg", "-R", str(repo_dir), "log", "-r", f"{a} and ancestor({a},{b})", "--template={node|short}"],
+        cwd=os.getcwd(),
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
         timeout=999,
@@ -123,7 +104,7 @@ def get_cset_hash_from_bisect_msg(msg):
     matched = rgx.match(msg)
     if matched:
         return matched.group(3)
-    raise ValueError("Bisection output format required for hash extraction unavailable. The variable msg is: %s" % msg)
+    raise ValueError(f"Bisection output format required for hash extraction unavailable. The variable msg is: {msg}")
 
 
 def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
@@ -146,18 +127,19 @@ def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
                             "--template", "{node|short} {rev}"]
     hg_id_full = subprocess.run(
         hg_log_template_cmds,
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         check=True,
         stdout=subprocess.PIPE,
         timeout=99,
         ).stdout.decode("utf-8", errors="replace")
     is_on_default = bool(hg_id_full)
     if not is_on_default:
+        # pylint: disable=input-builtin
         update_default = input("Not on default tip! "
                                "Would you like to (a)bort, update to (d)efault, or (u)se this rev: ")
         update_default = update_default.strip()
         if update_default == "a":
-            FUNFUZZ_LOG.error("Aborting...")
+            LOG_HG_HELPERS.error("Aborting...")
             sys.exit(0)
         elif update_default == "d":
             subprocess.run(["hg", "-R", str(repo_dir), "update", "default"], check=True)
@@ -169,14 +151,14 @@ def get_repo_hash_and_id(repo_dir, repo_rev="parents() and default"):
             raise ValueError("Invalid choice.")
         hg_id_full = subprocess.run(
             hg_log_template_cmds,
-            cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+            cwd=os.getcwd(),
             check=True,
             stdout=subprocess.PIPE,
             timeout=99,
             ).stdout.decode("utf-8", errors="replace")
     assert hg_id_full != ""
     (hg_id_hash, hg_id_local_num) = hg_id_full.split(" ")
-    FUNFUZZ_LOG.debug("Finished getting the hash and local id number of the repository.")
+    LOG_HG_HELPERS.debug("Finished getting the hash and local id number of the repository.")
     return hg_id_hash, hg_id_local_num, is_on_default
 
 
@@ -189,7 +171,7 @@ def hgrc_repo_name(repo_dir):
     Returns:
         str: Returns the name of the Mercurial repository as indicated in the .hgrc
     """
-    hgrc_cfg = configparser.SafeConfigParser()
+    hgrc_cfg = configparser.ConfigParser()
     hgrc_cfg.read(str(repo_dir / ".hg" / "hgrc"))
     # Not all default entries in [paths] end with "/".
     return [i for i in hgrc_cfg.get("paths", "default").split("/") if i][-1]
@@ -209,13 +191,13 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
         str: Returns the name of the patch file
     """
     repo_dir = str(repo_dir) or (
-        os.getcwdu() if sys.version_info.major == 2 else os.getcwd())  # pylint: disable=no-member
+        os.getcwd())
     # We may have passed in the patch with or without the full directory.
     patch_abs_path = patch_file.resolve()
     pname = patch_abs_path.name
     qimport_result = subprocess.run(
         ["hg", "-R", str(repo_dir), "qimport", patch_abs_path],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
         timeout=99)
@@ -223,14 +205,14 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
                                            qimport_result.returncode)
     if qimport_return_code != 0:
         if "already exists" in qimport_output:
-            FUNFUZZ_LOG.error("A patch with the same name has already been qpush'ed. Please qremove it first.")
-        raise OSError("Return code from `hg qimport` is: " + str(qimport_return_code))
+            LOG_HG_HELPERS.error("A patch with the same name has already been qpush'ed. Please qremove it first.")
+        raise OSError(f"Return code from `hg qimport` is: {qimport_return_code}")
 
-    FUNFUZZ_LOG.info("Patch qimport'ed...")
+    LOG_HG_HELPERS.info("Patch qimport'ed...")
 
     qpush_result = subprocess.run(
         ["hg", "-R", str(repo_dir), "qpush", pname],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         check=True,
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
@@ -240,13 +222,13 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
 
     if qpush_return_code != 0:
         qpop_qrm_applied_patch(patch_file, repo_dir)
-        FUNFUZZ_LOG.error("You may have untracked .rej or .orig files in the repository.")
-        FUNFUZZ_LOG.error("`hg status` output of the repository of interesting files in %s :", repo_dir)
+        LOG_HG_HELPERS.error("You may have untracked .rej or .orig files in the repository.")
+        LOG_HG_HELPERS.error("`hg status` output of the repository of interesting files in %s :", repo_dir)
         subprocess.run(["hg", "-R", str(repo_dir), "status", "--modified", "--added",
                         "--removed", "--deleted"], check=True)
-        raise OSError("Return code from `hg qpush` is: " + str(qpush_return_code))
+        raise OSError(f"Return code from `hg qpush` is: {qpush_return_code}")
 
-    FUNFUZZ_LOG.info("Patch qpush'ed. Continuing...")
+    LOG_HG_HELPERS.info("Patch qpush'ed. Continuing...")
     return pname
 
 
@@ -262,15 +244,15 @@ def qpop_qrm_applied_patch(patch_file, repo_dir):
     """
     qpop_result = subprocess.run(
         ["hg", "-R", str(repo_dir), "qpop"],
-        cwd=os.getcwdu() if sys.version_info.major == 2 else os.getcwd(),  # pylint: disable=no-member
+        cwd=os.getcwd(),
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
         timeout=99)
     qpop_output, qpop_return_code = qpop_result.stdout.decode("utf-8", errors="replace"), qpop_result.returncode
     if qpop_return_code != 0:
-        FUNFUZZ_LOG.error("`hg qpop` output is: %s", qpop_output)
-        raise OSError("Return code from `hg qpop` is: " + str(qpop_return_code))
+        LOG_HG_HELPERS.error("`hg qpop` output is: %s", qpop_output)
+        raise OSError(f"Return code from `hg qpop` is: {qpop_return_code}")
 
-    FUNFUZZ_LOG.info("Patch qpop'ed...")
+    LOG_HG_HELPERS.info("Patch qpop'ed...")
     subprocess.run(["hg", "-R", str(repo_dir), "qdelete", patch_file.name], check=True)
-    FUNFUZZ_LOG.info("Patch qdelete'd.")
+    LOG_HG_HELPERS.info("Patch qdelete'd.")

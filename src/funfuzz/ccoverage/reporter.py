@@ -7,27 +7,27 @@
 """Reports coverage build results to CovManager.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
-import logging
-import sys
+import os
 
 from CovReporter import CovReporter
+from EC2Reporter import EC2Reporter
 
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
+from ..util.logging_helpers import get_logger
 
-RUN_COV_LOG = logging.getLogger(__name__)
-RUN_COV_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-RUN_COV_LOG.addHandler(LOG_HANDLER)
+LOG_COV_REPORTER = get_logger(__name__)
+
+
+def disable_pool():
+    """Disables coverage pool on collection completion."""
+    spotman_env_var_name = "EC2SPOTMANAGER_POOLID"
+    if spotman_env_var_name in os.environ:  # pragma: no cover
+        pool_id = os.environ[spotman_env_var_name]
+        LOG_COV_REPORTER.info("About to disable EC2SpotManager pool ID: %s", pool_id)
+        EC2Reporter.main(argv=["--disable", str(pool_id)])
+        LOG_COV_REPORTER.info("Pool disabled!")
+    else:
+        LOG_COV_REPORTER.info("No pools were disabled, as the %s environment variable was not found",
+                              spotman_env_var_name)
 
 
 def report_coverage(cov_results):
@@ -36,8 +36,8 @@ def report_coverage(cov_results):
     Args:
         cov_results (Path): Path to the coverage .json results
     """
-    RUN_COV_LOG.info("Submitting to CovManager...")
+    LOG_COV_REPORTER.info("Submitting to CovManager...")
     assert not CovReporter.main(argv=["--repository", "mozilla-central",
                                       "--tool", "jsfunfuzz",
                                       "--submit", str(cov_results)])
-    RUN_COV_LOG.info("Submission complete!")
+    LOG_COV_REPORTER.info("Submission complete!")

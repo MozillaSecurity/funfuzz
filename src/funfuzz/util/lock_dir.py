@@ -8,29 +8,12 @@
 released.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
+from .logging_helpers import get_logger
 
-from builtins import object
-import logging
-import sys
-
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
-
-FUNFUZZ_LOG = logging.getLogger(__name__)
-FUNFUZZ_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-FUNFUZZ_LOG.addHandler(LOG_HANDLER)
+LOG_LOCK_DIR = get_logger(__name__)
 
 
-class LockDir(object):
+class LockDir:
     """Create a filesystem-based lock while in scope.
 
     Use:
@@ -48,7 +31,7 @@ class LockDir(object):
         try:
             self.directory.mkdir()
         except OSError:
-            FUNFUZZ_LOG.error("Lock directory exists: %s", self.directory)
+            LOG_LOCK_DIR.error("Lock directory exists: %s", self.directory)
             raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):

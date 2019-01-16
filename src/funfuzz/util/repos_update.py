@@ -10,35 +10,16 @@ Only supports hg (Mercurial) for now.
 Assumes that the repositories are located in ../../trees/*.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
 from copy import deepcopy
-import logging
 import os
+from pathlib import Path
 import platform
-import sys
+import subprocess
 import time
 
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import subprocess
+from .logging_helpers import get_logger
 
-FUNFUZZ_LOG = logging.getLogger(__name__)
-FUNFUZZ_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-FUNFUZZ_LOG.addHandler(LOG_HANDLER)
+LOG_REPOS_UPDATE = get_logger(__name__)
 
 # Add your repository here.
 REPOS = ["gecko-dev", "octo"] + \
@@ -48,9 +29,9 @@ if platform.system() == "Windows":
     # pylint: disable=invalid-name
     git_64bit_path = Path(os.getenv("PROGRAMFILES")) / "Git" / "bin" / "git.exe"
     git_32bit_path = Path(os.getenv("PROGRAMFILES(X86)")) / "Git" / "bin" / "git.exe"
-    if git_64bit_path.is_file():  # pylint: disable=no-member
+    if git_64bit_path.is_file():
         GITBINARY = str(git_64bit_path)
-    elif git_32bit_path.is_file():  # pylint: disable=no-member
+    elif git_32bit_path.is_file():
         GITBINARY = str(git_32bit_path)
     else:
         raise OSError("Git binary not found")
@@ -70,13 +51,13 @@ def time_cmd(cmd, cwd=None, env=None, timeout=None):
     if not env:
         env = os.environ.copy()
 
-    FUNFUZZ_LOG.info("\nRunning `%s` now..\n", " ".join(cmd))
+    LOG_REPOS_UPDATE.info("\nRunning `%s` now..\n", " ".join(cmd))
     cmd_start = time.time()
 
     cmd = subprocess.run(cmd, cwd=cwd, env=env, timeout=timeout)
 
     cmd_end = time.time()
-    FUNFUZZ_LOG.info("\n`%s` took %.3f seconds.\n", subprocess.list2cmdline(cmd.args), cmd_end - cmd_start)
+    LOG_REPOS_UPDATE.info("\n`%s` took %.3f seconds.\n", subprocess.list2cmdline(cmd.args), cmd_end - cmd_start)
 
 
 def typeOfRepo(r):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
@@ -88,7 +69,7 @@ def typeOfRepo(r):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     for rtype in repo_types:
         if (r / rtype).is_dir():
             return rtype[1:]
-    raise Exception("Type of repository located at " + r + " cannot be determined.")
+    raise OSError(f"Type of repository located at {r} cannot be determined.")
 
 
 def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-raises-doc,missing-return-doc
@@ -99,19 +80,19 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
 
     if repo_type == "hg":
         hg_pull_cmd = ["hg", "--time", "pull", "-u"]
-        FUNFUZZ_LOG.info("\nRunning `%s` now..\n", " ".join(hg_pull_cmd))
+        LOG_REPOS_UPDATE.info("\nRunning `%s` now..\n", " ".join(hg_pull_cmd))
         out_hg_pull = subprocess.run(hg_pull_cmd, check=True, cwd=str(repo), stderr=subprocess.PIPE)
-        FUNFUZZ_LOG.info('"%s" had the above output and took - %s',
-                         subprocess.list2cmdline(out_hg_pull.args),
-                         out_hg_pull.stderr)
+        LOG_REPOS_UPDATE.info('"%s" had the above output and took - %s',
+                              subprocess.list2cmdline(out_hg_pull.args),
+                              out_hg_pull.stderr.decode("utf-8", errors="replace").rstrip())
 
         hg_log_default_cmd = ["hg", "--time", "log", "-r", "default"]
-        FUNFUZZ_LOG.info("\nRunning `%s` now..\n", " ".join(hg_log_default_cmd))
+        LOG_REPOS_UPDATE.info("\nRunning `%s` now..\n", " ".join(hg_log_default_cmd))
         out_hg_log_default = subprocess.run(hg_log_default_cmd, check=True, cwd=str(repo),
                                             stderr=subprocess.PIPE)
-        FUNFUZZ_LOG.info('"%s" had the above output and took - %s',
-                         subprocess.list2cmdline(out_hg_log_default.args),
-                         out_hg_log_default.stderr)
+        LOG_REPOS_UPDATE.info('"%s" had the above output and took - %s',
+                              subprocess.list2cmdline(out_hg_log_default.args),
+                              out_hg_log_default.stderr.decode("utf-8", errors="replace").rstrip())
     elif repo_type == "git":
         # Ignore exit codes so the loop can continue retrying up to number of counts.
         gitenv = deepcopy(os.environ)
@@ -119,7 +100,7 @@ def updateRepo(repo):  # pylint: disable=invalid-name,missing-param-doc,missing-
             gitenv["GIT_SSH_COMMAND"] = "~/../../mozilla-build/msys/bin/ssh.exe -F ~/.ssh/config"
         time_cmd([GITBINARY, "pull"], cwd=str(repo), env=gitenv)
     else:
-        raise Exception("Unknown repository type: " + repo_type)
+        raise OSError(f"Unknown repository type: {repo_type}")
 
     return True
 
@@ -135,18 +116,18 @@ def updateRepos():  # pylint: disable=invalid-name
         for name in sorted(os.listdir(str(tree))):
             name_path = Path(tree) / name
             if name_path.is_dir() and (name in REPOS or (name.startswith("funfuzz") and "-" in name)):
-                FUNFUZZ_LOG.info("Updating %s ...", name)
+                LOG_REPOS_UPDATE.info("Updating %s ...", name)
                 updateRepo(name_path)
 
 
 def main():  # pylint: disable=missing-docstring
-    FUNFUZZ_LOG.info(time.asctime())
+    LOG_REPOS_UPDATE.info(time.asctime())
     try:
         updateRepos()
     except OSError as ex:
-        FUNFUZZ_LOG.warning("OSError hit:")
-        FUNFUZZ_LOG.warning(ex)
-    FUNFUZZ_LOG.info(time.asctime())
+        LOG_REPOS_UPDATE.warning("OSError hit:")
+        LOG_REPOS_UPDATE.warning(ex)
+    LOG_REPOS_UPDATE.info(time.asctime())
 
 
 if __name__ == "__main__":

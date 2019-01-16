@@ -6,34 +6,15 @@
 
 """Test the os_ops.py file."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
 import logging
-import sys
+from pathlib import Path
+import tempfile
 import unittest
 
 from funfuzz.util import os_ops
+from funfuzz.util.logging_helpers import get_logger
 
-if sys.version_info.major == 2:
-    import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
-    import logging_tz  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import tempfile
-
-FUNFUZZ_TEST_LOG = logging.getLogger(__name__)
-FUNFUZZ_TEST_LOG.setLevel(logging.DEBUG)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-FUNFUZZ_TEST_LOG.addHandler(LOG_HANDLER)
-logging.getLogger("flake8").setLevel(logging.WARNING)
+LOG_TEST_OS_OPS = get_logger(__name__, level=logging.DEBUG)
 
 
 class OsOpsTests(unittest.TestCase):
@@ -45,17 +26,17 @@ class OsOpsTests(unittest.TestCase):
             tmp_dir = Path(tmp_dir)
 
             wtmp_dir_1 = os_ops.make_wtmp_dir(tmp_dir)
-            assert wtmp_dir_1.is_dir()  # pylint: disable=no-member
+            assert wtmp_dir_1.is_dir()
             assert wtmp_dir_1.name.endswith("1")
 
             wtmp_dir_2 = os_ops.make_wtmp_dir(tmp_dir)
-            assert wtmp_dir_2.is_dir()  # pylint: disable=no-member
+            assert wtmp_dir_2.is_dir()
             assert wtmp_dir_2.name.endswith("2")
 
             wtmp_dir_3 = os_ops.make_wtmp_dir(tmp_dir)
-            assert wtmp_dir_3.is_dir()  # pylint: disable=no-member
+            assert wtmp_dir_3.is_dir()
             assert wtmp_dir_3.name.endswith("3")
 
             wtmp_dir_4 = os_ops.make_wtmp_dir(tmp_dir)
-            assert wtmp_dir_4.is_dir()  # pylint: disable=no-member
+            assert wtmp_dir_4.is_dir()
             assert wtmp_dir_4.name.endswith("4")

@@ -8,22 +8,16 @@
 
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
-from builtins import object
 import io
-import logging
 import multiprocessing
 from optparse import OptionParser  # pylint: disable=deprecated-module
-import os
+from pathlib import Path
 import platform
-import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
-
-from whichcraft import which
 
 from .js import build_options
 from .js import compile_shell
@@ -33,33 +27,13 @@ from .util import fork_join
 from .util import hg_helpers
 from .util import sm_compile_helpers
 from .util.lock_dir import LockDir
+from .util.logging_helpers import get_logger
 
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-    import psutil  # pylint: disable=import-error
-    if os.name == "posix":
-        import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    import subprocess
-    from pathlib import Path  # pylint: disable=import-error
-
-FUNFUZZ_LOG = logging.getLogger(__name__)
-FUNFUZZ_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-FUNFUZZ_LOG.addHandler(LOG_HANDLER)
-
+LOG_BOT = get_logger(__name__)
 JS_SHELL_DEFAULT_TIMEOUT = 24  # see comments in loop for tradeoffs
 
 
-class BuildInfo(object):  # pylint: disable=missing-param-doc,missing-type-doc,too-few-public-methods
+class BuildInfo:  # pylint: disable=missing-param-doc,missing-type-doc,too-few-public-methods
     """Store information related to the build, such as its directory, source and type."""
 
     def __init__(self, bDir, bType, bSrc, bRev, manyTimedRunArgs):  # pylint: disable=too-many-arguments
@@ -105,16 +79,15 @@ def parseOpts():  # pylint: disable=invalid-name,missing-docstring,missing-retur
 
     options, args = parser.parse_args()
     if args:
-        FUNFUZZ_LOG.warning("bot does not use positional arguments")
+        LOG_BOT.warning("bot does not use positional arguments")
 
-    # pylint: disable=no-member
     if not options.useTreeherderBuilds and not build_options.DEFAULT_TREES_LOCATION.is_dir():
         # We don't have trees, so we must use treeherder builds.
         options.useTreeherderBuilds = True
-        FUNFUZZ_LOG.info("")
-        FUNFUZZ_LOG.info("Trees were absent from default location: %s", build_options.DEFAULT_TREES_LOCATION)
-        FUNFUZZ_LOG.info("Using treeherder builds instead...")
-        FUNFUZZ_LOG.info("")
+        LOG_BOT.info("")
+        LOG_BOT.info("Trees were absent from default location: %s", build_options.DEFAULT_TREES_LOCATION)
+        LOG_BOT.info("Using treeherder builds instead...")
+        LOG_BOT.info("")
         sys.exit("Fuzzing downloaded builds is disabled for now, until tooltool is removed. Exiting...")
 
     if options.build_options is None:
@@ -134,12 +107,12 @@ def main():  # pylint: disable=missing-docstring
     try:
         collector.refresh()
     except RuntimeError:
-        FUNFUZZ_LOG.warning("")
-        FUNFUZZ_LOG.warning("Unable to find required entries in FuzzManager. "
-                            "Duplicate detection via sigcache will not work...")
+        LOG_BOT.warning("")
+        LOG_BOT.warning("Unable to find required entries in FuzzManager. "
+                        "Duplicate detection via sigcache will not work...")
 
     options.tempDir = tempfile.mkdtemp("fuzzbot")
-    FUNFUZZ_LOG.info(options.tempDir)
+    LOG_BOT.info(options.tempDir)
 
     build_info = ensureBuild(options)
     assert build_info.buildDir.is_dir()
@@ -158,42 +131,43 @@ def main():  # pylint: disable=missing-docstring
 
 def print_machine_info():
     """Log information about the machine."""
-    FUNFUZZ_LOG.info("Platform details: %s", " ".join(platform.uname()))
+    LOG_BOT.info("Platform details: %s", " ".join(platform.uname()))
 
-    FUNFUZZ_LOG.info("hg info: %s",
-                     subprocess.run(["hg", "-q", "version"], check=True, stdout=subprocess.PIPE).stdout.rstrip())
-    if which("gdb"):
+    hg_version = subprocess.run(["hg", "-q", "version"],
+                                check=True,
+                                stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+    LOG_BOT.info("hg info: %s", hg_version.rstrip())
+
+    if shutil.which("gdb"):
         gdb_version = subprocess.run(["gdb", "--version"],
                                      stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
-        FUNFUZZ_LOG.info("gdb info: %s", gdb_version.split("\n")[0])
-    if which("git"):
-        FUNFUZZ_LOG.info("git info: %s",
-                         subprocess.run(["git", "version"], check=True, stdout=subprocess.PIPE).stdout.rstrip())
-    FUNFUZZ_LOG.info("Python version: %s", sys.version.split()[0])
+        LOG_BOT.info("gdb info: %s", gdb_version.split("\n")[0].rstrip())
+    if shutil.which("git"):
+        git_version = subprocess.run(["git", "version"],
+                                     check=True,
+                                     stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+        LOG_BOT.info("git info: %s", git_version.rstrip())
+    LOG_BOT.info("Python version: %s", sys.version.split()[0])
 
-    FUNFUZZ_LOG.info("Number of cores visible to OS: %d", multiprocessing.cpu_count())
-
-    if sys.version_info.major == 2:
-        rootdir_free_space = psutil.disk_usage("/").free / (1024 ** 3)
-    else:
-        rootdir_free_space = shutil.disk_usage("/").free / (1024 ** 3)  # pylint: disable=no-member
-    FUNFUZZ_LOG.info("Free space (GB): %.2f", rootdir_free_space)
+    LOG_BOT.info("Number of cores visible to OS: %s", multiprocessing.cpu_count())
+    rootdir_free_space = shutil.disk_usage("/").free / (1024 ** 3)
+    LOG_BOT.info("Free space (GB): %.2f", rootdir_free_space)
 
     hgrc_path = Path("~/.hg/hgrc").expanduser()
     if hgrc_path.is_file():
-        FUNFUZZ_LOG.info("The hgrc of this repository is:")
+        LOG_BOT.info("The hgrc of this repository is:")
         with io.open(str(hgrc_path), "r", encoding="utf-8", errors="replace") as f:
             hgrc_contents = f.readlines()
         for line in hgrc_contents:
-            FUNFUZZ_LOG.info(line.rstrip())
+            LOG_BOT.info(line.rstrip())
 
     try:
         # resource library is only applicable to Linux or Mac platforms.
         import resource  # pylint: disable=import-error
         # pylint: disable=no-member
-        FUNFUZZ_LOG.info("Corefile size (soft limit, hard limit) is: %r", resource.getrlimit(resource.RLIMIT_CORE))
+        LOG_BOT.info("Corefile size (soft limit, hard limit) is: %r", resource.getrlimit(resource.RLIMIT_CORE))
     except ImportError:
-        FUNFUZZ_LOG.warning("Not checking corefile size as resource module is unavailable")
+        LOG_BOT.warning("Not checking corefile size as resource module is unavailable")
 
 
 def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -219,33 +193,29 @@ def ensureBuild(options):  # pylint: disable=invalid-name,missing-docstring,miss
             #   js-js-dbg-opt-64-dm-linux
             bType = build_options.computeShellType(options.build_options)[3:]  # pylint: disable=invalid-name
             bSrc = (  # pylint: disable=invalid-name
-                "Create another shell in shell-cache like this one:\n"
-                '%s -u -m %s -b "%s -R %s" -r %s\n\n'
-                "==============================================\n"
-                "|  Fuzzing %s js shell builds\n"
-                "|  DATE: %s\n"
-                "==============================================\n\n" % (
-                    re.search("python.*[2-3]", os.__file__).group(0).replace("/", ""),
-                    "funfuzz.js.compile_shell",
-                    options.build_options.build_options_str,
-                    options.build_options.repo_dir,
-                    bRev,
-                    cshell.get_repo_name(),
-                    time.asctime(),
-                ))
+                f"Create another shell in shell-cache like this one:\n"
+                f"python3 -u -m funfuzz.js.compile_shell "
+                f'-b "{options.build_options.build_options_str} '
+                f'-R {options.build_options.repo_dir}" '
+                f"-r {bRev}\n\n"
+                f"==============================================\n"
+                f"|  Fuzzing {cshell.get_repo_name()} js shell builds\n"
+                f"|  DATE: {time.asctime()}\n"
+                f"==============================================\n\n"
+            )
 
             manyTimedRunArgs = mtrArgsCreation(options, cshell)  # pylint: disable=invalid-name
-            FUNFUZZ_LOG.info("buildDir is: %s", bDir)
-            FUNFUZZ_LOG.info("buildSrc is: %s", bSrc)
+            LOG_BOT.info("buildDir is: %s", bDir)
+            LOG_BOT.info("buildSrc is: %s", bSrc)
     else:
-        FUNFUZZ_LOG.error("TBD: We need to switch to the fuzzfetch repository.")
+        LOG_BOT.error("TBD: We need to switch to the fuzzfetch repository.")
         sys.exit(0)
 
     return BuildInfo(bDir, bType, bSrc, bRev, manyTimedRunArgs)
 
 
 def loopFuzzingAndReduction(options, buildInfo, collector, i):  # pylint: disable=invalid-name,missing-docstring
-    tempDir = Path(tempfile.mkdtemp("loop" + str(i)))  # pylint: disable=invalid-name
+    tempDir = Path(tempfile.mkdtemp(f"loop{i}"))  # pylint: disable=invalid-name
     loop.many_timed_runs(options.targetTime, tempDir, buildInfo.mtrArgs, collector, False)
 
 
@@ -253,8 +223,8 @@ def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-pa
     # pylint: disable=missing-return-type-doc,missing-type-doc
     """Create many_timed_run arguments for compiled builds."""
     manyTimedRunArgs = []  # pylint: disable=invalid-name
-    manyTimedRunArgs.append("--repo=%s" % options.build_options.repo_dir)
-    manyTimedRunArgs.append("--build=" + options.build_options.build_options_str)
+    manyTimedRunArgs.append(f"--repo={options.build_options.repo_dir}")
+    manyTimedRunArgs.append(f"--build={options.build_options.build_options_str}")
     if options.build_options.runWithVg:
         manyTimedRunArgs.append("--valgrind")
     if options.build_options.enableMoreDeterministic:

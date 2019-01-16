@@ -7,30 +7,13 @@
 """Functions here make use of a Collector created from FuzzManager.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
-import logging
-import sys
+from pathlib import Path
 
 from Collector.Collector import Collector
 
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
+from .logging_helpers import get_logger
 
-FUNFUZZ_LOG = logging.getLogger(__name__)
-FUNFUZZ_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-FUNFUZZ_LOG.addHandler(LOG_HANDLER)
+LOG_CREATE_COLLECTOR = get_logger(__name__)
 
 
 def make_collector():
@@ -40,22 +23,22 @@ def make_collector():
         Collector: jsfunfuzz collector object
     """
     sigcache_path = Path.home() / "sigcache"
-    sigcache_path.mkdir(exist_ok=True)  # pylint: disable=no-member
+    sigcache_path.mkdir(exist_ok=True)
     return Collector(sigCacheDir=str(sigcache_path), tool="jsfunfuzz")
 
 
 def printCrashInfo(crashInfo):  # pylint: disable=invalid-name,missing-docstring
     if crashInfo.createShortSignature() != "No crash detected":
-        FUNFUZZ_LOG.info("")
-        FUNFUZZ_LOG.info("crashInfo:")
-        FUNFUZZ_LOG.info("  Short Signature: %s", crashInfo.createShortSignature())
-        FUNFUZZ_LOG.info("  Class name: %s", crashInfo.__class__.__name__)   # "NoCrashInfo", etc
-        FUNFUZZ_LOG.info("  Stack trace: %r", crashInfo.backtrace.rstrip())
-        FUNFUZZ_LOG.info("")
+        LOG_CREATE_COLLECTOR.info("")
+        LOG_CREATE_COLLECTOR.info("crashInfo:")
+        LOG_CREATE_COLLECTOR.info("  Short Signature: %s", crashInfo.createShortSignature())
+        LOG_CREATE_COLLECTOR.info("  Class name: %s", crashInfo.__class__.__name__)   # "NoCrashInfo", etc
+        LOG_CREATE_COLLECTOR.info("  Stack trace: %r", crashInfo.backtrace.rstrip())
+        LOG_CREATE_COLLECTOR.info("")
 
 
 def printMatchingSignature(match):  # pylint: disable=invalid-name,missing-docstring
-    FUNFUZZ_LOG.info("Matches signature in FuzzManager:")
-    FUNFUZZ_LOG.info("  Signature description: %s", match[1].get("shortDescription"))
-    FUNFUZZ_LOG.info("  Signature file: %s", match[0])
-    FUNFUZZ_LOG.info("")
+    LOG_CREATE_COLLECTOR.info("Matches signature in FuzzManager:")
+    LOG_CREATE_COLLECTOR.info("  Signature description: %s", match[1].get("shortDescription"))
+    LOG_CREATE_COLLECTOR.info("  Signature file: %s", match[0])
+    LOG_CREATE_COLLECTOR.info("")

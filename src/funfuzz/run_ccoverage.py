@@ -8,36 +8,17 @@
 
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
 import argparse
 import logging
+from pathlib import Path
 import platform
 import sys
+import tempfile
 
 from .ccoverage import gatherer
 from .ccoverage import get_build
 from .ccoverage import reporter
-
-if sys.version_info.major == 2:
-    import backports.tempfile as tempfile  # pylint: disable=import-error,no-name-in-module
-    import logging_tz  # pylint: disable=import-error
-    from pathlib2 import Path  # pylint: disable=import-error
-else:
-    from pathlib import Path  # pylint: disable=import-error
-    import tempfile
-
-RUN_COV_LOG = logging.getLogger(__name__)
-RUN_COV_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-RUN_COV_LOG.addHandler(LOG_HANDLER)
+from .util.logging_helpers import get_logger
 
 
 def parse_args(args=None):
@@ -52,7 +33,7 @@ def parse_args(args=None):
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("--report", action="store_true", help="Report results to FuzzManager")
     arg_parser.add_argument("--grcov_ver",
-                            default="0.1.37",
+                            default="0.2.3",
                             help='Set the version of grcov to use. Defaults to "%(default)s".')
     arg_parser.add_argument("--url",
                             required=True,
@@ -70,19 +51,31 @@ def main(argparse_args=None):
     if platform.system() != "Linux":
         sys.exit("Coverage mode must be run on Linux.")
     args = parse_args(argparse_args)
-    logging.basicConfig(datefmt="%Y-%m-%d %H:%M:%S",
-                        format="%(asctime)s %(levelname)-8s %(message)s",
-                        level=logging.DEBUG if args.verbose else logging.INFO)
-    logging.getLogger("flake8").setLevel(logging.WARNING)
+    log_run_cov = get_logger(__name__, level=logging.DEBUG if args.verbose else logging.INFO)
 
     with tempfile.TemporaryDirectory(suffix="funfuzzcov") as dirpath:
         dirpath = Path(dirpath)
 
+        log_run_cov.debug("Starting to get the coverage build")
         get_build.get_coverage_build(dirpath, args)
+        log_run_cov.debug("Coverage build obtained")
+
+        log_run_cov.debug("Starting to get the grcov binary")
         get_build.get_grcov(dirpath, args)
+        log_run_cov.debug("grcov binary obtained")
+
+        log_run_cov.debug("Starting to gather coverage")
         cov_result_file = gatherer.gather_coverage(dirpath)
+        log_run_cov.debug("Finished gathering coverage")
+
         if args.report:
+            log_run_cov.debug("Starting to report coverage")
             reporter.report_coverage(cov_result_file)
+            log_run_cov.debug("Finished reporting coverage")
+
+        log_run_cov.debug("Starting to disable EC2 pool")
+        reporter.disable_pool()
+        log_run_cov.debug("Finished disabling EC2 pool")
 
 
 if __name__ == "__main__":

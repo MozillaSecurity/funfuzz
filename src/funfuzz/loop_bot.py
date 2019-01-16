@@ -14,30 +14,13 @@ Config-ish bits should move to bot, OR move into a config file,
 OR this file should subprocess-run ITSELF rather than using a while loop.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
-
-import logging
-import os
+import subprocess
 import sys
 import time
 
-if sys.version_info.major == 2 and os.name == "posix":
-    import logging_tz  # pylint: disable=import-error
-    import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-    import subprocess
+from .util.logging_helpers import get_logger
 
-FUNFUZZ_LOG = logging.getLogger(__name__)
-FUNFUZZ_LOG.setLevel(logging.INFO)
-LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
-LOG_HANDLER.setFormatter(LOG_FORMATTER)
-FUNFUZZ_LOG.addHandler(LOG_HANDLER)
+LOG_LOOP_BOT = get_logger(__name__)
 
 
 def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-type-doc
@@ -46,16 +29,16 @@ def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-t
     i = 0
     while True:
         i += 1
-        FUNFUZZ_LOG.info("localLoop #%d!", i)
+        LOG_LOOP_BOT.info("localLoop #%s!", i)
         for cmd in cmd_seq:
             try:
                 subprocess.run(cmd, check=True)
             except subprocess.CalledProcessError as ex:
-                FUNFUZZ_LOG.warning("Something went wrong when calling: %r", cmd.rstrip())
-                FUNFUZZ_LOG.warning("%r", ex)
+                LOG_LOOP_BOT.warning("Something went wrong when calling: %r", cmd.rstrip())
+                LOG_LOOP_BOT.warning("%r", ex)
                 import traceback
-                FUNFUZZ_LOG.warning(traceback.format_exc())
-                FUNFUZZ_LOG.info("Waiting %d seconds...", wait_time)
+                LOG_LOOP_BOT.warning(traceback.format_exc())
+                LOG_LOOP_BOT.info("Waiting %s seconds...", wait_time)
                 time.sleep(wait_time)
                 break
 

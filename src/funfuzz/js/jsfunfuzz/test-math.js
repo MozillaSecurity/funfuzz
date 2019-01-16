@@ -50,7 +50,7 @@ var confusableVals = [
   "(new String(''))",
   "(new Number(0))",
   "(new Number(-0))",
-  "objectEmulatingUndefined()",
+  "createIsHTMLDDA()",
 ];
 
 function hashStr(s)
