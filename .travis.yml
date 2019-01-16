@@ -171,6 +171,10 @@ install:
   - if [ ! $TRAVIS_PYTHON_VERSION == "nightly" ] ; then python -m flake8 --version ; fi
   - if [ ! $TRAVIS_PYTHON_VERSION == "nightly" ] ; then python -m pylint --version ; fi
 before_script:
+  # Run shellcheck and bashate on shell scripts
+  - for file in $(find . -type f -name "*.sh"); do shellcheck --format=gcc $file; done;
+  - travis_retry python -m pip install --upgrade bashate
+  - for file in $(find . -type f -name "*.sh"); do bashate $file; done;
   # To run everything locally in local funfuzz github repository directory:
   #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
   # Compile-related tests are expected to fail at this stage (skip pylint with development Python versions)
