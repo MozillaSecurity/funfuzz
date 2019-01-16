@@ -89,7 +89,7 @@ def compare_jit(jsEngine,  # pylint: disable=invalid-name,missing-param-doc,miss
 
         metadata = {}
         if autoBisectLog:
-            metadata = {"autoBisectLog": "\n".join(autoBisectLog)}
+            metadata = {"autoBisectLog": "".join(autoBisectLog)}
         options.collector.submit(cl[1], str(infilename), quality, metaData=metadata)
         return True
 
@@ -112,6 +112,13 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         # Only used during initial fuzzing. Allowed to have false negatives.
         combos = [combos[0]]
 
+    # Remove any of the following flags from being used in compare_jit
+    flags = list(set(flags) - {
+        "--more-compartments",
+        "--no-wasm",
+        "--no-wasm-ion",
+        "--no-wasm-baseline",
+    })
     if flags:
         combos.insert(0, flags)
 

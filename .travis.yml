@@ -171,6 +171,10 @@ install:
   - if [ ! $TRAVIS_PYTHON_VERSION == "nightly" ] ; then python -m flake8 --version ; fi
   - if [ ! $TRAVIS_PYTHON_VERSION == "nightly" ] ; then python -m pylint --version ; fi
 before_script:
+  # Run shellcheck and bashate on shell scripts
+  - for file in $(find . -type f -name "*.sh"); do shellcheck --format=gcc $file; done;
+  - travis_retry python -m pip install --upgrade bashate
+  - for file in $(find . -type f -name "*.sh"); do bashate $file; done;
   # To run everything locally in local funfuzz github repository directory:
   #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
   # Compile-related tests are expected to fail at this stage (skip pylint with development Python versions)
@@ -186,8 +190,7 @@ before_script:
     fi
   - mkdir -p $HOME/trees/
   # aria2 / wget do not seem to have greater reliability than hg clone, so not using get_hg_repo.sh
-  # Apparently only hg 4.4+ have --stream - Python 3+ on Travis only has 4.2.2
-  - time hg clone --uncompressed https://hg.mozilla.org/mozilla-central/ $HOME/trees/mozilla-central
+  - time hg clone --stream https://hg.mozilla.org/mozilla-central/ $HOME/trees/mozilla-central
 script:
   - travis_wait 50 unbuffer python -m pytest -s -p no:flake8,pylint --cov --cov-report term-missing
 after_failure:

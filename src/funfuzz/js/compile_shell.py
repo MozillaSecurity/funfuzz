@@ -38,6 +38,8 @@ if platform.system() == "Windows":
     # CLANG_ASAN_PARAMS = "-fsanitize=address -Dxmalloc=myxmalloc"
     # Note that Windows ASan builds are still a work-in-progress
     CLANG_ASAN_PARAMS = ""
+    CLANG_VER = "7.0.1"
+    PROGRAMW6432_DIR = os.getenv("PROGRAMW6432").replace("\\", "/")
 else:
     MAKE_BINARY = "make"
     CLANG_PARAMS = ""
@@ -344,7 +346,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     cfg_cmds = []
     cfg_env = copy.deepcopy(os.environ)
     orig_cfg_env = copy.deepcopy(os.environ)
-    cfg_env["AR"] = "ar"
+    if platform.system() != "Windows":
+        cfg_env["AR"] = "ar"
     if shell.build_opts.enable32 and platform.system() == "Linux":
         # 32-bit shell on 32/64-bit x86 Linux
         cfg_env["PKG_CONFIG_LIBDIR"] = "/usr/lib/pkgconfig"
@@ -371,8 +374,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             if shell.build_opts.enableArmSimulatorObsolete:
                 cfg_cmds.append("--enable-arm-simulator")
             cfg_cmds.append("--enable-simulator=arm")
-    # 64-bit shell on Mac OS X 10.11 El Capitan and greater
-    elif parse_version(platform.mac_ver()[0]) >= parse_version("10.11") and not shell.build_opts.enable32:
+    # 64-bit shell on Mac OS X 10.13 El Capitan and greater
+    elif parse_version(platform.mac_ver()[0]) >= parse_version("10.13") and not shell.build_opts.enable32:
         cfg_env["CC"] = f"clang {CLANG_PARAMS}"
         cfg_env["CXX"] = f"clang++ {CLANG_PARAMS}"
         if shell.build_opts.buildWithAsan:
@@ -382,7 +385,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_env["AUTOCONF"] = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
-        cfg_cmds.append("--target=x86_64-apple-darwin15.6.0")  # El Capitan 10.11.6
+        cfg_cmds.append("--target=x86_64-apple-darwin17.7.0")  # macOS 10.13.6
         cfg_cmds.append("--disable-xcode-checks")
         if shell.build_opts.buildWithAsan:
             cfg_cmds.append("--enable-address-sanitizer")
@@ -390,6 +393,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_cmds.append("--enable-simulator=arm64")
 
     elif platform.system() == "Windows":
+        cfg_env["LIBCLANG_PATH"] = f"{PROGRAMW6432_DIR}/LLVM/bin"
         cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
         if shell.build_opts.buildWithClang:
             cfg_env["CC"] = f"clang-cl.exe {CLANG_PARAMS}"
@@ -400,7 +404,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_env["CXXFLAGS"] = CLANG_ASAN_PARAMS
             cfg_env["LDFLAGS"] = ("clang_rt.asan_dynamic-x86_64.lib "
                                   "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib")
-            cfg_env["CLANG_LIB_DIR"] = "C:/Program Files/LLVM/lib/clang/6.0.1/lib/windows"
+            cfg_env["CLANG_LIB_DIR"] = f"{PROGRAMW6432_DIR}/LLVM/lib/clang/{CLANG_VER}/lib/windows"
             cfg_env["MOZ_CLANG_RT_ASAN_LIB_PATH"] = f'{cfg_env["CLANG_LIB_DIR"]}/clang_rt.asan_dynamic-x86_64.dll'
             cfg_env["LIB"] = cfg_env.get("LIB", "") + cfg_env["CLANG_LIB_DIR"]
         cfg_cmds.append("sh")
@@ -563,6 +567,10 @@ def sm_compile(shell):
         for run_lib in shell.get_shell_compiled_runlibs_path():
             if run_lib.is_file():
                 shutil.copy2(str(run_lib), str(shell.get_shell_cache_dir()))
+        if platform.system() == "Windows" and shell.build_opts.buildWithAsan:
+            shutil.copy2(str(f"{PROGRAMW6432_DIR}/LLVM/lib/clang/{CLANG_VER}/lib/windows/"
+                             f"clang_rt.asan_dynamic-x86_64.dll"),
+                         str(shell.get_shell_cache_dir()))
 
         shell.set_version(sm_compile_helpers.extract_vers(shell.get_js_objdir()))
 

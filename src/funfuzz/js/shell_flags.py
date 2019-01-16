@@ -217,6 +217,10 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
         args.append("--no-ion")
 
     # Other flags
+    if shell_supports_flag(shell_path, "--more-compartments") and chance(.9):
+        # m-c rev 453627:450b8f0cbb4e, see bug 1518753
+        args.append("--more-compartments")
+
     if shell_supports_flag(shell_path, "--no-streams") and chance(.2):
         # m-c rev 442977:c6a8b4d451af, see bug 1501734
         args.append("--no-streams")
@@ -251,8 +255,7 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
     if shell_supports_flag(shell_path, "--gc-zeal=1,1") and chance(.9):
         allocations_number = 999 if chance(.001) else random.randint(0, 500)  # 999 is for tests
 
-        # Lowered from 25 due to bug 1516138
-        highest_gczeal = 23
+        highest_gczeal = 25
         gczeal_value = highest_gczeal - 3  # 3 levels disabled below
         gczeal_a = final_value = 3 if chance(.001) else random.randint(0, gczeal_value)  # 3 is for tests
 
@@ -323,16 +326,15 @@ def basic_flag_sets(shell_path):
     """
     basic_flags = [
         # Parts of this flag permutation come from:
-        # https://hg.mozilla.org/mozilla-central/file/c91249f41e37/js/src/tests/lib/tests.py#l13
-        # compare_jit may choose to use the following first flag set as the baseline when fuzzing
+        # https://hg.mozilla.org/mozilla-central/file/afdeb0288690/js/src/tests/lib/tests.py#l10
+        # compare_jit uses the following first flag set as the sole baseline when fuzzing
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"],
         ["--fuzzing-safe"],
         ["--fuzzing-safe", "--no-threads", "--ion-eager"],
         ["--fuzzing-safe", "--ion-offthread-compile=off"],
         ["--fuzzing-safe", "--baseline-eager", "--no-ion"],  # This combo seems to find more issues than w/o --no-ion
         ["--fuzzing-safe", "--no-baseline", "--no-ion"],
-        # The following combination used to include --no-native-regexp and --no-wasm but had too many false positives
-        ["--fuzzing-safe", "--no-baseline", "--no-asmjs"],
+        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--no-native-regexp"],
     ]
     if shell_supports_flag(shell_path, "--ion-extra-checks"):
         basic_flags.append(["--fuzzing-safe", "--no-threads", "--ion-eager", "--ion-check-range-analysis",

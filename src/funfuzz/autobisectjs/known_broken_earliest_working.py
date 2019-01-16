@@ -90,8 +90,8 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     # pylint: disable=missing-return-type-doc,missing-type-doc,too-many-branches,too-complex,too-many-statements
     """Return a revset which evaluates to the first revision of the shell that compiles with |options|
     and runs jsfunfuzz successfully with |flags|."""
-    # Only support at least Mac OS X 10.11
-    assert (not platform.system() == "Darwin") or (parse_version(platform.mac_ver()[0]) >= parse_version("10.11"))
+    # Only support at least Mac OS X 10.13
+    assert (not platform.system() == "Darwin") or (parse_version(platform.mac_ver()[0]) >= parse_version("10.13"))
 
     cpu_count_flag = False
     for entry in flags:  # flags is a list of flags, and the option must exactly match.
@@ -101,6 +101,8 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     required = []
 
     # These should be in descending order, or bisection will break at earlier changesets.
+    if "--more-compartments" in flags:
+        required.append("450b8f0cbb4e")  # m-c 453627 Fx66, 1st w/--more-compartments, see bug 1518753
     if "--no-streams" in flags:
         required.append("c6a8b4d451af")  # m-c 442977 Fx65, 1st w/ working --no-streams, see bug 1501734
     if "--enable-streams" in flags:
