@@ -101,6 +101,8 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     required = []
 
     # These should be in descending order, or bisection will break at earlier changesets.
+    if "--more-compartments" in flags:
+        required.append("450b8f0cbb4e")  # m-c 453627 Fx66, 1st w/--more-compartments, see bug 1518753
     if "--no-streams" in flags:
         required.append("c6a8b4d451af")  # m-c 442977 Fx65, 1st w/ working --no-streams, see bug 1501734
     if "--enable-streams" in flags:

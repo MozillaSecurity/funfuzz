@@ -217,6 +217,10 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
         args.append("--no-ion")
 
     # Other flags
+    if shell_supports_flag(shell_path, "--more-compartments") and chance(.9):
+        # m-c rev 453627:450b8f0cbb4e, see bug 1518753
+        args.append("--more-compartments")
+
     if shell_supports_flag(shell_path, "--no-streams") and chance(.2):
         # m-c rev 442977:c6a8b4d451af, see bug 1501734
         args.append("--no-streams")
