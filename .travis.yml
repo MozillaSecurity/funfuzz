@@ -99,6 +99,23 @@ matrix:
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
             - valgrind
+    - python: "3.7"
+      os: osx
+      language: sh
+      osx_image: xcode10.1
+      before_install:
+        - brew update
+        - brew install autoconf@2.13 shellcheck
+        - brew upgrade python
+        - python3 -m venv venv
+        - source venv/bin/activate
+    - python: "3.7"
+      os: windows
+      language: sh
+      before_install:
+        - choco install hg python3 shellcheck
+        - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+        - python -m pip install --upgrade pip wheel
     # Sanity checks, so only run debug builds
     - python: "nightly"
       dist: xenial
@@ -140,23 +157,26 @@ before_install:
   #   else
   #     echo 'gcc-6 and g++-6 are both not found...'
   #   fi
-  - gcc --version
-  - g++ --version
-  - clang --version
-  - clang++ --version
-  - llvm-symbolizer --version || true  # Ignore exit code if llvm-symbolizer does not exist
-  - which llvm-config || true  # Find out location of llvm-config
-  - export LLVM_CONFIG=/usr/local/clang-7.0.0/bin/llvm-config  # From llvm-config location
-  - llvm-config --version || true  # Ignore exit code if llvm-config does not exist
-  - /usr/bin/llvm-config --version || true  # Ignore exit code if llvm-config does not exist
-  # Ensure latest Rust is installed
-  - curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path
-  - source $HOME/.cargo/env
-  - rustup update stable
-  - which rustup
-  - rustup --version
-  - which rustc
-  - rustc --version
+  - |
+    if [ $TRAVIS_OS_NAME == "linux" ] ; then
+      gcc --version
+      g++ --version
+      clang --version
+      clang++ --version
+      llvm-symbolizer --version || true  # Ignore exit code if llvm-symbolizer does not exist
+      which llvm-config || true  # Find out location of llvm-config
+      export LLVM_CONFIG=/usr/local/clang-7.0.0/bin/llvm-config  # From llvm-config location
+      llvm-config --version || true  # Ignore exit code if llvm-config does not exist
+      /usr/bin/llvm-config --version || true  # Ignore exit code if llvm-config does not exist
+      # Ensure latest Rust is installed
+      curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path
+      source $HOME/.cargo/env
+      rustup update stable
+      which rustup
+      rustup --version
+      which rustc
+      rustc --version
+    fi
 install:
   # Already in venv, no need for --user
   - travis_retry python -m pip install --upgrade setuptools pip
@@ -165,16 +185,29 @@ install:
   - travis_retry python -m pip install --upgrade .[test]  # Installs python testing-related packages
   - travis_retry python -m pip install --upgrade -r requirements.txt  # Gets FuzzManager, lithium-reducer from GitHub
   - git --version
-  - hg --version
-  - python3 --version
-  # Linters may not work properly in latest Python nightly on Travis
-  - if [ ! $TRAVIS_PYTHON_VERSION == "nightly" ] ; then python -m flake8 --version ; fi
-  - if [ ! $TRAVIS_PYTHON_VERSION == "nightly" ] ; then python -m pylint --version ; fi
+  - hg --version || true  # Windows Travis does not seem to detect installed Mercurial, unknown why for now
+  - python --version
+  - python3 --version || true  # Windows Travis does not seem to detect installed python3, unknown why for now
+  # Linters may not work properly in latest Python nightly on Linux
+  - |
+    if [[ (! $TRAVIS_PYTHON_VERSION == "linux") || (! $TRAVIS_PYTHON_VERSION == "nightly") ]] ; then
+      python -m flake8 --version
+    fi
+  - |
+    if [[ (! $TRAVIS_PYTHON_VERSION == "linux") || (! $TRAVIS_PYTHON_VERSION == "nightly") ]] ; then
+      python -m pylint --version
+    fi
 before_script:
-  # Run shellcheck and bashate on shell scripts
-  - for file in $(find . -type f -name "*.sh"); do shellcheck --format=gcc $file; done;
-  - travis_retry python -m pip install --upgrade bashate
-  - for file in $(find . -type f -name "*.sh"); do bashate $file; done;
+  - |
+    if [ ! $TRAVIS_OS_NAME == "windows" ] ; then
+      # Run shellcheck and bashate on shell scripts
+      for file in $(find . -type d \( -name venv \) -prune -o -type f -name "*.sh" -print);
+        do shellcheck --format=gcc $file;
+      done;
+      travis_retry python -m pip install --upgrade bashate
+      for file in $(find . -type d \( -name venv \) -prune -o -type f -name "*.sh" -print); do bashate $file; done;
+    fi
+script:
   # To run everything locally in local funfuzz github repository directory:
   #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
   # Compile-related tests are expected to fail at this stage (skip pylint with development Python versions)
@@ -188,12 +221,20 @@ before_script:
     else
       python -m pytest -s --flake8 --pylint --pylint-jobs=2 -p no:cov -m "not slow"
     fi
-  - mkdir -p $HOME/trees/
-  # aria2 / wget do not seem to have greater reliability than hg clone, so not using get_hg_repo.sh
-  - time hg clone --stream https://hg.mozilla.org/mozilla-central/ $HOME/trees/mozilla-central
-script:
-  - travis_wait 50 unbuffer python -m pytest -s -p no:flake8,pylint --cov --cov-report term-missing
+  - |
+    if [ $TRAVIS_OS_NAME == "linux" ] ; then
+      mkdir -p $HOME/trees/
+      # aria2 / wget do not seem to have greater reliability than hg clone, so not using get_hg_repo.sh
+      time hg clone --stream https://hg.mozilla.org/mozilla-central/ $HOME/trees/mozilla-central
+    fi
+  - |
+    if [ $TRAVIS_OS_NAME == "linux" ] ; then
+      travis_wait 50 unbuffer python -m pytest -s -p no:flake8,pylint --cov --cov-report term-missing
+    fi
 after_failure:
-  - tail -n 100 $HOME/shell-cache/*/*.busted*
+  - |
+    if [ $TRAVIS_OS_NAME == "linux" ] ; then
+      tail -n 100 $HOME/shell-cache/*/*.busted*
+    fi
 after_success:
   - travis_retry codecov

@@ -8,8 +8,11 @@
 
 import logging
 from pathlib import Path
+import platform
 import tempfile
 import unittest
+
+import pytest
 
 from funfuzz import util
 
@@ -21,6 +24,7 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 class SmCompileHelpersTests(unittest.TestCase):
     """"TestCase class for functions in sm_compile_helpers.py"""
     @staticmethod
+    @pytest.mark.skipif(platform.system() == "Windows", reason="Windows on Travis is still new and experimental")
     def test_autoconf_run():
         """Test the autoconf runs properly."""
         with tempfile.TemporaryDirectory(suffix="autoconf_run_test") as tmp_dir:
