@@ -222,7 +222,7 @@ def reduction_strat(logPrefix, infilename, lithArgs, targetTime, lev):  # pylint
         lith_result, lith_details = lith_reduce(["--chunksize=2"])
 
     isLevOverallMismatchAsmJsAvailable = (lev == JS_OVERALL_MISMATCH and  # pylint: disable=invalid-name
-                                          file_contains_str(str(infilename), "isAsmJSCompilationAvailable"))
+                                          file_contains_str(str(infilename), b"isAsmJSCompilationAvailable"))
     # Step 5 (not always run): Run character reduction within interesting lines.
     if lith_result == LITH_FINISHED and origNumOfLines <= 50 and targetTime is None and \
             lev >= JS_OVERALL_MISMATCH and not isLevOverallMismatchAsmJsAvailable:
