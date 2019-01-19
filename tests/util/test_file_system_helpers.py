@@ -6,10 +6,16 @@
 
 """Test the file_system_helpers.py file."""
 
+import io
 import logging
+import os
 from pathlib import Path
+import platform
+import stat
 import tempfile
 import unittest
+
+import pytest
 
 from funfuzz import util
 
@@ -54,3 +60,20 @@ class FileSystemHelpersTests(unittest.TestCase):
             assert not wtmp_name_crash_txt.is_file()
             assert not wtmp_name_vg_xml.is_file()
             assert not wtmp_name_core_gz.is_file()
+
+    @staticmethod
+    @pytest.mark.skipif(platform.system() != "Windows", reason="Test only applies to read-only files on Windows")
+    def test_rm_tree_incl_readonly_files():
+        """Test that directory trees with readonly files can be removed."""
+        with tempfile.TemporaryDirectory(suffix="_rm_tree_incl_readonly_test") as tmp_dir:
+            test_dir = Path(tmp_dir) / "test_dir"
+            read_only_dir = test_dir / "nested_read_only_dir"
+            read_only_dir.mkdir(parents=True)
+
+            test_file = read_only_dir / "test.txt"
+            with io.open(test_file, "w", encoding="utf-8", errors="replace") as f:
+                f.write("testing\n")
+
+            os.chmod(test_file, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+
+            util.file_system_helpers.rm_tree_incl_readonly_files(test_dir)

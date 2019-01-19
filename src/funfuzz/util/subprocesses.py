@@ -7,59 +7,7 @@
 """Miscellaneous helper functions.
 """
 
-import errno
-import os
-import platform
-import shutil
-import stat
-
-verbose = False  # pylint: disable=invalid-name
-
-
-def rm_tree_incl_readonly(dir_tree):
-    """Remove a directory tree including all read-only files.
-
-    Args:
-        dir_tree (Path): Directory tree of files to be removed
-    """
-    shutil.rmtree(str(dir_tree), onerror=handle_rm_readonly if platform.system() == "Windows" else None)
-
-
-# This test needs updates for the move to pathlib, and needs to move to pytest
-# def test_rm_tree_incl_readonly():
-#     """Run this function in the same directory as subprocesses to test."""
-#     test_dir = "test_rm_tree_incl_readonly"
-#     os.mkdir(test_dir)
-#     read_only_dir = os.path.join(test_dir, "nestedReadOnlyDir")
-#     os.mkdir(read_only_dir)
-#     filename = os.path.join(read_only_dir, "test.txt")
-#     with io.open(filename, "w", encoding="utf-8", errors="replace") as f:
-#         f.write("testing\n")
-
-#     os.chmod(filename, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
-#     os.chmod(read_only_dir, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
-
-#     rm_tree_incl_readonly(test_dir)  # Should pass here
-
-
-def handle_rm_readonly(func, path, exc):
-    """Handle read-only files on Windows. Adapted from http://stackoverflow.com/q/1213706 and some docs adapted from
-    Python 2.7 official docs.
-
-    Args:
-        func (function): Function which raised the exception
-        path (str): Path name passed to function
-        exc (exception): Exception information returned by sys.exc_info()
-
-    Raises:
-        OSError: Raised if the read-only files are unable to be handled
-    """
-    assert platform.system() == "Windows"
-    if func in (os.rmdir, os.remove) and exc[1].errno == errno.EACCES:
-        os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)  # 0777
-        func(path)
-    else:
-        raise OSError("Unable to handle read-only files.")
+verbose = True  # pylint: disable=invalid-name
 
 
 def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
