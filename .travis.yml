@@ -190,11 +190,11 @@ install:
   - python3 --version || true  # Windows Travis does not seem to detect installed python3, unknown why for now
   # Linters may not work properly in latest Python nightly on Linux
   - |
-    if [[ (! $TRAVIS_PYTHON_VERSION == "linux") || (! $TRAVIS_PYTHON_VERSION == "nightly") ]] ; then
+    if [[ (! $TRAVIS_OS_NAME == "linux") || (! $TRAVIS_PYTHON_VERSION == "nightly") ]] ; then
       python -m flake8 --version
     fi
   - |
-    if [[ (! $TRAVIS_PYTHON_VERSION == "linux") || (! $TRAVIS_PYTHON_VERSION == "nightly") ]] ; then
+    if [[ (! $TRAVIS_OS_NAME == "linux") || (! $TRAVIS_PYTHON_VERSION == "nightly") ]] ; then
       python -m pylint --version
     fi
 before_script:
@@ -212,7 +212,7 @@ script:
   #   python -m pytest --flake8 --pylint --cov=`pwd` --cov-report term-missing
   # Compile-related tests are expected to fail at this stage (skip pylint with development Python versions)
   - |
-    if [[ ($TRAVIS_PYTHON_VERSION == "linux") && ($TRAVIS_PYTHON_VERSION == "nightly") ]] ; then
+    if [[ ($TRAVIS_OS_NAME == "linux") && ($TRAVIS_PYTHON_VERSION == "nightly") ]] ; then
       # Work around astroid failing in Python nightly
       python -m pip uninstall -y pylint astroid
       # Work around flake8 failing in Python nightly
