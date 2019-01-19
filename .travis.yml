@@ -216,10 +216,10 @@ script:
       # Work around astroid failing in Python nightly
       python -m pip uninstall -y pylint astroid
       # Work around flake8 failing in Python nightly
-      python -m pytest -s -p no:flake8,cov -m "not slow"
+      python -m pytest -s -p no:flake8 -m "not slow" --cov --cov-report term-missing
       # python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
     else
-      python -m pytest -s --flake8 --pylint --pylint-jobs=2 -p no:cov -m "not slow"
+      python -m pytest -s --flake8 --pylint --pylint-jobs=2 -m "not slow" --cov --cov-report term-missing
     fi
   - |
     if [ $TRAVIS_OS_NAME == "linux" ] ; then
