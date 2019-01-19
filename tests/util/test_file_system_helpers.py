@@ -37,6 +37,10 @@ class FileSystemHelpersTests(unittest.TestCase):
             wtmp_name_out_wrapper.touch()  # pylint: disable=no-member
             wtmp_name_err_txt = (tmp_dir / f"{wtmp_name}-err.txt")
             wtmp_name_err_txt.touch()  # pylint: disable=no-member
+            wtmp_name_wasm_err_txt = (tmp_dir / f"{wtmp_name}-wasm-err.txt")
+            wtmp_name_wasm_err_txt.touch()  # pylint: disable=no-member
+            wtmp_name_wasm_out_txt = (tmp_dir / f"{wtmp_name}-wasm-out.txt")
+            wtmp_name_wasm_out_txt.touch()  # pylint: disable=no-member
             wtmp_name_crash_txt = (tmp_dir / f"{wtmp_name}-crash.txt")
             wtmp_name_crash_txt.touch()  # pylint: disable=no-member
             wtmp_name_vg_xml = (tmp_dir / f"{wtmp_name}-vg.xml")
@@ -51,6 +55,8 @@ class FileSystemHelpersTests(unittest.TestCase):
             assert not wtmp_name_out_wasm.is_file()
             assert not wtmp_name_out_wrapper.is_file()
             assert not wtmp_name_err_txt.is_file()
+            assert not wtmp_name_wasm_err_txt.is_file()
+            assert not wtmp_name_wasm_out_txt.is_file()
             assert not wtmp_name_crash_txt.is_file()
             assert not wtmp_name_vg_xml.is_file()
             assert not wtmp_name_core_gz.is_file()
