@@ -8,7 +8,6 @@
 
 import io
 import logging
-import os
 from pathlib import Path
 import platform
 import stat
@@ -74,6 +73,6 @@ class FileSystemHelpersTests(unittest.TestCase):
             with io.open(test_file, "w", encoding="utf-8", errors="replace") as f:
                 f.write("testing\n")
 
-            os.chmod(test_file, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+            Path.chmod(test_file, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
             util.file_system_helpers.rm_tree_incl_readonly_files(test_dir)

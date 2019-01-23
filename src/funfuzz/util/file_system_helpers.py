@@ -8,7 +8,6 @@
 """
 
 import errno
-import os
 from pathlib import Path
 import platform
 import shutil
@@ -59,10 +58,11 @@ def handle_rm_readonly_files(_func, path, exc):
         OSError: Raised if the read-only files are unable to be handled
     """
     assert platform.system() == "Windows"
+    path = Path(path)
     if exc[1].errno == errno.EACCES:
-        os.chmod(path, stat.S_IWRITE)
-        assert Path(path).is_file()
-        Path(path).unlink()
+        Path.chmod(path, stat.S_IWRITE)
+        assert path.is_file()
+        path.unlink()
     else:
         raise OSError("Unable to handle read-only files.")
 
