@@ -104,18 +104,18 @@ matrix:
       language: sh
       osx_image: xcode10.1
       before_install:
-        - brew update
-        - brew install autoconf@2.13 shellcheck
-        - brew upgrade python
+        - travis_retry brew update
+        - travis_retry brew install autoconf@2.13 shellcheck
+        - travis_retry brew upgrade python
         - python3 -m venv venv
         - source venv/bin/activate
     - python: "3.7"
       os: windows
       language: sh
       before_install:
-        - choco install hg python3 shellcheck
+        - travis_retry choco install hg python3 shellcheck
         - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
-        - python -m pip install --upgrade pip wheel
+        - travis_retry python -m pip install --upgrade pip wheel
     # Sanity checks, so only run debug builds
     - python: "nightly"
       dist: xenial
