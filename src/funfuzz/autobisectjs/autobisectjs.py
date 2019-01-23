@@ -27,7 +27,6 @@ from ..util import file_system_helpers
 from ..util import hg_helpers
 from ..util import s3cache
 from ..util import sm_compile_helpers
-from ..util import subprocesses as sps
 from ..util.lock_dir import LockDir
 from ..util.logging_helpers import get_logger
 
