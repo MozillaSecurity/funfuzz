@@ -196,7 +196,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
                 shutil.move(str(core_file), str(core_file))
                 subprocess.run(["gzip", "-f", str(core_file)], check=True)
                 # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
-                gzipped_core = f"{core_file}.gz"
+                gzipped_core = Path(f"{core_file}.gz")
                 # Ensure gzipped file can be read by all
                 Path.chmod(gzipped_core, Path.stat(gzipped_core).st_mode | 0o444)
             return str(crash_log)
