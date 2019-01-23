@@ -18,16 +18,7 @@ from ..js.loop import many_timed_runs
 from ..util import create_collector
 
 RUN_COV_LOG = logging.getLogger("funfuzz")
-
-
-def ccov_time():
-    """Specify the amount of time (in seconds) to run the code coverage build. This separate function is needed so
-    pytest can monkeypatch this function to return a smaller number.
-
-    Returns:
-        int: Number of seconds to run code coverage
-    """
-    return 85000  # 85,000 seconds is just under a day
+RUN_COV_TIME = 85000  # 85,000 seconds is just under a day
 
 
 def gather_coverage(dirpath):
@@ -46,8 +37,8 @@ def gather_coverage(dirpath):
     loop_args = ["--compare-jit", "--random-flags",
                  str(JS_SHELL_DEFAULT_TIMEOUT), "KNOWNPATH", str(cov_build_bin_path), "--fuzzing-safe"]
 
-    RUN_COV_LOG.info("Fuzzing a coverage build for %s seconds...", str(ccov_time()))
-    many_timed_runs(ccov_time(), dirpath, loop_args, create_collector.make_collector(), True)
+    RUN_COV_LOG.info("Fuzzing a coverage build for %s seconds...", str(RUN_COV_TIME))
+    many_timed_runs(RUN_COV_TIME, dirpath, loop_args, create_collector.make_collector(), True)
     RUN_COV_LOG.info("Finished fuzzing the coverage build")
 
     fm_conf = configparser.ConfigParser()

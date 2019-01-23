@@ -22,15 +22,6 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
 
 
-def mock_ccov_time():
-    """Overwrite the ccov_time function to return a shorter time to test code coverage.
-
-    Returns:
-        int: Number of seconds to run code coverage
-    """
-    return 3
-
-
 def mock_covreporter_main(argv=None):  # pylint: disable=unused-argument
     """Overwrite the main function in CovReporter to not submit reports during the test run.
 
@@ -58,7 +49,7 @@ class RunCcoverageTests(unittest.TestCase):
 
         monkey = MonkeyPatch()
         with monkey.context() as monkey_context:
-            monkey_context.setattr(funfuzz.ccoverage.gatherer, "ccov_time", mock_ccov_time)
+            monkey_context.setattr(funfuzz.ccoverage.gatherer, "RUN_COV_TIME", 3)
             monkey_context.setattr(CovReporter, "main", mock_covreporter_main)
 
             assert not funfuzz.run_ccoverage.main(argparse_args=["--url", build_url, "--report"])
