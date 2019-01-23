@@ -66,7 +66,6 @@ class ShellFlagsTests(CompileShellTests):
         assert "--ion-extra-checks" in all_flags
         # assert "--ion-sink=on" in all_flags
         assert "--ion-warmup-threshold=100" in all_flags
-        assert "--ion-loop-unrolling=on" in all_flags
         assert "--ion-scalar-replacement=on" in all_flags
         assert "--ion-check-range-analysis" in all_flags
         # assert "--ion-regalloc=stupid" in all_flags
@@ -124,7 +123,6 @@ class ShellFlagsTests(CompileShellTests):
         assert "--no-ggc" in all_flags
         assert "--no-baseline" in all_flags
         assert "--no-asmjs" in all_flags
-        assert "--dump-bytecode" in all_flags
 
     @pytest.mark.slow
     def test_shell_supports_flag(self):

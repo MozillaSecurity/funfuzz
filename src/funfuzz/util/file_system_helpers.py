@@ -7,8 +7,14 @@
 """Helper functions dealing with the files on the file system.
 """
 
+import errno
+from pathlib import Path
+import platform
+import shutil
+import stat
 
-def delete_logs(log_prefix):
+
+def delete_logs(log_prefix):  # pylint: disable=too-complex
     """Whoever might call baseLevel should eventually call this function (unless a bug was found).
 
     If this turns up a WindowsError on Windows, remember to have excluded fuzzing locations in
@@ -29,6 +35,12 @@ def delete_logs(log_prefix):
     err_log = (log_prefix.parent / f"{log_prefix.stem}-err").with_suffix(".txt")
     if err_log.is_file():
         err_log.unlink()
+    wasm_err_log = (log_prefix.parent / f"{log_prefix.stem}-wasm-err").with_suffix(".txt")
+    if wasm_err_log.is_file():
+        wasm_err_log.unlink()
+    wasm_out_log = (log_prefix.parent / f"{log_prefix.stem}-wasm-out").with_suffix(".txt")
+    if wasm_out_log.is_file():
+        wasm_out_log.unlink()
     crash_log = (log_prefix.parent / f"{log_prefix.stem}-crash").with_suffix(".txt")
     if crash_log.is_file():
         crash_log.unlink()
@@ -38,3 +50,33 @@ def delete_logs(log_prefix):
     core_gzip = (log_prefix.parent / f"{log_prefix.stem}-core").with_suffix(".gz")
     if core_gzip.is_file():
         core_gzip.unlink()
+
+
+def handle_rm_readonly_files(_func, path, exc):
+    """Handle read-only files on Windows. Adapted from https://stackoverflow.com/a/21263493.
+
+    Args:
+        _func (function): Function which raised the exception
+        path (str): Path name passed to function
+        exc (exception): Exception information returned by sys.exc_info()
+
+    Raises:
+        OSError: Raised if the read-only files are unable to be handled
+    """
+    assert platform.system() == "Windows"
+    path = Path(path)
+    if exc[1].errno == errno.EACCES:
+        Path.chmod(path, stat.S_IWRITE)
+        assert path.is_file()
+        path.unlink()
+    else:
+        raise OSError("Unable to handle read-only files.")
+
+
+def rm_tree_incl_readonly_files(dir_tree):
+    """Remove a directory tree including all read-only files. Directories should not be read-only.
+
+    Args:
+        dir_tree (Path): Directory tree of files to be removed
+    """
+    shutil.rmtree(str(dir_tree), onerror=handle_rm_readonly_files if platform.system() == "Windows" else None)

@@ -44,6 +44,7 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
         hgrange("4c72627cfc6c", "926f80f2c5cc"),  # Fx60, broken spidermonkey
         hgrange("1fb7ddfad86d", "5202cfbf8d60"),  # Fx63, broken spidermonkey
         hgrange("aae4f349fa58", "c5fbbf959e23"),  # Fx64, broken spidermonkey
+        hgrange("f611bc50d11c", "39d0c50a2209"),  # Fx66, broken spidermonkey
     ]
 
     if platform.system() == "Linux":

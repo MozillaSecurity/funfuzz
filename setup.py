@@ -6,6 +6,7 @@
 
 """setuptools install script"""
 
+from setuptools import find_packages
 from setuptools import setup
 
 EXTRAS = {
@@ -19,7 +20,7 @@ EXTRAS = {
         "flake8-quotes==1.0.0",
         "isort==4.3.4",
         "pylint==2.2.2",
-        "pytest==3.10.1",
+        "pytest==4.1.1",
         "pytest-cov==2.6.1",
         "pytest-flake8==1.0.3",
         "pytest-pylint==0.14.0",
@@ -32,13 +33,6 @@ if __name__ == "__main__":
           entry_points={
               "console_scripts": ["funfuzz = funfuzz.bot:main"],
           },
-          packages=[
-              "funfuzz",
-              "funfuzz.autobisectjs",
-              "funfuzz.ccoverage",
-              "funfuzz.js",
-              "funfuzz.util",
-          ],
           package_data={"funfuzz": [
               "autobisectjs/*",
               "ccoverage/*",
@@ -48,8 +42,10 @@ if __name__ == "__main__":
               "util/*",
           ]},
           package_dir={"": "src"},
+          packages=find_packages(where="src"),
           install_requires=[
               "boto>=2.49.0",
+              "fasteners>=0.14.1,<0.15",
               # https://www.mercurial-scm.org/wiki/SupportedPythonVersions#Python_3.x_support
               # "mercurial>=4.7.2",  # Mercurial does not support Python 3 yet
               "requests>=2.20.1",

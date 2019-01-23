@@ -52,4 +52,5 @@ class RunCcoverageTests(unittest.TestCase):
             monkey_context.setattr(funfuzz.ccoverage.gatherer, "RUN_COV_TIME", 3)
             monkey_context.setattr(CovReporter, "main", mock_covreporter_main)
 
+            # run_ccoverage's main method does not actually return anything.
             assert not funfuzz.run_ccoverage.main(argparse_args=["--url", build_url, "--report"])
