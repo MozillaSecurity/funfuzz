@@ -123,7 +123,6 @@ class ShellFlagsTests(CompileShellTests):
         assert "--no-ggc" in all_flags
         assert "--no-baseline" in all_flags
         assert "--no-asmjs" in all_flags
-        assert "--dump-bytecode" in all_flags
 
     @pytest.mark.slow
     def test_shell_supports_flag(self):
