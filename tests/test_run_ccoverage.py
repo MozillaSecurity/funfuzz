@@ -9,7 +9,6 @@
 import logging
 import unittest
 
-from CovReporter import CovReporter
 from _pytest.monkeypatch import MonkeyPatch
 from pkg_resources import parse_version
 import pytest
@@ -21,19 +20,6 @@ from funfuzz.ccoverage import gatherer
 FUNFUZZ_TEST_LOG = logging.getLogger("run_ccoverage_test")
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.WARNING)
-
-
-def mock_covreporter_main(argv=None):  # pylint: disable=unused-argument
-    """Overwrite the main function in CovReporter to not submit reports during the test run.
-
-    Args:
-        argv (list): List of parameters to be passed to CovReporter
-
-    Returns:
-        int: Simulates a successful submission exit code
-    """
-    FUNFUZZ_TEST_LOG.info("Simulating a successful submission...")
-    return 0
 
 
 class RunCcoverageTests(unittest.TestCase):
@@ -51,7 +37,9 @@ class RunCcoverageTests(unittest.TestCase):
         monkey = MonkeyPatch()
         with monkey.context() as monkey_context:
             monkey_context.setattr(gatherer, "RUN_COV_TIME", 3)
-            monkey_context.setattr(CovReporter, "main", mock_covreporter_main)
+            monkey_context.setattr("funfuzz.ccoverage.reporter.report_coverage",
+                                   lambda x: FUNFUZZ_TEST_LOG.info("Simulation: cov_result_file report is: %s", x))
+            monkey_context.setattr("funfuzz.ccoverage.reporter.disable_pool",
+                                   lambda: FUNFUZZ_TEST_LOG.info("Simulation: Pool disabled"))
 
-            # run_ccoverage's main method does not actually return anything.
-            assert not run_ccoverage.main(argparse_args=["--url", build_url, "--report"])
+            run_ccoverage.main(argparse_args=["--url", build_url, "--report"])
