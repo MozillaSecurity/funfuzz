@@ -14,7 +14,7 @@ import shutil
 import stat
 
 
-def delete_logs(log_prefix):
+def delete_logs(log_prefix):  # pylint: disable=too-complex
     """Whoever might call baseLevel should eventually call this function (unless a bug was found).
 
     If this turns up a WindowsError on Windows, remember to have excluded fuzzing locations in
