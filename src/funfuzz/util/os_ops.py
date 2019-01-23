@@ -199,7 +199,9 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
                 shutil.move(str(core_file), str(core_file))
                 subprocess.run(["gzip", "-f", str(core_file)], check=True)
                 # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
-                subprocess.run(["chmod", "og+r", f"{core_file}.gz"], check=True)
+                gzipped_core = f"{core_file}.gz"
+                # Ensure gzipped file can be read by all
+                Path.chmod(gzipped_core, Path.stat(gzipped_core).st_mode | 0o444)
             return str(crash_log)
         else:
             LOG_OS_OPS.warning("I don't know what to do with a core file when log_prefix is null")
@@ -270,10 +272,8 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
                         # Use copyfile, as we do not want to copy the permissions metadata over
                         crash_log = (log_prefix.parent / f"{log_prefix.stem}-crash").with_suffix(".txt")
                         shutil.copyfile(str(full_report_path), str(crash_log))
-                        subprocess.run(["chmod", "og+r", str(crash_log)],
-                                       cwd=os.getcwd(),
-                                       check=True,
-                                       timeout=9)
+                        # Ensure crash_log can be read by all
+                        Path.chmod(crash_log, Path.stat(crash_log).st_mode | 0o444)
                         return str(crash_log)
                     return str(full_report_path)
 

@@ -24,6 +24,7 @@ from pkg_resources import parse_version
 
 from . import build_options
 from . import inspect_shell
+from ..util import file_system_helpers
 from ..util import hg_helpers
 from ..util import s3cache
 from ..util import sm_compile_helpers
@@ -639,7 +640,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         raise OSError("Found a cached shell that failed compilation...")
     elif shell.get_shell_cache_dir().is_dir():
         LOG_COMPILE_SHELL.info("Found a cache dir without a successful/failed shell...")
-        sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
+        file_system_helpers.rm_tree_incl_readonly_files(shell.get_shell_cache_dir())
 
     shell.get_shell_cache_dir().mkdir()
     hg_helpers.destroyPyc(shell.build_opts.repo_dir)
@@ -680,10 +681,10 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if platform.system() == "Windows":
             sm_compile_helpers.verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
     except KeyboardInterrupt:
-        sps.rm_tree_incl_readonly(shell.get_shell_cache_dir())
+        file_system_helpers.rm_tree_incl_readonly_files(shell.get_shell_cache_dir())
         raise
     except (subprocess.CalledProcessError, OSError) as ex:
-        shutil.rmtree(str(shell.get_shell_cache_dir() / "objdir-js"))
+        file_system_helpers.rm_tree_incl_readonly_files(shell.get_shell_cache_dir() / "objdir-js")
         if shell.get_shell_cache_js_bin_path().is_file():  # Switch to contextlib.suppress when we are fully on Python 3
             shell.get_shell_cache_js_bin_path().unlink()
         with io.open(str(cached_no_shell), "a", encoding="utf-8", errors="replace") as f:

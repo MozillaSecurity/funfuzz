@@ -23,6 +23,7 @@ from . import known_broken_earliest_working as kbew
 from ..js import build_options
 from ..js import compile_shell
 from ..js import inspect_shell
+from ..util import file_system_helpers
 from ..util import hg_helpers
 from ..util import s3cache
 from ..util import sm_compile_helpers
@@ -343,7 +344,7 @@ def externalTestAndLabel(options, interestingness):  # pylint: disable=invalid-n
         else:
             innerResult = ("good", "not interesting")  # pylint: disable=invalid-name
         if temp_dir.is_dir():
-            sps.rm_tree_incl_readonly(str(temp_dir))
+            file_system_helpers.rm_tree_incl_readonly_files(str(temp_dir))
         return innerResult
     return inner
 

@@ -8,8 +8,11 @@
 
 import logging
 from pathlib import Path
+import platform
 import tempfile
 import unittest
+
+import pytest
 
 from funfuzz import util
 from funfuzz.util.logging_helpers import get_logger
@@ -20,6 +23,7 @@ LOG_TEST_SM_COMPILE_HELPERS = get_logger(__name__, level=logging.DEBUG)
 class SmCompileHelpersTests(unittest.TestCase):
     """"TestCase class for functions in sm_compile_helpers.py"""
     @staticmethod
+    @pytest.mark.skipif(platform.system() == "Windows", reason="Windows on Travis is still new and experimental")
     def test_autoconf_run():
         """Test the autoconf runs properly."""
         with tempfile.TemporaryDirectory(suffix="autoconf_run_test") as tmp_dir:

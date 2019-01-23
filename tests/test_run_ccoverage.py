@@ -12,7 +12,7 @@ import unittest
 
 import pytest
 
-import funfuzz
+from funfuzz import run_ccoverage
 
 if sys.version_info.major == 2:
     import logging_tz  # pylint: disable=import-error
@@ -38,4 +38,4 @@ class RunCcoverageTests(unittest.TestCase):
         """Run run_ccoverage with test parameters."""
         build_url = "https://build.fuzzing.mozilla.org/builds/jsshell-mc-64-opt-gcov.zip"
         # run_ccoverage's main method does not actually return anything.
-        assert not funfuzz.run_ccoverage.main(argparse_args=["--url", build_url])
+        assert not run_ccoverage.main(argparse_args=["--url", build_url])
