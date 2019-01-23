@@ -18,4 +18,3 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 
 class GathererTests(unittest.TestCase):
     """"TestCase class for functions in gatherer.py"""
-    pass
