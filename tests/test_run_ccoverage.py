@@ -15,7 +15,8 @@ from pkg_resources import parse_version
 import pytest
 
 import distro
-import funfuzz
+from funfuzz import run_ccoverage
+from funfuzz.ccoverage import gatherer
 
 FUNFUZZ_TEST_LOG = logging.getLogger("run_ccoverage_test")
 logging.basicConfig(level=logging.DEBUG)
@@ -49,8 +50,8 @@ class RunCcoverageTests(unittest.TestCase):
 
         monkey = MonkeyPatch()
         with monkey.context() as monkey_context:
-            monkey_context.setattr(funfuzz.ccoverage.gatherer, "RUN_COV_TIME", 3)
+            monkey_context.setattr(gatherer, "RUN_COV_TIME", 3)
             monkey_context.setattr(CovReporter, "main", mock_covreporter_main)
 
             # run_ccoverage's main method does not actually return anything.
-            assert not funfuzz.run_ccoverage.main(argparse_args=["--url", build_url, "--report"])
+            assert not run_ccoverage.main(argparse_args=["--url", build_url, "--report"])
