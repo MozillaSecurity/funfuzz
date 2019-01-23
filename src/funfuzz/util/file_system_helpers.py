@@ -35,6 +35,12 @@ def delete_logs(log_prefix):
     err_log = (log_prefix.parent / f"{log_prefix.stem}-err").with_suffix(".txt")
     if err_log.is_file():
         err_log.unlink()
+    wasm_err_log = (log_prefix.parent / f"{log_prefix.stem}-wasm-err").with_suffix(".txt")
+    if wasm_err_log.is_file():
+        wasm_err_log.unlink()
+    wasm_out_log = (log_prefix.parent / f"{log_prefix.stem}-wasm-out").with_suffix(".txt")
+    if wasm_out_log.is_file():
+        wasm_out_log.unlink()
     crash_log = (log_prefix.parent / f"{log_prefix.stem}-crash").with_suffix(".txt")
     if crash_log.is_file():
         crash_log.unlink()

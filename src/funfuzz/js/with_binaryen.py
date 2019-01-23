@@ -13,7 +13,10 @@ from pathlib import Path
 import platform
 import subprocess
 import tarfile
+import threading
+import time
 
+import fasteners
 import requests
 
 from ..util import sm_compile_helpers
@@ -57,12 +60,19 @@ def wasmopt_run(seed):
     assert seed.is_file()
     seed_wrapper_output = seed.resolve().with_suffix(".wrapper")
     seed_wasm_output = seed.resolve().with_suffix(".wasm")
-    subprocess.run([ensure_binaryen(BINARYEN_URL, BINARYEN_VERSION),
-                    seed,
-                    "--translate-to-fuzz",
-                    "--disable-simd",
-                    "--output", seed_wasm_output,
-                    f"--emit-js-wrapper={seed_wrapper_output}"], check=True)
+
+    t_lock = threading.Lock()
+    with fasteners.try_lock(t_lock) as gotten:
+        while True:
+            if gotten:
+                subprocess.run([ensure_binaryen(BINARYEN_URL, BINARYEN_VERSION),
+                                seed,
+                                "--translate-to-fuzz",
+                                "--disable-simd",
+                                "--output", seed_wasm_output,
+                                f"--emit-js-wrapper={seed_wrapper_output}"], check=True)
+                break
+            time.sleep(5)
     assert seed_wrapper_output.is_file()
     assert seed_wasm_output.is_file()
 
