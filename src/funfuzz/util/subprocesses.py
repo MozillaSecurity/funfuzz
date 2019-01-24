@@ -7,7 +7,7 @@
 """Miscellaneous helper functions.
 """
 
-verbose = True  # pylint: disable=invalid-name
+verbose = False  # pylint: disable=invalid-name
 
 
 def vdump(inp):  # pylint: disable=missing-param-doc,missing-type-doc
