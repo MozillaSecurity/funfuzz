@@ -480,6 +480,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         cfg_cmds.append("--with-ccache")
     cfg_cmds.append("--enable-gczeal")
     cfg_cmds.append("--enable-debug-symbols")  # gets debug symbols on opt shells
+    cfg_cmds.append("--disable-cranelift")
     cfg_cmds.append("--disable-tests")
 
     if platform.system() == "Windows":
