@@ -87,6 +87,7 @@ class ShellFlagsTests(CompileShellTests):
         assert "--wasm-compiler=baseline+ion" in all_flags
         assert "--wasm-gc" in all_flags
         assert "--test-wasm-await-tier2" in all_flags
+        assert "--no-asmjs" in all_flags
 
     @staticmethod
     def test_basic_flag_sets():
@@ -121,7 +122,6 @@ class ShellFlagsTests(CompileShellTests):
         assert "--no-native-regexp" in all_flags
         assert "--no-ggc" in all_flags
         assert "--no-baseline" in all_flags
-        assert "--no-asmjs" in all_flags
 
     @pytest.mark.slow
     def test_shell_supports_flag(self):

@@ -198,7 +198,7 @@ def add_random_wasm_flags(shell_path, input_list=False):
     return input_list
 
 
-def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-branches,too-many-statements
+def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branches,too-many-statements
     """Returns a random list of CLI flags appropriate for the given shell.
 
     Args:
