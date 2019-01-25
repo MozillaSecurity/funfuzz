@@ -362,10 +362,6 @@ def get_random_valid_repo(tree):
 def main():  # pylint: disable=missing-docstring
     print("Here are some sample random build configurations that can be generated:")
     parser, randomizer = addParserOptions()
-    build_options = parser.parse_args()
-
-    if build_options.enableArmSimulatorObsolete:
-        build_options.enableSimulatorArm32 = True
 
     for _ in range(30):
         build_options = generateRandomConfigurations(parser, randomizer)
@@ -374,7 +370,7 @@ def main():  # pylint: disable=missing-docstring
     print()
     print("Running this file directly doesn't do anything, but here's our subparser help:")
     print()
-    parse_shell_opts("--help")
+    parser.parse_args()
 
 
 if __name__ == "__main__":
