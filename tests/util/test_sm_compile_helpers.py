@@ -45,6 +45,7 @@ class SmCompileHelpersTests(unittest.TestCase):
         """Remove the temporary directory on test completion."""
         cls.tmp_dir_object.cleanup()
 
+    @pytest.mark.slow  # Workaround for Travis as we only have mozilla-central and hence icu.m4, available on slow tests
     @pytest.mark.skipif(platform.system() != "Linux",
                         reason="sed version check only works with GNU sed, not macOS BSD sed")
     def test_icu_m4_replace(self):
@@ -64,6 +65,7 @@ class SmCompileHelpersTests(unittest.TestCase):
 
         self.icu_m4_test_abs_path.unlink()
 
+    @pytest.mark.slow  # Workaround for Travis as we only have mozilla-central and hence icu.m4, available on slow tests
     @pytest.mark.skipif(platform.system() != "Linux",
                         reason="sed version check only works with GNU sed, not macOS BSD sed")
     def test_icu_m4_undo(self):
