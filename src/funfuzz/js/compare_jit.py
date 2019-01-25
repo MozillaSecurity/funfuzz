@@ -222,8 +222,10 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 if showDetailedDiffs:
                     print(summary)
                     print()
+                assert jsEngine.with_suffix(".fuzzmanagerconf").is_file()
                 # Create a crashInfo object with empty stdout, and stderr showing diffs
-                pc = ProgramConfiguration.fromBinary(str(jsEngine))  # pylint: disable=invalid-name
+                # pylint: disable=invalid-name
+                pc = ProgramConfiguration.fromBinary(str(jsEngine.parent / jsEngine.stem))
                 pc.addProgramArguments(flags)
                 crashInfo = Crash_Info.CrashInfo.fromRawCrashData([], summary, pc)  # pylint: disable=invalid-name
                 return js_interesting.JS_OVERALL_MISMATCH, crashInfo
