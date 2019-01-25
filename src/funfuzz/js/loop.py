@@ -319,10 +319,9 @@ def run_to_report_wasm(_options, js_interesting_opts, env, log_prefix, out_log, 
     for runtime_flag in js_interesting_opts.jsengineWithArgs:
         if "--execute=" in str(runtime_flag) and "ion." in str(runtime_flag):
             execute_ion_flags_in_shell = True
-    if ("--no-wasm-ion" in js_interesting_opts.jsengineWithArgs and
-            "--no-wasm-baseline" in js_interesting_opts.jsengineWithArgs):
-        # WebAssembly object will not be present if either of these flags are not removed
-        js_interesting_opts.jsengineWithArgs.remove("--no-wasm-ion")
+    if "--wasm-compiler=none" in js_interesting_opts.jsengineWithArgs:
+        # WebAssembly object will not be present if this flag is not removed
+        js_interesting_opts.jsengineWithArgs.remove("--wasm-compiler=none")
 
     if not execute_ion_flags_in_shell:
         res = js_interesting.ShellResult(js_interesting_opts,

@@ -106,7 +106,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
 
     assert isinstance(infilename, Path)
 
-    combos = shell_flags.basic_flag_sets(jsEngine)
+    combos = shell_flags.basic_flag_sets()
 
     if quickMode:
         # Only used during initial fuzzing. Allowed to have false negatives.
@@ -118,6 +118,11 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         "--no-wasm",
         "--no-wasm-ion",
         "--no-wasm-baseline",
+        "--wasm-compiler=baseline+ion",
+        "--wasm-compiler=baseline",
+        "--wasm-compiler=ion",
+        "--wasm-compiler=cranelift",
+        "--wasm-compiler=baseline+cranelift",
     })
     if flags:
         combos.insert(0, flags)

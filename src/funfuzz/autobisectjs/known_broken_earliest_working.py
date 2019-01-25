@@ -8,7 +8,6 @@
 """
 
 import platform
-import subprocess
 
 from pkg_resources import parse_version
 
@@ -101,6 +100,9 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
 
     required = []
 
+    if set(["--wasm-compiler=none", "--wasm-compiler=baseline+ion", "--wasm-compiler=baseline",
+            "--wasm-compiler=ion"]).intersection(flags):
+        required.append("48dc14f79fb0")  # m-c 455252 Fx66, 1st w/--wasm-compiler=none/<other options>, see bug 1509441
     # These should be in descending order, or bisection will break at earlier changesets.
     if "--more-compartments" in flags:
         required.append("450b8f0cbb4e")  # m-c 453627 Fx66, 1st w/--more-compartments, see bug 1518753
@@ -123,17 +125,11 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     if cpu_count_flag:
         required.append("1b55231e6628")  # m-c 380023 Fx57, 1st w/--cpu-count=<NUM>, see bug 1206770
     if "--no-wasm-ion" in flags:
-        required.append("158b333a0a89")  # m-c 375650 Fx57, 1st w/--no-wasm-ion, see bug 1277562
+        required.append("158b333a0a89")  # m-c 375650 Fx57, 1st w/--no-wasm-ion, removed in m-c 455252, Fx66
     if "--no-wasm-baseline" in flags:
-        required.append("9ea44ef0c07c")  # m-c 375639 Fx57, 1st w/--no-wasm-baseline, see bug 1277562
+        required.append("9ea44ef0c07c")  # m-c 375639 Fx57, 1st w/--no-wasm-baseline, removed in m-c 455252, Fx66
     if platform.system() == "Windows" and platform.uname()[2] == "10":
         required.append("530f7bd28399")  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
-    # Note that the sed version check only works with GNU sed, not BSD sed found in macOS.
-    if (platform.system() == "Linux" and
-            parse_version(subprocess.run(["sed", "--version"],
-                                         stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace").split()[3])
-            >= parse_version("4.3")):
-        required.append("ebcbf47a83e7")  # m-c 328765 Fx53, 1st w/ working builds using sed 4.3+ found on Ubuntu 17.04+
     if options.disableProfiling:
         required.append("800a887c705e")  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
     if "--no-wasm" in flags:

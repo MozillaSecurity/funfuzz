@@ -162,6 +162,21 @@ def add_random_wasm_flags(shell_path, input_list=False):
     Returns:
         list: List of flags to be tested, with probable wasm flags added.
     """
+    if shell_supports_flag(shell_path, "--wasm-compiler=none") and chance(.9):
+        if chance(.4):
+            wasm_compiler_option = "baseline+ion"
+        elif chance(.5):  # pragma: no cover
+            wasm_compiler_option = "baseline"
+        elif chance(.6):  # pragma: no cover
+            wasm_compiler_option = "ion"
+        # elif chance(.7):  # pragma: no cover
+        #     wasm_compiler_option = "baseline+cranelift"
+        # elif chance(.8):  # pragma: no cover
+        #     wasm_compiler_option = "cranelift"
+        else:  # pragma: no cover
+            wasm_compiler_option = "none"
+        # m-c rev 455252:48dc14f79fb0, see bug 1509441
+        input_list.append("--wasm-compiler=" + wasm_compiler_option)
     if shell_supports_flag(shell_path, "--wasm-gc") and chance(.8):
         # m-c rev 413255:302befe7689a, see bug 1445272
         input_list.append("--wasm-gc")
@@ -309,31 +324,27 @@ def random_flag_set(shell_path=False):  # pylint: disable=too-complex,too-many-b
     return args
 
 
-def basic_flag_sets(shell_path):
+def basic_flag_sets():
     """These flag combos are used w/the original flag sets when run through Lithium & autobisectjs.
-
-    Args:
-        shell_path (str): Path to shell.
 
     Returns:
         list: Possible shell runtime flag combinations for fuzzing.
     """
-    basic_flags = [
+    return [
         # Parts of this flag permutation come from:
-        # https://hg.mozilla.org/mozilla-central/file/afdeb0288690/js/src/tests/lib/tests.py#l10
+        # https://hg.mozilla.org/mozilla-central/file/b641b61da234/js/src/tests/lib/tests.py#l10
         # compare_jit uses the following first flag set as the sole baseline when fuzzing
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--more-compartments"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"],
         ["--fuzzing-safe"],
-        ["--fuzzing-safe", "--no-threads", "--ion-eager"],
-        ["--fuzzing-safe", "--ion-offthread-compile=off"],
-        ["--fuzzing-safe", "--baseline-eager", "--no-ion"],  # This combo seems to find more issues than w/o --no-ion
-        ["--fuzzing-safe", "--no-baseline", "--no-ion"],
-        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--no-native-regexp"],
+        ["--fuzzing-safe", "--no-threads", "--ion-eager", "--more-compartments"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--more-compartments"],
+        ["--fuzzing-safe", "--baseline-eager"],
+        ["--fuzzing-safe", "--baseline-eager", "--no-ion", "--more-compartments"],  # Seems to find > w/o --no-ion
+        ["--fuzzing-safe", "--no-baseline", "--no-ion", "--more-compartments"],
+        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--wasm-compiler=none", "--no-native-regexp"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--ion-check-range-analysis",
+         "--ion-extra-checks", "--no-sse3"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--test-wasm-await-tier2",
+         "--spectre-mitigations=on", "--nursery-strings=on"],
     ]
-    if shell_supports_flag(shell_path, "--ion-extra-checks"):
-        basic_flags.append(["--fuzzing-safe", "--no-threads", "--ion-eager", "--ion-check-range-analysis",
-                            "--ion-extra-checks", "--no-sse3"])
-    if shell_supports_flag(shell_path, "--nursery-strings=on"):
-        basic_flags.append(["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager",
-                            "--test-wasm-await-tier2", "--spectre-mitigations=on", "--nursery-strings=on"])
-    return basic_flags
