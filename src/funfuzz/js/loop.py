@@ -198,6 +198,14 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
             cj_testcase = (log_prefix.parent / f"{log_prefix.stem}-cj-in").with_suffix(".js")
             with io.open(str(cj_testcase), "w", encoding="utf-8", errors="replace") as f:
                 f.writelines(linesToCompare)
+
+            if "--more-compartments" in js_interesting_opts.jsengineWithArgs:
+                # --more-compartments should not be tested with compare_jit, see bug 1521338 comment 7
+                js_interesting_opts.jsengineWithArgs.remove("--more-compartments")
+            if "--wasm-compiler=none" in js_interesting_opts.jsengineWithArgs:
+                # WebAssembly object will not be present if this flag is not removed
+                js_interesting_opts.jsengineWithArgs.remove("--wasm-compiler=none")
+
             compare_jit.compare_jit(options.jsEngine, options.engineFlags, cj_testcase,
                                     log_prefix.parent / f"{log_prefix.stem}-cj", options.repo,
                                     options.build_options_str, target_time, js_interesting_opts, ccoverage)
@@ -319,9 +327,6 @@ def run_to_report_wasm(_options, js_interesting_opts, env, log_prefix, out_log, 
     for runtime_flag in js_interesting_opts.jsengineWithArgs:
         if "--execute=" in str(runtime_flag) and "ion." in str(runtime_flag):
             execute_ion_flags_in_shell = True
-    if "--wasm-compiler=none" in js_interesting_opts.jsengineWithArgs:
-        # WebAssembly object will not be present if this flag is not removed
-        js_interesting_opts.jsengineWithArgs.remove("--wasm-compiler=none")
 
     if not execute_ion_flags_in_shell:
         res = js_interesting.ShellResult(js_interesting_opts,

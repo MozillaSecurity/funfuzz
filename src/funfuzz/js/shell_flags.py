@@ -334,14 +334,14 @@ def basic_flag_sets():
         # Parts of this flag permutation come from:
         # https://hg.mozilla.org/mozilla-central/file/b641b61da234/js/src/tests/lib/tests.py#l10
         # compare_jit uses the following first flag set as the sole baseline when fuzzing
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--more-compartments"],
+        # --more-compartments should not be here, see https://bugzilla.mozilla.org/show_bug.cgi?id=1521338#c7
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"],
         ["--fuzzing-safe"],
-        ["--fuzzing-safe", "--no-threads", "--ion-eager", "--more-compartments"],
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--more-compartments"],
+        ["--fuzzing-safe", "--no-threads", "--ion-eager"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off"],
         ["--fuzzing-safe", "--baseline-eager"],
-        ["--fuzzing-safe", "--baseline-eager", "--no-ion", "--more-compartments"],  # Seems to find > w/o --no-ion
-        ["--fuzzing-safe", "--no-baseline", "--no-ion", "--more-compartments"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--baseline-eager", "--no-ion"],  # May find > w/o --no-ion
+        ["--fuzzing-safe", "--no-baseline", "--no-ion"],
         ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--wasm-compiler=none", "--no-native-regexp"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--ion-check-range-analysis",
          "--ion-extra-checks", "--no-sse3"],
