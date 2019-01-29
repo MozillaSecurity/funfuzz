@@ -480,8 +480,11 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         cfg_cmds.append("--with-ccache")
     cfg_cmds.append("--enable-gczeal")
     cfg_cmds.append("--enable-debug-symbols")  # gets debug symbols on opt shells
-    cfg_cmds.append("--disable-cranelift")
     cfg_cmds.append("--disable-tests")
+
+    # Disable cranelift if repository revision is after m-c rev 428135:6fcf54117a3b, fx63
+    if not hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(6fcf54117a3b)"):
+        cfg_cmds.append("--disable-cranelift")
 
     if platform.system() == "Windows":
         # FIXME: Replace this with shlex's quote  # pylint: disable=fixme
