@@ -356,9 +356,14 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_env["CC"] = cfg_env["HOST_CC"] = f"clang {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
             cfg_env["CXX"] = cfg_env["HOST_CXX"] = f"clang++ {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
         else:
-            # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux.
-            cfg_env["CC"] = f"gcc -m32 {SSE2_FLAGS}"
-            cfg_env["CXX"] = f"g++ -m32 {SSE2_FLAGS}"
+            # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux. (no matter Clang or GCC)
+            # m-c rev 301874:e1cac03485d9, fx50 is the first rev that works with Clang 6.0 on Ubuntu 18.04
+            if hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(e1cac03485d9)"):
+                cfg_env["CC"] = f"gcc -m32 {SSE2_FLAGS}"
+                cfg_env["CXX"] = f"g++ -m32 {SSE2_FLAGS}"
+            else:
+                cfg_env["CC"] = f"clang -m32 {SSE2_FLAGS}"
+                cfg_env["CXX"] = f"clang -m32 {SSE2_FLAGS}"
         if shell.build_opts.buildWithAsan:
             cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
             cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
