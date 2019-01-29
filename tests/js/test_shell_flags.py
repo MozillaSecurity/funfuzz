@@ -92,7 +92,7 @@ class ShellFlagsTests(CompileShellTests):
     @staticmethod
     def test_basic_flag_sets():
         """Test that we are able to obtain a basic set of shell runtime flags for fuzzing."""
-        important_flag_set = ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--more-compartments"]
+        important_flag_set = ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"]
         assert important_flag_set in js.shell_flags.basic_flag_sets()
 
     def test_chance(self):
