@@ -363,7 +363,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
                 cfg_env["CXX"] = f"g++ -m32 {SSE2_FLAGS}"
             else:
                 cfg_env["CC"] = f"clang -m32 {SSE2_FLAGS}"
-                cfg_env["CXX"] = f"clang -m32 {SSE2_FLAGS}"
+                cfg_env["CXX"] = f"clang++ -m32 {SSE2_FLAGS}"
         if shell.build_opts.buildWithAsan:
             cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
             cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
