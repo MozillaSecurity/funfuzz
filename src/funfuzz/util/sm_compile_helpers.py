@@ -153,6 +153,58 @@ def get_lock_dir_path(cache_dir_base, repo_dir, tbox_id=""):
     return ensure_cache_dir(cache_dir_base) / lockdir_name
 
 
+def icu_m4_undo(tree):
+    """Reverse-replaces a change for a local mozilla repository tree, needed to compile on Linux systems with sed >= 4.3
+
+    Note that has only been tested to work on Linux sed, not macOS BSD sed.
+
+    Args:
+        tree (Path): Local mozilla repository tree
+    """
+    assert platform.system() == "Linux"
+    icu_m4 = tree / "build" / "autoconf" / "icu.m4"
+
+    # Read icu.m4 into memory
+    with io.open(str(icu_m4), "r", encoding="utf-8", errors="replace") as f:
+        contents = f.readlines()
+
+    # Replace line
+    with io.open(str(icu_m4), "w", encoding="utf-8", errors="replace") as f:
+        for line in contents:
+            if "version=`sed -n 's/^[[[:space:]]]*#[[:space:]]*define[[:space:]][[:space:]]*" in line:
+                f.write("    version=`sed -n 's/^[[:space:]]*#[[:space:]]*define[[:space:]][[:space:]]*"
+                        "U_ICU_VERSION_MAJOR_NUM[[:space:]][[:space:]]*\\([0-9][0-9]*\\)[[:space:]]*$/\\1/p' "
+                        "\"$icudir/common/unicode/uvernum.h\"`\n")
+            else:
+                f.write(line)
+
+
+def icu_m4_replace(tree):
+    """Replaces a change for a local mozilla repository tree, needed to compile on Linux systems with sed >= 4.3
+
+    Note that has only been tested to work on Linux sed, not macOS BSD sed.
+
+    Args:
+        tree (Path): Local mozilla repository tree
+    """
+    assert platform.system() == "Linux"
+    icu_m4 = tree / "build" / "autoconf" / "icu.m4"
+
+    # Read icu.m4 into memory
+    with io.open(str(icu_m4), "r", encoding="utf-8", errors="replace") as f:
+        contents = f.readlines()
+
+    # Replace line
+    with io.open(str(icu_m4), "w", encoding="utf-8", errors="replace") as f:
+        for line in contents:
+            if "version=`sed -n 's/^[[:space:]]*#[[:space:]]*define[[:space:]][[:space:]]*" in line:
+                f.write("    version=`sed -n 's/^[[[:space:]]]*#[[:space:]]*define[[:space:]][[:space:]]*"
+                        "U_ICU_VERSION_MAJOR_NUM[[:space:]][[:space:]]*\\([0-9][0-9]*\\)[[:space:]]*$/\\1/p' "
+                        "\"$icudir/common/unicode/uvernum.h\"`\n")
+            else:
+                f.write(line)
+
+
 def verify_full_win_pageheap(shell_path):
     """Turn on full page heap verification on Windows.
 

@@ -108,7 +108,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
 
     assert isinstance(infilename, Path)
 
-    combos = shell_flags.basic_flag_sets(jsEngine)
+    combos = shell_flags.basic_flag_sets()
 
     if quickMode:
         # Only used during initial fuzzing. Allowed to have false negatives.
@@ -120,6 +120,11 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         "--no-wasm",
         "--no-wasm-ion",
         "--no-wasm-baseline",
+        "--wasm-compiler=baseline+ion",
+        "--wasm-compiler=baseline",
+        "--wasm-compiler=ion",
+        "--wasm-compiler=cranelift",
+        "--wasm-compiler=baseline+cranelift",
     })
     if flags:
         combos.insert(0, flags)
@@ -219,8 +224,10 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
                 if showDetailedDiffs:
                     LOG_COMPARE_JIT.info(summary)
                     LOG_COMPARE_JIT.info("")
+                assert jsEngine.with_suffix(".fuzzmanagerconf").is_file()
                 # Create a crashInfo object with empty stdout, and stderr showing diffs
-                pc = ProgramConfiguration.fromBinary(str(jsEngine))  # pylint: disable=invalid-name
+                # pylint: disable=invalid-name
+                pc = ProgramConfiguration.fromBinary(str(jsEngine.parent / jsEngine.stem))
                 pc.addProgramArguments(flags)
                 crashInfo = Crash_Info.CrashInfo.fromRawCrashData([], summary, pc)  # pylint: disable=invalid-name
                 return js_interesting.JS_OVERALL_MISMATCH, crashInfo

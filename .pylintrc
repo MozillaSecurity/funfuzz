@@ -27,6 +27,9 @@ load-plugins=pylint.extensions.bad_builtin,
              pylint.extensions.overlapping_exceptions,
              pylint.extensions.redefined_variable_type
 
+# Pickle collected data for later comparisons.
+persistent=no
+
 [MESSAGES CONTROL]
 
 # Disable the message, report, category or checker with the given id(s). You
@@ -135,6 +138,10 @@ accept-no-return-doc=no
 # Whether to accept totally missing yields documentation in the docstring of a
 # generator.
 accept-no-yields-doc=no
+
+[REPORTS]
+# Activate the evaluation score.
+score=no
 
 [SIMILARITIES]
 

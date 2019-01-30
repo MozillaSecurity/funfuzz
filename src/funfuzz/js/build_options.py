@@ -30,17 +30,16 @@ class Randomizer:  # pylint: disable=missing-docstring
     def __init__(self):
         self.options = []
 
-    def add(self, name, fastDeviceWeight, slowDeviceWeight):  # pylint: disable=invalid-name,missing-docstring
+    def add(self, name, weight):  # pylint: disable=invalid-name,missing-docstring
         self.options.append({
             "name": name,
-            "fastDeviceWeight": fastDeviceWeight,
-            "slowDeviceWeight": slowDeviceWeight,
+            "weight": weight,
         })
 
     def getRandomSubset(self):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc
         # pylint: disable=missing-return-type-doc
         def getWeight(o):  # pylint: disable=invalid-name,missing-return-doc
-            return o["slowDeviceWeight"]
+            return o["weight"]
         return [o["name"] for o in self.options if chance(getWeight(o))]
 
 
@@ -50,13 +49,13 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
     parser = argparse.ArgumentParser(description="Usage: Don't use this directly")
     randomizer = Randomizer()
 
-    def randomizeBool(name, fastDeviceWeight, slowDeviceWeight, **kwargs):  # pylint: disable=invalid-name
+    def randomizeBool(name, weight, **kwargs):  # pylint: disable=invalid-name
         # pylint: disable=missing-param-doc,missing-type-doc
         """Add a randomized boolean option that defaults to False.
 
         Option also has a [weight] chance of being changed to True when using --random.
         """
-        randomizer.add(name[-1], fastDeviceWeight, slowDeviceWeight)
+        randomizer.add(name[-1], weight)
         parser.add_argument(*name, action="store_true", default=False, **kwargs)
 
     parser.add_argument("--random",
@@ -74,40 +73,40 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
                         help="Define the path to a single JS patch. Ensure mq is installed.")
 
     # Basic spidermonkey options
-    randomizeBool(["--32"], 0.5, 0.5,
+    randomizeBool(["--32"], 0.5,
                   dest="enable32",
                   help="Build 32-bit shells, but if not enabled, 64-bit shells are built.")
-    randomizeBool(["--enable-debug"], 0.5, 0.5,
+    randomizeBool(["--enable-debug"], 0.5,
                   dest="enableDbg",
                   help='Build shells with --enable-debug. Defaults to "%(default)s". '
                        "Currently defaults to True in configure.in on mozilla-central.")
-    randomizeBool(["--disable-debug"], 0, 0,
+    randomizeBool(["--disable-debug"], 0,
                   dest="disableDbg",
                   help='Build shells with --disable-debug. Defaults to "%(default)s". '
                        "Currently defaults to True in configure.in on mozilla-central.")
-    randomizeBool(["--enable-optimize"], 0, 0,
+    randomizeBool(["--enable-optimize"], 0,
                   dest="enableOpt",
                   help='Build shells with --enable-optimize. Defaults to "%(default)s".')
-    randomizeBool(["--disable-optimize"], 0.1, 0.01,
+    randomizeBool(["--disable-optimize"], 0.1,
                   dest="disableOpt",
                   help='Build shells with --disable-optimize. Defaults to "%(default)s".')
-    randomizeBool(["--enable-profiling"], 0, 0,
+    randomizeBool(["--enable-profiling"], 0,
                   dest="enableProfiling",
                   help='Build shells with --enable-profiling. Defaults to "%(default)s". '
                        "Currently defaults to True in configure.in on mozilla-central.")
-    randomizeBool(["--disable-profiling"], 0.5, 0,
+    randomizeBool(["--disable-profiling"], 0.5,
                   dest="disableProfiling",
                   help='Build with profiling off. Defaults to "True" on Linux, else "%(default)s".')
 
     # Alternative compiler for Linux. Clang is always turned on, on Win and Mac.
-    randomizeBool(["--build-with-clang"], 0.5, 0.5,
+    randomizeBool(["--build-with-clang"], 0.5,
                   dest="buildWithClang",
                   help='Build with clang. Defaults to "True" on Win and Mac, "%(default)s" otherwise.')
     # Memory debuggers
-    randomizeBool(["--build-with-asan"], 0.3, 0,
+    randomizeBool(["--build-with-asan"], 0.3,
                   dest="buildWithAsan",
                   help='Build with clang AddressSanitizer support. Defaults to "%(default)s".')
-    randomizeBool(["--build-with-valgrind"], 0.2, 0.05,
+    randomizeBool(["--build-with-valgrind"], 0.2,
                   dest="buildWithVg",
                   help='Build with valgrind.h bits. Defaults to "%(default)s". '
                        "Requires --enable-hardfp for ARM platforms.")
@@ -120,7 +119,7 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
                         help="Run the shell under Valgrind. Requires --build-with-valgrind.")
 
     # Misc spidermonkey options
-    randomizeBool(["--enable-more-deterministic"], 0.75, 0.5,
+    randomizeBool(["--enable-more-deterministic"], 0.75,
                   dest="enableMoreDeterministic",
                   help='Build shells with --enable-more-deterministic. Defaults to "%(default)s".')
     parser.add_argument("--enable-oom-breakpoint",  # Extra debugging help for OOM assertions
@@ -133,11 +132,11 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
                         action="store_true",
                         default=False,
                         help='Build shells using --without-intl-api. Defaults to "%(default)s".')
-    randomizeBool(["--enable-simulator=arm"], 0.3, 0,
+    randomizeBool(["--enable-simulator=arm"], 0.3,
                   dest="enableSimulatorArm32",
                   help="Build shells with --enable-simulator=arm, only applicable to 32-bit shells. "
                        'Defaults to "%(default)s".')
-    randomizeBool(["--enable-simulator=arm64"], 0.3, 0,
+    randomizeBool(["--enable-simulator=arm64"], 0.3,
                   dest="enableSimulatorArm64",
                   help="Build shells with --enable-simulator=arm64, only applicable to 64-bit shells. "
                        'Defaults to "%(default)s".')
@@ -365,10 +364,6 @@ def get_random_valid_repo(tree):
 def main():  # pylint: disable=missing-docstring
     LOG_BUILD_OPTS.info("Here are some sample random build configurations that can be generated:")
     parser, randomizer = addParserOptions()
-    build_options = parser.parse_args()
-
-    if build_options.enableArmSimulatorObsolete:
-        build_options.enableSimulatorArm32 = True
 
     for _ in range(30):
         build_options = generateRandomConfigurations(parser, randomizer)
@@ -377,7 +372,7 @@ def main():  # pylint: disable=missing-docstring
     LOG_BUILD_OPTS.info("")
     LOG_BUILD_OPTS.info("Running this file directly doesn't do anything, but here's our subparser help:")
     LOG_BUILD_OPTS.info("")
-    parse_shell_opts("--help")
+    parser.parse_args()
 
 
 if __name__ == "__main__":

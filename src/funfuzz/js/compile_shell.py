@@ -356,10 +356,14 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         if shell.build_opts.buildWithClang:
             cfg_env["CC"] = cfg_env["HOST_CC"] = f"clang {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
             cfg_env["CXX"] = cfg_env["HOST_CXX"] = f"clang++ {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
-        else:
-            # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux.
+        # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux. (no matter Clang or GCC)
+        elif hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(e1cac03485d9)"):
+            # m-c rev 301874:e1cac03485d9, fx50 is the first rev that works with Clang 6.0 on Ubuntu 18.04
             cfg_env["CC"] = f"gcc -m32 {SSE2_FLAGS}"
             cfg_env["CXX"] = f"g++ -m32 {SSE2_FLAGS}"
+        else:
+            cfg_env["CC"] = f"clang -m32 {SSE2_FLAGS}"
+            cfg_env["CXX"] = f"clang++ -m32 {SSE2_FLAGS}"
         if shell.build_opts.buildWithAsan:
             cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
             cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
@@ -482,6 +486,10 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     cfg_cmds.append("--enable-gczeal")
     cfg_cmds.append("--enable-debug-symbols")  # gets debug symbols on opt shells
     cfg_cmds.append("--disable-tests")
+
+    # Disable cranelift if repository revision is after m-c rev 428135:6fcf54117a3b, fx63
+    if not hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(6fcf54117a3b)"):
+        cfg_cmds.append("--disable-cranelift")
 
     if platform.system() == "Windows":
         # FIXME: Replace this with shlex's quote  # pylint: disable=fixme
@@ -676,6 +684,15 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if shell.build_opts.patch_file:
             hg_helpers.patch_hg_repo_with_mq(shell.build_opts.patch_file, shell.get_repo_dir())
 
+        if (platform.system() == "Linux" and
+                parse_version(subprocess.run(["sed", "--version"], stdout=subprocess.PIPE)
+                              .stdout.decode("utf-8", errors="replace").split()[3])
+                >= parse_version("4.3") and
+                hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(ebcbf47a83e7)")):
+            print("Patching for Linux systems with sed >= 4.3 ...", flush=True)
+            sm_compile_helpers.icu_m4_replace(Path(shell.get_repo_dir()))  # Patch the icu.m4 file
+            print("Patching completed.", flush=True)
+
         cfgJsCompile(shell)
         if platform.system() == "Windows":
             sm_compile_helpers.verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
@@ -696,6 +713,15 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             s3cache_obj.uploadFileToS3(f"{shell.get_shell_cache_js_bin_path()}.busted")
         raise
     finally:
+        if (platform.system() == "Linux" and
+                parse_version(subprocess.run(["sed", "--version"], stdout=subprocess.PIPE)
+                              .stdout.decode("utf-8", errors="replace").split()[3])
+                >= parse_version("4.3") and
+                hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(ebcbf47a83e7)")):
+            print("Undo-ing patch for Linux systems with sed >= 4.3 ...", flush=True)
+            sm_compile_helpers.icu_m4_undo(Path(shell.get_repo_dir()))  # Undo the icu.m4 patch
+            print("Undo completed.", flush=True)
+
         if shell.build_opts.patch_file:
             hg_helpers.qpop_qrm_applied_patch(shell.build_opts.patch_file, shell.get_repo_dir())
 

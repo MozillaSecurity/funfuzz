@@ -83,16 +83,16 @@ class ShellFlagsTests(CompileShellTests):
         ShellFlagsTests.monkeypatch.setattr(js.shell_flags, "chance", mock_chance)
 
         all_flags = js.shell_flags.add_random_wasm_flags(self.test_shell_compile(), [])
+        assert "--wasm-compiler=baseline+ion" in all_flags
         assert "--wasm-gc" in all_flags
-        assert "--no-wasm-baseline" in all_flags
-        assert "--no-wasm-ion" in all_flags
         assert "--test-wasm-await-tier2" in all_flags
+        assert "--no-asmjs" in all_flags
 
-    @pytest.mark.slow
-    def test_basic_flag_sets(self):
+    @staticmethod
+    def test_basic_flag_sets():
         """Test that we are able to obtain a basic set of shell runtime flags for fuzzing."""
-        important_flag_set = ["--fuzzing-safe", "--no-threads", "--ion-eager"]  # Important flag set combination
-        assert important_flag_set in js.shell_flags.basic_flag_sets(self.test_shell_compile())
+        important_flag_set = ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"]
+        assert important_flag_set in js.shell_flags.basic_flag_sets()
 
     def test_chance(self):
         """Test that the chance function works as intended."""
@@ -121,7 +121,6 @@ class ShellFlagsTests(CompileShellTests):
         assert "--no-native-regexp" in all_flags
         assert "--no-ggc" in all_flags
         assert "--no-baseline" in all_flags
-        assert "--no-asmjs" in all_flags
 
     @pytest.mark.slow
     def test_shell_supports_flag(self):
