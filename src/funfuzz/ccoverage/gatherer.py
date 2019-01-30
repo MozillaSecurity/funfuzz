@@ -18,6 +18,7 @@ from ..js.loop import many_timed_runs
 from ..util import create_collector
 
 RUN_COV_LOG = logging.getLogger("funfuzz")
+RUN_COV_TIME = 85000  # 85,000 seconds is just under a day
 
 
 def gather_coverage(dirpath):
@@ -36,9 +37,8 @@ def gather_coverage(dirpath):
     loop_args = ["--compare-jit", "--random-flags",
                  str(JS_SHELL_DEFAULT_TIMEOUT), "KNOWNPATH", str(cov_build_bin_path), "--fuzzing-safe"]
 
-    cov_timeout = 85000  # 85,000 seconds is just under a day
-    RUN_COV_LOG.info("Fuzzing a coverage build for %s seconds...", str(cov_timeout))
-    many_timed_runs(cov_timeout, dirpath, loop_args, create_collector.make_collector(), True)
+    RUN_COV_LOG.info("Fuzzing a coverage build for %s seconds...", str(RUN_COV_TIME))
+    many_timed_runs(RUN_COV_TIME, dirpath, loop_args, create_collector.make_collector(), True)
     RUN_COV_LOG.info("Finished fuzzing the coverage build")
 
     fm_conf = configparser.ConfigParser()
