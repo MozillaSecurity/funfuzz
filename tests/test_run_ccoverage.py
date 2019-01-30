@@ -16,6 +16,7 @@ import pytest
 import distro
 from funfuzz import run_ccoverage
 from funfuzz.ccoverage import gatherer
+from funfuzz.ccoverage import reporter
 
 FUNFUZZ_TEST_LOG = logging.getLogger("run_ccoverage_test")
 logging.basicConfig(level=logging.DEBUG)
@@ -37,9 +38,10 @@ class RunCcoverageTests(unittest.TestCase):
         monkey = MonkeyPatch()
         with monkey.context() as monkey_context:
             monkey_context.setattr(gatherer, "RUN_COV_TIME", 3)
-            monkey_context.setattr("funfuzz.ccoverage.reporter.report_coverage",
-                                   lambda x: FUNFUZZ_TEST_LOG.info("Simulation: cov_result_file report is: %s", x))
-            monkey_context.setattr("funfuzz.ccoverage.reporter.disable_pool",
-                                   lambda: FUNFUZZ_TEST_LOG.info("Simulation: Pool disabled"))
+            assert gatherer.RUN_COV_TIME == 3
+            monkey_context.setattr(reporter, "report_coverage", lambda _: "hit")
+            assert reporter.report_coverage("") == "hit"
+            monkey_context.setattr(reporter, "disable_pool", lambda: "hit")
+            assert reporter.disable_pool() == "hit"
 
             run_ccoverage.main(argparse_args=["--url", build_url, "--report"])
