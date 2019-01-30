@@ -50,7 +50,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
     print()
 
     # pylint: disable=literal-comparison
-    if (bisectRepo is not "none" and targetTime >= 3 * 60 * 60 and
+    if (bisectRepo != "none" and targetTime >= 3 * 60 * 60 and
             build_options_str is not None and testJsShellOrXpcshell(jsEngine) != "xpcshell"):
         autobisectCmd = (  # pylint: disable=invalid-name
             [sys.executable, "-u", "-m", "funfuzz.autobisectjs"] +
