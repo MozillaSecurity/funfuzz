@@ -355,10 +355,14 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         if shell.build_opts.buildWithClang:
             cfg_env["CC"] = cfg_env["HOST_CC"] = f"clang {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
             cfg_env["CXX"] = cfg_env["HOST_CXX"] = f"clang++ {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
-        else:
-            # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux.
+        # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux. (no matter Clang or GCC)
+        elif hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(e1cac03485d9)"):
+            # m-c rev 301874:e1cac03485d9, fx50 is the first rev that works with Clang 6.0 on Ubuntu 18.04
             cfg_env["CC"] = f"gcc -m32 {SSE2_FLAGS}"
             cfg_env["CXX"] = f"g++ -m32 {SSE2_FLAGS}"
+        else:
+            cfg_env["CC"] = f"clang -m32 {SSE2_FLAGS}"
+            cfg_env["CXX"] = f"clang++ -m32 {SSE2_FLAGS}"
         if shell.build_opts.buildWithAsan:
             cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
             cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
@@ -480,8 +484,11 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         cfg_cmds.append("--with-ccache")
     cfg_cmds.append("--enable-gczeal")
     cfg_cmds.append("--enable-debug-symbols")  # gets debug symbols on opt shells
-    cfg_cmds.append("--disable-cranelift")
     cfg_cmds.append("--disable-tests")
+
+    # Disable cranelift if repository revision is after m-c rev 428135:6fcf54117a3b, fx63
+    if not hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(6fcf54117a3b)"):
+        cfg_cmds.append("--disable-cranelift")
 
     if platform.system() == "Windows":
         # FIXME: Replace this with shlex's quote  # pylint: disable=fixme
