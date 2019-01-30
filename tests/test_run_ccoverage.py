@@ -10,9 +10,14 @@ import logging
 import sys
 import unittest
 
+from _pytest.monkeypatch import MonkeyPatch
+from pkg_resources import parse_version
 import pytest
 
+import distro
 from funfuzz import run_ccoverage
+from funfuzz.ccoverage import gatherer
+from funfuzz.ccoverage import reporter
 
 if sys.version_info.major == 2:
     import logging_tz  # pylint: disable=import-error
@@ -33,9 +38,23 @@ logging.getLogger("flake8").setLevel(logging.WARNING)
 
 class RunCcoverageTests(unittest.TestCase):
     """"TestCase class for functions in run_ccoverage.py"""
-    @pytest.mark.skip(reason="disable for now until actual use")
-    def test_main(self):  # pylint: disable=no-self-use
+
+    @staticmethod
+    @pytest.mark.skipif(distro.linux_distribution()[0] == "Ubuntu" and
+                        parse_version(distro.linux_distribution()[1]) < parse_version("16.04"),
+                        reason="Code coverage binary crashes in 14.04 Trusty but works in 16.04 Xenial and up")
+    @pytest.mark.slow
+    def test_main():
         """Run run_ccoverage with test parameters."""
         build_url = "https://build.fuzzing.mozilla.org/builds/jsshell-mc-64-opt-gcov.zip"
-        # run_ccoverage's main method does not actually return anything.
-        assert not run_ccoverage.main(argparse_args=["--url", build_url])
+
+        monkey = MonkeyPatch()
+        with monkey.context() as monkey_context:
+            monkey_context.setattr(gatherer, "RUN_COV_TIME", 3)
+            assert gatherer.RUN_COV_TIME == 3
+            monkey_context.setattr(reporter, "report_coverage", lambda _: "hit")
+            assert reporter.report_coverage("") == "hit"
+            monkey_context.setattr(reporter, "disable_pool", lambda: "hit")
+            assert reporter.disable_pool() == "hit"
+
+            run_ccoverage.main(argparse_args=["--url", build_url, "--report"])
