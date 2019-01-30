@@ -19,11 +19,6 @@ matrix:
           packages:
             - autoconf2.13
             - expect-dev  # unbuffer requires this
-            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
-            # - g++-6
-            # - g++-6-multilib
-            # - gcc-6
-            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
@@ -42,11 +37,6 @@ matrix:
           packages:
             - autoconf2.13
             - expect-dev  # unbuffer requires this
-            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
-            # - g++-6
-            # - g++-6-multilib
-            # - gcc-6
-            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
@@ -66,11 +56,6 @@ matrix:
           packages:
             - autoconf2.13
             - expect-dev  # unbuffer requires this
-            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
-            # - g++-6
-            # - g++-6-multilib
-            # - gcc-6
-            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
@@ -89,11 +74,6 @@ matrix:
           packages:
             - autoconf2.13
             - expect-dev  # unbuffer requires this
-            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
-            # - g++-6
-            # - g++-6-multilib
-            # - gcc-6
-            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
@@ -131,11 +111,6 @@ matrix:
           packages:
             - autoconf2.13
             - expect-dev  # unbuffer requires this
-            # Travis Xenial does not have ubuntu-toolchain-r-test yet: https://git.io/fNfj9
-            # - g++-6
-            # - g++-6-multilib
-            # - gcc-6
-            # - gcc-6-multilib
             - gdb
             - lib32z1  # needed by 32-bit builds
             - libc6-dbg  # needed by Valgrind
@@ -143,19 +118,6 @@ matrix:
   allow_failures:
     - python: "nightly"
 before_install:
-  # Use GCC 6
-  # - |
-  #   if [ `which gcc-6` ] && [ `which g++-6` ] ; then
-  #     mkdir -p latest-gcc-symlinks  # See https://git.io/vx1sH
-  #     ln -s /usr/bin/g++-6 latest-gcc-symlinks/g++
-  #     ln -s /usr/bin/gcc-6 latest-gcc-symlinks/gcc
-  #     PATH=$PWD/latest-gcc-symlinks:$PATH
-  #     # Be explicit for the Mozilla build system to pick up GCC 6
-  #     export CC=$PWD/latest-gcc-symlinks/gcc
-  #     export CXX=$PWD/latest-gcc-symlinks/g++
-  #   else
-  #     echo 'gcc-6 and g++-6 are both not found...'
-  #   fi
   - |
     if [ $TRAVIS_OS_NAME == "linux" ] ; then
       gcc --version
