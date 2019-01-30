@@ -9,8 +9,6 @@
 import io
 import logging
 from pathlib import Path
-import tempfile
-import unittest
 
 from funfuzz.util import fork_join
 
@@ -19,16 +17,16 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
-class ForkJoinTests(unittest.TestCase):
-    """"TestCase class for functions in fork_join.py"""
-    @staticmethod
-    def test_log_name():
-        """Test that incrementally numbered wtmp directories can be created"""
-        with tempfile.TemporaryDirectory(suffix="make_wtmp_dir_test") as tmp_dir:
-            tmp_dir = Path(tmp_dir)
-            log_path = tmp_dir / "forkjoin-1-out.txt"
+def test_log_name(tmpdir):
+    """Test that incrementally numbered wtmp directories can be created.
 
-            with io.open(str(log_path), "w", encoding="utf-8", errors="replace") as f:
-                f.writelines("test")
+    Args:
+        tmpdir (class): Fixture from pytest for creating a temporary directory
+    """
+    tmpdir = Path(tmpdir)
+    log_path = tmpdir / "forkjoin-1-out.txt"
 
-            assert fork_join.log_name(tmp_dir, 1, "out") == str(log_path)
+    with io.open(str(log_path), "w", encoding="utf-8", errors="replace") as f:
+        f.writelines("test")
+
+    assert fork_join.log_name(tmpdir, 1, "out") == str(log_path)

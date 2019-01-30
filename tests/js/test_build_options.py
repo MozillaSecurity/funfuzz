@@ -8,9 +8,7 @@
 
 import logging
 from pathlib import Path
-import unittest
 
-from _pytest.monkeypatch import MonkeyPatch
 import pytest
 
 from funfuzz.js import build_options
@@ -18,6 +16,8 @@ from funfuzz.js import build_options
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.ERROR)
+
+TREES_PATH = Path.home() / "trees"
 
 
 def mock_chance(i):
@@ -32,15 +32,14 @@ def mock_chance(i):
     return i > 0
 
 
-class BuildOptionsTests(unittest.TestCase):
-    """"TestCase class for functions in build_options.py"""
-    monkeypatch = MonkeyPatch()
-    trees_location = Path.home() / "trees"
+# pylint: disable=no-member
+@pytest.mark.skipif(not (TREES_PATH / "mozilla-central" / ".hg" / "hgrc").is_file(),
+                    reason="requires a Mozilla Mercurial repository")
+def test_get_random_valid_repo(monkeypatch):
+    """Test that a valid repository can be obtained.
 
-    # pylint: disable=no-member
-    @pytest.mark.skipif(not (trees_location / "mozilla-central" / ".hg" / "hgrc").is_file(),
-                        reason="requires a Mozilla Mercurial repository")
-    def test_get_random_valid_repo(self):
-        """Test that a valid repository can be obtained."""
-        BuildOptionsTests.monkeypatch.setattr(build_options, "chance", mock_chance)
-        assert build_options.get_random_valid_repo(self.trees_location) == self.trees_location / "mozilla-central"
+    Args:
+        monkeypatch (class): For monkeypatching some variables/functions
+    """
+    monkeypatch.setattr(build_options, "chance", mock_chance)
+    assert build_options.get_random_valid_repo(TREES_PATH) == TREES_PATH / "mozilla-central"
