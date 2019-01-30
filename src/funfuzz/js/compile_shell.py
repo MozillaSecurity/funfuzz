@@ -689,9 +689,9 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
                               .stdout.decode("utf-8", errors="replace").split()[3])
                 >= parse_version("4.3") and
                 hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(ebcbf47a83e7)")):
-            print("Patching for Linux systems with sed >= 4.3 ...", flush=True)
+            LOG_COMPILE_SHELL.info("Patching for Linux systems with sed >= 4.3 ...")
             sm_compile_helpers.icu_m4_replace(Path(shell.get_repo_dir()))  # Patch the icu.m4 file
-            print("Patching completed.", flush=True)
+            LOG_COMPILE_SHELL.info("Patching completed.")
 
         cfgJsCompile(shell)
         if platform.system() == "Windows":
@@ -718,9 +718,9 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
                               .stdout.decode("utf-8", errors="replace").split()[3])
                 >= parse_version("4.3") and
                 hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(ebcbf47a83e7)")):
-            print("Undo-ing patch for Linux systems with sed >= 4.3 ...", flush=True)
+            LOG_COMPILE_SHELL.info("Undo-ing patch for Linux systems with sed >= 4.3 ...")
             sm_compile_helpers.icu_m4_undo(Path(shell.get_repo_dir()))  # Undo the icu.m4 patch
-            print("Undo completed.", flush=True)
+            LOG_COMPILE_SHELL.info("Undo completed.")
 
         if shell.build_opts.patch_file:
             hg_helpers.qpop_qrm_applied_patch(shell.build_opts.patch_file, shell.get_repo_dir())
