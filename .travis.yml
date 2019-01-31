@@ -162,13 +162,13 @@ before_script:
   - |
     if [ ! $TRAVIS_OS_NAME == "windows" ] ; then
       # Run shellcheck on shell scripts
-      (find . -type d \( -name venv \) -prune -o -type f -name "*.sh" -print0 | xargs -n 1 -0 shellcheck; false; exit;)
+      (find . -type d \( -name venv \) -prune -o -type f -name "*.sh" -print0 | xargs -n 1 -0 shellcheck; exit;)
     fi
   - if [ ! $TRAVIS_OS_NAME == "windows" ] ; then travis_retry python -m pip install --upgrade bashate; fi
   - |
     if [ ! $TRAVIS_OS_NAME == "windows" ] ; then
       # Run bashate on shell scripts
-      (find . -type d \( -name venv \) -prune -o -type f -name "*.sh" -print0 | xargs -n 1 -0 bashate; false; exit;)
+      (find . -type d \( -name venv \) -prune -o -type f -name "*.sh" -print0 | xargs -n 1 -0 bashate; exit;)
     fi
 script:
   # To run everything locally in local funfuzz github repository directory:
