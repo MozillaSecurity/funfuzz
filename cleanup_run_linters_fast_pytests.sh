@@ -46,7 +46,7 @@ fi
 
 # Run pylint
 if $PY3 -m pylint --version > /dev/null 2>&1; then
-    for i in $( ls -F "$(pwd)"| grep "src/\|tests/" ); do
+    for i in $(echo ./*/); do
         $PY3 -m pylint "$i" || {
             PYLINT_EC=$?; printf '%s\n' "pylint found errors." >&2;
         };
