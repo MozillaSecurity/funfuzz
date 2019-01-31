@@ -7,6 +7,7 @@
 """Test the shell_flags.py file."""
 
 import logging
+import random
 
 import pytest
 
@@ -19,18 +20,6 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
-def mock_chance(i):
-    """Overwrite the chance function to return True or False depending on a specific condition.
-
-    Args:
-        i (float): Intended probability between 0 < i < 1
-
-    Returns:
-        bool: True if i > 0, False otherwise.
-    """
-    return i > 0
-
-
 @pytest.mark.slow
 def test_add_random_arch_flags(monkeypatch):
     """Test that we are able to obtain add shell runtime flags related to architecture.
@@ -38,7 +27,7 @@ def test_add_random_arch_flags(monkeypatch):
     Args:
         monkeypatch (class): For monkeypatching some variables/functions
     """
-    monkeypatch.setattr(js.shell_flags, "chance", mock_chance)
+    monkeypatch.setattr(random, "random", lambda: 0)
 
     all_flags = js.shell_flags.add_random_arch_flags(test_shell_compile(), [])
     assert "--enable-avx" in all_flags
@@ -58,7 +47,7 @@ def test_add_random_ion_flags(monkeypatch):
     Args:
         monkeypatch (class): For monkeypatching some variables/functions
     """
-    monkeypatch.setattr(js.shell_flags, "chance", mock_chance)
+    monkeypatch.setattr(random, "random", lambda: 0)
 
     all_flags = js.shell_flags.add_random_ion_flags(test_shell_compile(), [])
     assert "--cache-ir-stubs=on" in all_flags
@@ -90,7 +79,7 @@ def test_add_random_wasm_flags(monkeypatch):
     Args:
         monkeypatch (class): For monkeypatching some variables/functions
     """
-    monkeypatch.setattr(js.shell_flags, "chance", mock_chance)
+    monkeypatch.setattr(random, "random", lambda: 0)
 
     all_flags = js.shell_flags.add_random_wasm_flags(test_shell_compile(), [])
     assert "--wasm-compiler=baseline+ion" in all_flags
@@ -105,19 +94,6 @@ def test_basic_flag_sets():
     assert important_flag_set in js.shell_flags.basic_flag_sets()
 
 
-def test_chance(monkeypatch):
-    """Test that the chance function works as intended.
-
-    Args:
-        monkeypatch (class): Fixture from pytest for monkeypatching some variables/functions
-    """
-    monkeypatch.setattr(js.shell_flags, "chance", mock_chance)
-    assert js.shell_flags.chance(0.6)
-    assert js.shell_flags.chance(0.1)
-    assert not js.shell_flags.chance(0)
-    assert not js.shell_flags.chance(-0.2)
-
-
 @pytest.mark.slow
 def test_random_flag_set(monkeypatch):
     """Test runtime flags related to SpiderMonkey.
@@ -125,7 +101,7 @@ def test_random_flag_set(monkeypatch):
     Args:
         monkeypatch (class): For monkeypatching some variables/functions
     """
-    monkeypatch.setattr(js.shell_flags, "chance", mock_chance)
+    monkeypatch.setattr(random, "random", lambda: 0)
 
     all_flags = js.shell_flags.random_flag_set(test_shell_compile())
     assert "--fuzzing-safe" in all_flags

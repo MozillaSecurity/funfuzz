@@ -8,6 +8,7 @@
 
 import logging
 from pathlib import Path
+import random
 
 import pytest
 
@@ -20,16 +21,17 @@ logging.getLogger("flake8").setLevel(logging.ERROR)
 TREES_PATH = Path.home() / "trees"
 
 
-def mock_chance(i):
-    """Overwrite the chance function to return True or False depending on a specific condition.
+def test_chance(monkeypatch):
+    """Test that the chance function works as intended.
 
     Args:
-        i (float): Intended probability between 0 < i < 1
-
-    Returns:
-        bool: True if i > 0, False otherwise.
+        monkeypatch (class): Fixture from pytest for monkeypatching some variables/functions
     """
-    return i > 0
+    monkeypatch.setattr(random, "random", lambda: 0)
+    assert build_options.chance(0.6)
+    assert build_options.chance(0.1)
+    assert not build_options.chance(0)
+    assert not build_options.chance(-0.2)
 
 
 # pylint: disable=no-member
@@ -41,5 +43,5 @@ def test_get_random_valid_repo(monkeypatch):
     Args:
         monkeypatch (class): For monkeypatching some variables/functions
     """
-    monkeypatch.setattr(build_options, "chance", mock_chance)
+    monkeypatch.setattr(random, "random", lambda: 0)
     assert build_options.get_random_valid_repo(TREES_PATH) == TREES_PATH / "mozilla-central"

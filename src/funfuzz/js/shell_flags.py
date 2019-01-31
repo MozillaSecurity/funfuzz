@@ -13,6 +13,7 @@ import random
 import re
 
 from . import inspect_shell
+from .build_options import chance
 
 
 @lru_cache(maxsize=None)
@@ -28,18 +29,6 @@ def shell_supports_flag(shell_path, flag):
     """
     out = inspect_shell.shellSupports(shell_path, [flag, "-e", "42"])
     return out
-
-
-def chance(i):
-    """Returns a random boolean result based on an input probability.
-
-    Args:
-        i (float): Intended probability.
-
-    Returns:
-        bool: Result based on the input probability
-    """
-    return random.random() < i
 
 
 def add_random_arch_flags(shell_path, input_list=False):
