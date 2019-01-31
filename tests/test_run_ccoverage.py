@@ -7,7 +7,6 @@
 """Test the run_ccoverage.py file."""
 
 import logging
-import sys
 import unittest
 
 from _pytest.monkeypatch import MonkeyPatch
