@@ -20,7 +20,7 @@ from funfuzz.ccoverage import reporter
 
 FUNFUZZ_TEST_LOG = logging.getLogger("run_ccoverage_test")
 logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("flake8").setLevel(logging.WARNING)
+logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
 class RunCcoverageTests(unittest.TestCase):

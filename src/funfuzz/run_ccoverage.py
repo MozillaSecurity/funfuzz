@@ -55,7 +55,7 @@ def main(argparse_args=None):
     logging.basicConfig(datefmt="%Y-%m-%d %H:%M:%S",
                         format="%(asctime)s %(levelname)-8s %(message)s",
                         level=logging.DEBUG if args.verbose else logging.INFO)
-    logging.getLogger("flake8").setLevel(logging.WARNING)
+    logging.getLogger("flake8").setLevel(logging.ERROR)
 
     with tempfile.TemporaryDirectory(suffix="funfuzzcov") as dirpath:
         dirpath = Path(dirpath)
