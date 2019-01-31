@@ -16,6 +16,7 @@ from funfuzz.js import link_fuzzer
 from funfuzz.util.logging_helpers import get_logger
 
 LOG_TEST_LINK_FUZZER = get_logger(__name__, level=logging.DEBUG)
+logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
 class LinkFuzzerTests(unittest.TestCase):

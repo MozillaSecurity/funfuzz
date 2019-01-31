@@ -52,6 +52,7 @@ def main(argparse_args=None):
         sys.exit("Coverage mode must be run on Linux.")
     args = parse_args(argparse_args)
     log_run_cov = get_logger(__name__, level=logging.DEBUG if args.verbose else logging.INFO)
+    logging.getLogger("flake8").setLevel(logging.ERROR)
 
     with tempfile.TemporaryDirectory(suffix="funfuzzcov") as dirpath:
         dirpath = Path(dirpath)

@@ -19,7 +19,7 @@ from .test_compile_shell import CompileShellTests
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("flake8").setLevel(logging.WARNING)
+logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
 @pytest.mark.skipif(platform.system() != "Linux", reason="Only Linux binaryen binary is obtained for now")

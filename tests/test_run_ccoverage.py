@@ -19,21 +19,14 @@ from funfuzz import run_ccoverage
 from funfuzz.ccoverage import gatherer
 from funfuzz.ccoverage import reporter
 
-if sys.version_info.major == 2:
-    import logging_tz  # pylint: disable=import-error
-
 FUNFUZZ_TEST_LOG = logging.getLogger(__name__)
 FUNFUZZ_TEST_LOG.setLevel(logging.DEBUG)
 LOG_HANDLER = logging.StreamHandler()
-if sys.version_info.major == 2:
-    LOG_FORMATTER = logging_tz.LocalFormatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                              fmt="%(asctime)s %(levelname)-8s %(message)s")
-else:
-    LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
-                                      fmt="%(asctime)s %(levelname)-8s %(message)s")
+LOG_FORMATTER = logging.Formatter(datefmt="[%Y-%m-%d %H:%M:%S %z]",
+                                  fmt="%(asctime)s %(levelname)-8s %(message)s")
 LOG_HANDLER.setFormatter(LOG_FORMATTER)
 FUNFUZZ_TEST_LOG.addHandler(LOG_HANDLER)
-logging.getLogger("flake8").setLevel(logging.WARNING)
+logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
 class RunCcoverageTests(unittest.TestCase):

@@ -11,7 +11,7 @@ import unittest
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
 logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("flake8").setLevel(logging.WARNING)
+logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
 class GathererTests(unittest.TestCase):

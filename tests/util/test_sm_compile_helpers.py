@@ -20,6 +20,7 @@ from funfuzz import util
 from funfuzz.util.logging_helpers import get_logger
 
 LOG_TEST_SM_COMPILE_HELPERS = get_logger(__name__, level=logging.DEBUG)
+logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
 class SmCompileHelpersTests(unittest.TestCase):

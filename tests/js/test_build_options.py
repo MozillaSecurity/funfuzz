@@ -17,6 +17,7 @@ from funfuzz.js import build_options
 from funfuzz.util.logging_helpers import get_logger
 
 LOG_TEST_BUILD_OPTS = get_logger(__name__, level=logging.DEBUG)
+logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
 def mock_chance(i):

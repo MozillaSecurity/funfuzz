@@ -19,6 +19,7 @@ from funfuzz import js
 from funfuzz import util
 
 LOG_TEST_COMPILE_SHELL = util.logging_helpers.get_logger(__name__, level=logging.DEBUG)
+logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
 class CompileShellTests(unittest.TestCase):

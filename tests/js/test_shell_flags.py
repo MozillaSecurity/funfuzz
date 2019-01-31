@@ -17,6 +17,7 @@ from funfuzz.util.logging_helpers import get_logger
 from .test_compile_shell import CompileShellTests
 
 LOG_TEST_SHELL_FLAGS = get_logger(__name__, level=logging.DEBUG)
+logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
 def mock_chance(i):

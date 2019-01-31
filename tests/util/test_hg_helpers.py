@@ -16,6 +16,7 @@ from funfuzz.util import hg_helpers
 from funfuzz.util.logging_helpers import get_logger
 
 LOG_TEST_HG_HELPERS = get_logger(__name__, level=logging.DEBUG)
+logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
 class HgHelpersTests(unittest.TestCase):

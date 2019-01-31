@@ -15,6 +15,7 @@ from funfuzz.util import os_ops
 from funfuzz.util.logging_helpers import get_logger
 
 LOG_TEST_OS_OPS = get_logger(__name__, level=logging.DEBUG)
+logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
 class OsOpsTests(unittest.TestCase):
