@@ -20,10 +20,12 @@ import fasteners
 import requests
 
 from ..util import sm_compile_helpers
+from ..util.logging_helpers import get_logger
 
 BINARYEN_VERSION = 64
 BINARYEN_URL = (f"https://github.com/WebAssembly/binaryen/releases/download/version_{BINARYEN_VERSION}/"
                 f"binaryen-version_{BINARYEN_VERSION}-{platform.uname()[4]}-linux.tar.gz")
+LOG_WITH_BINARYEN = get_logger(__name__)
 
 
 def ensure_binaryen(url, version):
@@ -73,7 +75,7 @@ def wasmopt_run(seed):
                                     "--output", seed_wasm_output,
                                     f"--emit-js-wrapper={seed_wrapper_output}"], check=True)
                 except subprocess.CalledProcessError:
-                    print("wasm-opt aborted with a CalledProcessError")
+                    LOG_WITH_BINARYEN.warning("wasm-opt aborted with a CalledProcessError")
                 break
             time.sleep(5)
     assert seed_wrapper_output.is_file()
