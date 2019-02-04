@@ -65,12 +65,15 @@ def wasmopt_run(seed):
     with fasteners.try_lock(t_lock) as gotten:
         while True:
             if gotten:
-                subprocess.run([ensure_binaryen(BINARYEN_URL, BINARYEN_VERSION),
-                                seed,
-                                "--translate-to-fuzz",
-                                "--disable-simd",
-                                "--output", seed_wasm_output,
-                                f"--emit-js-wrapper={seed_wrapper_output}"], check=True)
+                try:
+                    subprocess.run([ensure_binaryen(BINARYEN_URL, BINARYEN_VERSION),
+                                    seed,
+                                    "--translate-to-fuzz",
+                                    "--disable-simd",
+                                    "--output", seed_wasm_output,
+                                    f"--emit-js-wrapper={seed_wrapper_output}"], check=True)
+                except subprocess.CalledProcessError:
+                    print("wasm-opt aborted with a CalledProcessError")
                 break
             time.sleep(5)
     assert seed_wrapper_output.is_file()
