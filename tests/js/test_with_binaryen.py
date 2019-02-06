@@ -23,6 +23,8 @@ logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
 @pytest.mark.skipif(platform.system() != "Linux", reason="Only Linux binaryen binary is obtained for now")
+# See https://github.com/WebAssembly/binaryen/issues/1615
+@pytest.mark.skipif(platform.machine() != "x86_64", reason="Only Linux x86_64 binaryen binary is usable now")
 class WithBinaryenTests(CompileShellTests):
     """"TestCase class for functions in with_binaryen.py"""
     wasm_file = Path(__file__).resolve().with_suffix(".wasm")

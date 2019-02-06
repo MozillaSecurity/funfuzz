@@ -186,8 +186,8 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
         res, out_log = run_to_report(options, js_interesting_opts, env, log_prefix,
                                      fuzzjs, ccoverage, collector, target_time)
 
-        # funbind - integrate with binaryen wasm project but only on Linux
-        if platform.system() == "Linux" and out_log.is_file():
+        # funbind - integrate with binaryen wasm project but only on Linux x86_64
+        if platform.system() == "Linux" and platform.machine() == "x86_64" and out_log.is_file():
             run_to_report_wasm(options, js_interesting_opts, env, log_prefix,
                                out_log, ccoverage, collector, target_time)
 
