@@ -53,6 +53,10 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
             # Failure specific to GCC 5 (and probably earlier) - supposedly works on GCC 6
             hgrange("e94dceac8090", "516c01f62d84"),  # Fx56-57, see bug 1386011
         ])
+        if platform.machine() == "aarch64":
+            skips.extend([
+                hgrange("e8bb22053e65", "999757e9e5a5"),  # Fx54, see bug 1336344
+            ])
         if not options.disableProfiling:
             skips.extend([
                 # To bypass the following month-long breakage, use "--disable-profiling"
