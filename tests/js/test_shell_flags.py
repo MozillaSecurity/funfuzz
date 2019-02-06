@@ -123,4 +123,3 @@ def test_random_flag_set(monkeypatch):
 def test_shell_supports_flag():
     """Test that the shell does support flags as intended."""
     assert js.shell_flags.shell_supports_flag(test_shell_compile(), "--fuzzing-safe")
-
