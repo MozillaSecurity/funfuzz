@@ -51,11 +51,11 @@ def test_shell_compile():
     file_name = None
     if default_parameters_debug in build_opts:
         # Test compilation of a debug shell with determinism, valgrind and OOM breakpoint support.
-        file_name = f"js-dbg-optDisabled-64-dm-vg-oombp-linux-{hg_hash_of_default}"
+        file_name = f"js-dbg-optDisabled-64-dm-vg-oombp-linux-x86_64-{hg_hash_of_default}"
     elif "--disable-debug --disable-profiling --without-intl-api" in build_opts:
         # Test compilation of an opt shell with both profiling and Intl support disabled.
         # This set of builds should also have the following: 32-bit with ARM, with asan, and with clang
-        file_name = f"js-64-profDisabled-intlDisabled-linux-{hg_hash_of_default}"
+        file_name = f"js-64-profDisabled-intlDisabled-linux-x86_64-{hg_hash_of_default}"
 
     js_bin_path = SHELL_CACHE / file_name / file_name
     if platform.system() == "Windows":

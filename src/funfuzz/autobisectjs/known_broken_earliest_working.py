@@ -53,6 +53,10 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
             # Failure specific to GCC 5 (and probably earlier) - supposedly works on GCC 6
             hgrange("e94dceac8090", "516c01f62d84"),  # Fx56-57, see bug 1386011
         ])
+        if platform.machine() == "aarch64":
+            skips.extend([
+                hgrange("e8bb22053e65", "999757e9e5a5"),  # Fx54, see bug 1336344
+            ])
         if not options.disableProfiling:
             skips.extend([
                 # To bypass the following month-long breakage, use "--disable-profiling"
@@ -81,6 +85,7 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
             hgrange("3a580b48d1ad", "20c9570b0734"),  # Fx43, broken 32-bit ARM-simulator builds
             hgrange("f35d1107fe2e", "bdf975ad2fcd"),  # Fx45, broken 32-bit ARM-simulator builds
             hgrange("6c37be9cee51", "4548ba932bde"),  # Fx50, broken 32-bit ARM-simulator builds
+            hgrange("284002382c21", "05669ce25b03"),  # Fx57-61, broken 32-bit ARM-simulator builds
         ])
 
     return skips
@@ -142,11 +147,12 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("d4e0e0e5d26d")  # m-c 268534 Fx44, 1st w/ reliable ASan builds w/ ICU, see bug 1214464
     if "--ion-sincos=on" in flags or "--ion-sincos=off" in flags:
         required.append("3dec2b935295")  # m-c 262544 Fx43, 1st w/--ion-sincos=on, see bug 984018
+    if options.enableSimulatorArm64:
+        required.append("e668e5f2fb8a")  # m-c 262171 Fx43, 1st w/ stable --enable-simulator=arm64, see bug 1203287
     if "--ion-instruction-reordering=on" in flags or "--ion-instruction-reordering=off" in flags:
         required.append("59d2f2e62420")  # m-c 259672 Fx43, 1st w/--ion-instruction-reordering=on, see bug 1195545
-    if options.enableSimulatorArm32 or options.enableSimulatorArm64:
-        # For ARM64: This should get updated whenever ARM64 builds are stable
-        required.append("25e99bc12482")  # m-c 249239 Fx41, 1st w/--enable-simulator=[arm|arm64|mips], see bug 1173992
+    if options.enableSimulatorArm32:
+        required.append("25e99bc12482")  # m-c 249239 Fx41, 1st w/--enable-simulator=arm, see bug 1173992
     if "--ion-regalloc=testbed" in flags:
         required.append("47e92bae09fd")  # m-c 248962 Fx41, 1st w/--ion-regalloc=testbed, see bug 1170840
     if "--execute=setJitCompilerOption(\"ion.forceinlineCaches\",1)" in flags:

@@ -8,6 +8,7 @@
 """
 
 from pathlib import Path
+from time import sleep
 
 from Collector.Collector import Collector
 
@@ -38,3 +39,27 @@ def printMatchingSignature(match):  # pylint: disable=invalid-name,missing-docst
     print(f'  Signature description: {match[1].get("shortDescription")}')
     print(f"  Signature file: {match[0]}")
     print()
+
+
+def submit_collector(collector, crash_info, testcase, quality, meta_data=None):
+    """Use exponential backoff for FuzzManager submission. Adapted from https://stackoverflow.com/a/23961254/445241
+
+    Args:
+        collector (class): Collector for FuzzManager
+        crash_info (object): Crash info object
+        testcase (Path): Path to the testcase to be submitted
+        quality (int): Quality specified as a number when submitting to FuzzManager
+        meta_data (dict): Metadata when submitting testcase, if any
+    """
+    if meta_data is None:
+        meta_data = {}
+    sleep_time = 2
+    for _ in range(0, 99):
+        try:
+            collector.submit(crash_info, str(testcase), quality, metaData=meta_data)
+            break
+        except RuntimeError:
+            # Sample error via Reporter:
+            # RuntimeError: Server unexpectedly responded with status code 500: <h1>Server Error (500)</h1>
+            sleep(sleep_time)
+            sleep_time *= 2  # exponential backoff

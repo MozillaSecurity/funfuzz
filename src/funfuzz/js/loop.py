@@ -292,7 +292,7 @@ def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccovera
             metadata = {}
             if autobisect_log:
                 metadata = {"autobisect_log": "\n".join(autobisect_log)}
-            collector.submit(res.crashInfo, str(reduced_log), quality, metaData=metadata)
+            create_collector.submit_collector(collector, res.crashInfo, str(reduced_log), quality, meta_data=metadata)
             print(f"Submitted {reduced_log}")
 
     return res, out_log
@@ -349,7 +349,8 @@ def run_to_report_wasm(_options, js_interesting_opts, env, log_prefix, out_log, 
                 f.write(wasm_file, wasm_file.name, compress_type=zipfile.ZIP_DEFLATED)
 
             if not ccoverage:
-                collector.submit(res.crashInfo, str(result_zip), 10, metaData={})  # Quality is 10, metaData {}
+                # Quality is 10, meta_data {}
+                create_collector.submit_collector(collector, res.crashInfo, str(result_zip), 10, meta_data={})
                 print(f"Submitted {result_zip}")
 
 
