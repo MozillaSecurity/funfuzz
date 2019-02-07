@@ -39,10 +39,17 @@ def ensure_binaryen(url, version):
     shell_cache = sm_compile_helpers.ensure_cache_dir(Path.home())
     wasmopt_path = Path(shell_cache / f"binaryen-version_{version}" / "wasm-opt").resolve()
 
-    if not wasmopt_path.is_file():
-        with requests.get(url, allow_redirects=True, stream=True) as binaryen_gzip_request:
-            with tarfile.open(fileobj=io.BytesIO(binaryen_gzip_request.content), mode="r:gz") as f:
-                f.extractall(str(shell_cache.resolve()))
+    t_lock = threading.Lock()
+    with fasteners.try_lock(t_lock) as gotten:
+        while not wasmopt_path.is_file():
+            if gotten:
+                with requests.get(url, allow_redirects=True, stream=True) as binaryen_gzip_request:
+                    try:
+                        with tarfile.open(fileobj=io.BytesIO(binaryen_gzip_request.content), mode="r:gz") as f:
+                            f.extractall(str(shell_cache.resolve()))
+                    except OSError:
+                        print("binaryen tarfile threw an OSError")
+                    break
     return wasmopt_path
 
 
