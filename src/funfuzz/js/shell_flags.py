@@ -322,6 +322,10 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
             # m-c rev 127353:be125cabea26, see bug 843596
             args.append("--baseline-eager")
 
+    if shell_supports_flag(shell_path, "--dump-bytecode") and chance(.05):
+        # m-c rev 73054:b1923b866d6a, see bug 668095
+        args.append("--dump-bytecode")
+
     return args
 
 
