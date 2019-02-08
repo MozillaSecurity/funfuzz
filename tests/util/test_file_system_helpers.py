@@ -44,6 +44,8 @@ def test_delete_logs(tmpdir):
     wtmp_name_wasm_err_txt.touch()  # pylint: disable=no-member
     wtmp_name_wasm_out_txt = (tmpdir / f"{wtmp_name}-wasm-out.txt")
     wtmp_name_wasm_out_txt.touch()  # pylint: disable=no-member
+    wtmp_name_wasm_summary_txt = (tmp_dir / f"{wtmp_name}-wasm-summary.txt")
+    wtmp_name_wasm_summary_txt.touch()  # pylint: disable=no-member
     wtmp_name_crash_txt = (tmpdir / f"{wtmp_name}-crash.txt")
     wtmp_name_crash_txt.touch()  # pylint: disable=no-member
     wtmp_name_vg_xml = (tmpdir / f"{wtmp_name}-vg.xml")
@@ -60,6 +62,7 @@ def test_delete_logs(tmpdir):
     assert not wtmp_name_err_txt.is_file()
     assert not wtmp_name_wasm_err_txt.is_file()
     assert not wtmp_name_wasm_out_txt.is_file()
+    assert not wtmp_name_wasm_summary_txt.is_file()
     assert not wtmp_name_crash_txt.is_file()
     assert not wtmp_name_vg_xml.is_file()
     assert not wtmp_name_core_gz.is_file()
