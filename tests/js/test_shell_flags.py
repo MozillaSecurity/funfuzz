@@ -48,9 +48,8 @@ class ShellFlagsTests(CompileShellTests):
             assert "--arm-sim-icache-checks" in all_flags
         if js.inspect_shell.queryBuildConfiguration(self.test_shell_compile(), "arm-simulator"):
             assert "--arm-asm-nop-fill=1" in all_flags
-        # Temporarily disabled due to bug 1523515
-        # if js.inspect_shell.queryBuildConfiguration(self.test_shell_compile(), "arm-simulator"):
-        #     assert "--arm-hwcap=vfp" in all_flags
+        if js.inspect_shell.queryBuildConfiguration(self.test_shell_compile(), "arm-simulator"):
+            assert "--arm-hwcap=vfp" in all_flags
 
     @pytest.mark.slow
     def test_add_random_ion_flags(self):

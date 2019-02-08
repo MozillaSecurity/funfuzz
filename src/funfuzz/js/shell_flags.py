@@ -59,11 +59,10 @@ def add_random_arch_flags(shell_path, input_list=False):
         # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
         # m-c rev 192164:f1bacafe789c, see bug 1020834
         input_list.append("--arm-asm-nop-fill=1")
-    # Temporarily disabled due to bug 1523515
-    # if inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and chance(.7):
-    #     # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
-    #     # m-c rev 190582:5399dc155c3b, see bug 1028008
-    #     input_list.append("--arm-hwcap=vfp")
+    if inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and chance(.7):
+        # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
+        # m-c rev 190582:5399dc155c3b, see bug 1028008
+        input_list.append("--arm-hwcap=vfp")
 
     if shell_supports_flag(shell_path, "--enable-avx") and chance(.2):
         # m-c rev 223959:5e6e959f0043, see bug 1118235
