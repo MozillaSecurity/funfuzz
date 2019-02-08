@@ -14,7 +14,7 @@ import platform
 import subprocess
 import tarfile
 import threading
-import time
+from time import sleep
 
 import fasteners
 import requests
@@ -39,6 +39,7 @@ def ensure_binaryen(url, version):
     shell_cache = sm_compile_helpers.ensure_cache_dir(Path.home())
     wasmopt_path = Path(shell_cache / f"binaryen-version_{version}" / "wasm-opt").resolve()
 
+    sleep_time = 2
     t_lock = threading.Lock()
     with fasteners.try_lock(t_lock) as gotten:
         while not wasmopt_path.is_file():
@@ -50,6 +51,8 @@ def ensure_binaryen(url, version):
                     except OSError:
                         print("binaryen tarfile threw an OSError")
                     break
+            sleep(sleep_time)
+            sleep_time *= 2
     return wasmopt_path
 
 
@@ -68,6 +71,7 @@ def wasmopt_run(seed):
     seed_wrapper_output = seed.resolve().with_suffix(".wrapper")
     seed_wasm_output = seed.resolve().with_suffix(".wasm")
 
+    sleep_time = 2
     t_lock = threading.Lock()
     with fasteners.try_lock(t_lock) as gotten:
         while True:
@@ -82,7 +86,8 @@ def wasmopt_run(seed):
                 except subprocess.CalledProcessError:
                     print("wasm-opt aborted with a CalledProcessError")
                 break
-            time.sleep(5)
+            sleep(sleep_time)
+            sleep_time *= 2
     assert seed_wrapper_output.is_file()
     assert seed_wasm_output.is_file()
 
