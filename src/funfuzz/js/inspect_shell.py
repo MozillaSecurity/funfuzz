@@ -18,6 +18,8 @@ from lithium.interestingness.utils import env_with_path
 from ..util import hg_helpers
 from ..util.logging_helpers import get_logger
 
+LOG_INSPECT_SHELL = get_logger(__name__)
+
 RUN_MOZGLUE_LIB = ""
 RUN_NSPR_LIB = ""
 RUN_PLDS_LIB = ""
