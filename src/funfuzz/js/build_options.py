@@ -213,7 +213,7 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
 
 
 def computeShellType(build_options):  # pylint: disable=invalid-name,missing-param-doc,missing-return-doc
-    # pylint: disable=missing-return-type-doc,missing-type-doc,too-complex
+    # pylint: disable=missing-return-type-doc,missing-type-doc,too-complex,too-many-branches
     """Return configuration information of the shell."""
     fileName = ["js"]  # pylint: disable=invalid-name
     if build_options.enableDbg:
@@ -237,9 +237,12 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
         fileName.append("oombp")
     if build_options.enableWithoutIntlApi:
         fileName.append("intlDisabled")
-    if build_options.enableSimulatorArm32 or build_options.enableSimulatorArm64:
-        fileName.append("armSim")
-    fileName.append("windows" if platform.system() == "Windows" else platform.system().lower())
+    if build_options.enableSimulatorArm32:
+        fileName.append("armsim32")
+    if build_options.enableSimulatorArm64:
+        fileName.append("armsim64")
+    fileName.append(platform.system().lower())
+    fileName.append(platform.machine().lower())
     if build_options.patch_file:
         # We take the name before the first dot, so Windows (hopefully) does not get confused.
         # Also replace any "." in the name with "_" so pathlib .stem and suffix-wrangling work properly
@@ -312,14 +315,14 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
             return False, "ASan is explicitly not supported in 32-bit Windows builds."
 
     if args.enableSimulatorArm32 or args.enableSimulatorArm64:
-        if platform.system() == "Windows":
-            return False, "Nobody runs the ARM simulator on Windows."
+        if platform.system() == "Windows" and args.enableSimulatorArm32:
+            return False, "Nobody runs the ARM32 simulators on Windows."
+        if platform.system() == "Linux" and platform.machine() == "aarch64" and args.enableSimulatorArm64:
+            return False, "Nobody runs the ARM64 simulators on ARM64 Linux."
         if args.enableSimulatorArm32 and not args.enable32:
             return False, "The 32-bit ARM simulator builds are only for 32-bit binaries."
         if args.enableSimulatorArm64 and args.enable32:
             return False, "The 64-bit ARM simulator builds are only for 64-bit binaries."
-        if args.enableSimulatorArm64 and not args.enable32:
-            return False, "The 64-bit ARM simulator builds are not ready for testing yet."
 
     return True, ""
 

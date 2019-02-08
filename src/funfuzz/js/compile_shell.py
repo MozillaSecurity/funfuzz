@@ -443,6 +443,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         if shell.build_opts.buildWithAsan:
             cfg_cmds.append("--enable-address-sanitizer")
+        if shell.build_opts.enableSimulatorArm64:
+            cfg_cmds.append("--enable-simulator=arm64")
 
     if shell.build_opts.buildWithClang:
         if platform.system() == "Windows":

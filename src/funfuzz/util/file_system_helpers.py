@@ -41,6 +41,9 @@ def delete_logs(log_prefix):  # pylint: disable=too-complex
     wasm_out_log = (log_prefix.parent / f"{log_prefix.stem}-wasm-out").with_suffix(".txt")
     if wasm_out_log.is_file():
         wasm_out_log.unlink()
+    wasm_summary_log = (log_prefix.parent / f"{log_prefix.stem}-wasm-summary").with_suffix(".txt")
+    if wasm_summary_log.is_file():
+        wasm_summary_log.unlink()
     crash_log = (log_prefix.parent / f"{log_prefix.stem}-crash").with_suffix(".txt")
     if crash_log.is_file():
         crash_log.unlink()
