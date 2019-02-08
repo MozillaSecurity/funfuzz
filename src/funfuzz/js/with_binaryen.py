@@ -50,7 +50,7 @@ def ensure_binaryen(url, version):
                         with tarfile.open(fileobj=io.BytesIO(binaryen_gzip_request.content), mode="r:gz") as f:
                             f.extractall(str(shell_cache.resolve()))
                     except OSError:
-                        print("binaryen tarfile threw an OSError")
+                        LOG_WITH_BINARYEN.warning("binaryen tarfile threw an OSError")
                     break
     return wasmopt_path
 
