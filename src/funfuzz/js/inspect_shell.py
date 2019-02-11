@@ -194,7 +194,7 @@ def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-
             sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm32
 
     # m-c rev 250632:5f9e24957f2d Fx41 added the arm64-simulator entry in getBuildConfiguration.
-    if hg_helpers.existsAndIsAncestor(sh.get_repo_dir(), sh.get_hg_hash(), "parents(5f9e24957f2d)"):
+    if not hg_helpers.existsAndIsAncestor(sh.get_repo_dir(), sh.get_hg_hash(), "parents(5f9e24957f2d)"):
         assert (queryBuildConfiguration(binary, "arm64-simulator") and not
                 sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm64
     # Note that we should test whether a shell has profiling turned on or not.

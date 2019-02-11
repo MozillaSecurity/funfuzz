@@ -59,10 +59,11 @@ def add_random_arch_flags(shell_path, input_list=False):
         # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
         # m-c rev 192164:f1bacafe789c, see bug 1020834
         input_list.append("--arm-asm-nop-fill=1")
-    if inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and chance(.7):
-        # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
-        # m-c rev 190582:5399dc155c3b, see bug 1028008
-        input_list.append("--arm-hwcap=vfp")
+    # Temporarily disabled due to bug 1523515
+    # if inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and chance(.7):
+    #     # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
+    #     # m-c rev 190582:5399dc155c3b, see bug 1028008
+    #     input_list.append("--arm-hwcap=vfp")
 
     if shell_supports_flag(shell_path, "--enable-avx") and chance(.2):
         # m-c rev 223959:5e6e959f0043, see bug 1118235
@@ -320,10 +321,6 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         elif chance(.5):
             # m-c rev 127353:be125cabea26, see bug 843596
             args.append("--baseline-eager")
-
-    if shell_supports_flag(shell_path, "--dump-bytecode") and chance(.05):
-        # m-c rev 73054:b1923b866d6a, see bug 668095
-        args.append("--dump-bytecode")
 
     return args
 
