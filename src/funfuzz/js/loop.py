@@ -291,7 +291,7 @@ def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccovera
 
             metadata = {}
             if autobisect_log:
-                metadata = {"autobisect_log": "\n".join(autobisect_log)}
+                metadata = {"autobisect_log": "".join(autobisect_log)}
             create_collector.submit_collector(collector, res.crashInfo, str(reduced_log), quality, meta_data=metadata)
             print(f"Submitted {reduced_log}")
 
