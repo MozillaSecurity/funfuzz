@@ -191,11 +191,8 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
             run_to_report_wasm(options, js_interesting_opts, env, log_prefix,
                                out_log, ccoverage, collector, target_time)
 
-        # compare_jit integration
-        are_flags_deterministic = "--dump-bytecode" not in options.engineFlags and "-D" not in options.engineFlags
         # pylint: disable=no-member
-        if options.use_compare_jit and res.lev == js_interesting.JS_FINE and \
-                js_interesting_opts.shellIsDeterministic and are_flags_deterministic:
+        if options.use_compare_jit and res.lev == js_interesting.JS_FINE and js_interesting_opts.shellIsDeterministic:
             cj_out_log = (log_prefix.parent / f"{log_prefix.stem}-out").with_suffix(".txt")
             linesToCompare = jitCompareLines(cj_out_log, "/*FCM*/")  # pylint: disable=invalid-name
             cj_testcase = (log_prefix.parent / f"{log_prefix.stem}-cj-in").with_suffix(".js")
@@ -294,7 +291,7 @@ def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccovera
 
             metadata = {}
             if autobisect_log:
-                metadata = {"autobisect_log": "\n".join(autobisect_log)}
+                metadata = {"autobisect_log": "".join(autobisect_log)}
             create_collector.submit_collector(collector, res.crashInfo, str(reduced_log), quality, meta_data=metadata)
             print(f"Submitted {reduced_log}")
 

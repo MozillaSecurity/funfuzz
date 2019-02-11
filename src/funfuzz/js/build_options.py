@@ -281,6 +281,8 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
 
     if platform.system() == "Darwin" and args.enable32:
         return False, "We are no longer going to ship 32-bit Mac binaries."
+    if platform.machine() == "aarch64" and args.enable32:
+        return False, "ARM64 systems cannot seem to compile 32-bit binaries properly."
     if "Microsoft" in platform.release() and args.enable32:
         return False, "WSL does not seem to support 32-bit Linux binaries yet."
 
@@ -323,6 +325,8 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     if args.enableSimulatorArm32 or args.enableSimulatorArm64:
         if platform.system() == "Windows" and args.enableSimulatorArm32:
             return False, "Nobody runs the ARM32 simulators on Windows."
+        if platform.system() == "Linux" and platform.machine() == "aarch64" and args.enableSimulatorArm32:
+            return False, "Nobody runs the ARM32 simulators on ARM64 Linux."
         if platform.system() == "Linux" and platform.machine() == "aarch64" and args.enableSimulatorArm64:
             return False, "Nobody runs the ARM64 simulators on ARM64 Linux."
         if args.enableSimulatorArm32 and not args.enable32:
