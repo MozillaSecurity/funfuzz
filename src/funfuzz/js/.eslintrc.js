@@ -19,6 +19,8 @@ module.exports = {
     "no-shadow": "error",
     "no-undef": ["error", {"typeof": true}],
     "no-undef-init": "error",
+    // We want to test object-curly-spacing in funfuzz
+    "object-curly-spacing": "off",
     "one-var": ["error", "never"],
     "operator-linebreak": ["error", "after"],
     "quotes": ["error", "double"],
