@@ -7,9 +7,7 @@
 """Test the run_ccoverage.py file."""
 
 import logging
-import unittest
 
-from _pytest.monkeypatch import MonkeyPatch
 from pkg_resources import parse_version
 import pytest
 
@@ -28,25 +26,23 @@ FUNFUZZ_TEST_LOG.addHandler(LOG_HANDLER)
 logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
-class RunCcoverageTests(unittest.TestCase):
-    """"TestCase class for functions in run_ccoverage.py"""
+@pytest.mark.skipif(distro.linux_distribution()[0] == "Ubuntu" and
+                    parse_version(distro.linux_distribution()[1]) < parse_version("16.04"),
+                    reason="Code coverage binary crashes in 14.04 Trusty but works in 16.04 Xenial and up")
+@pytest.mark.slow
+def test_main(monkeypatch):
+    """Run run_ccoverage with test parameters.
 
-    @staticmethod
-    @pytest.mark.skipif(distro.linux_distribution()[0] == "Ubuntu" and
-                        parse_version(distro.linux_distribution()[1]) < parse_version("16.04"),
-                        reason="Code coverage binary crashes in 14.04 Trusty but works in 16.04 Xenial and up")
-    @pytest.mark.slow
-    def test_main():
-        """Run run_ccoverage with test parameters."""
-        build_url = "https://build.fuzzing.mozilla.org/builds/jsshell-mc-64-opt-gcov.zip"
+    Args:
+        monkeypatch (class): Fixture from pytest for monkeypatching some variables/functions
+    """
+    build_url = "https://build.fuzzing.mozilla.org/builds/jsshell-mc-64-opt-gcov.zip"
 
-        monkey = MonkeyPatch()
-        with monkey.context() as monkey_context:
-            monkey_context.setattr(gatherer, "RUN_COV_TIME", 3)
-            assert gatherer.RUN_COV_TIME == 3
-            monkey_context.setattr(reporter, "report_coverage", lambda _: "hit")
-            assert reporter.report_coverage("") == "hit"
-            monkey_context.setattr(reporter, "disable_pool", lambda: "hit")
-            assert reporter.disable_pool() == "hit"
+    monkeypatch.setattr(gatherer, "RUN_COV_TIME", 3)
+    assert gatherer.RUN_COV_TIME == 3
+    monkeypatch.setattr(reporter, "report_coverage", lambda _: "hit")
+    assert reporter.report_coverage("") == "hit"
+    monkeypatch.setattr(reporter, "disable_pool", lambda: "hit")
+    assert reporter.disable_pool() == "hit"
 
-            run_ccoverage.main(argparse_args=["--url", build_url, "--report"])
+    run_ccoverage.main(argparse_args=["--url", build_url, "--report"])

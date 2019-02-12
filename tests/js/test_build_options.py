@@ -8,9 +8,8 @@
 
 import logging
 from pathlib import Path
-import unittest
+import random
 
-from _pytest.monkeypatch import MonkeyPatch
 import pytest
 
 from funfuzz.js import build_options
@@ -19,28 +18,30 @@ from funfuzz.util.logging_helpers import get_logger
 LOG_TEST_BUILD_OPTS = get_logger(__name__, level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.ERROR)
 
+TREES_PATH = Path.home() / "trees"
 
-def mock_chance(i):
-    """Overwrite the chance function to return True or False depending on a specific condition.
+
+def test_chance(monkeypatch):
+    """Test that the chance function works as intended.
 
     Args:
-        i (float): Intended probability between 0 < i < 1
-
-    Returns:
-        bool: True if i > 0, False otherwise.
+        monkeypatch (class): Fixture from pytest for monkeypatching some variables/functions
     """
-    return i > 0
+    monkeypatch.setattr(random, "random", lambda: 0)
+    assert build_options.chance(0.6)
+    assert build_options.chance(0.1)
+    assert not build_options.chance(0)
+    assert not build_options.chance(-0.2)
 
 
-class BuildOptionsTests(unittest.TestCase):
-    """"TestCase class for functions in build_options.py"""
-    monkeypatch = MonkeyPatch()
-    trees_location = Path.home() / "trees"
+# pylint: disable=no-member
+@pytest.mark.skipif(not (TREES_PATH / "mozilla-central" / ".hg" / "hgrc").is_file(),
+                    reason="requires a Mozilla Mercurial repository")
+def test_get_random_valid_repo(monkeypatch):
+    """Test that a valid repository can be obtained.
 
-    # pylint: disable=no-member
-    @pytest.mark.skipif(not (trees_location / "mozilla-central" / ".hg" / "hgrc").is_file(),
-                        reason="requires a Mozilla Mercurial repository")
-    def test_get_random_valid_repo(self):
-        """Test that a valid repository can be obtained."""
-        BuildOptionsTests.monkeypatch.setattr(build_options, "chance", mock_chance)
-        assert build_options.get_random_valid_repo(self.trees_location) == self.trees_location / "mozilla-central"
+    Args:
+        monkeypatch (class): For monkeypatching some variables/functions
+    """
+    monkeypatch.setattr(random, "random", lambda: 0)
+    assert build_options.get_random_valid_repo(TREES_PATH) == TREES_PATH / "mozilla-central"

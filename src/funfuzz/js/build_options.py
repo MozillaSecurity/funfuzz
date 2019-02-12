@@ -22,8 +22,16 @@ LOG_BUILD_OPTS = get_logger(__name__)
 DEFAULT_TREES_LOCATION = Path.home() / "trees"
 
 
-def chance(p):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    return random.random() < p
+def chance(i):
+    """Returns a random boolean result based on an input probability.
+
+    Args:
+        i (float): Intended probability.
+
+    Returns:
+        bool: Result based on the input probability
+    """
+    return random.random() < i
 
 
 class Randomizer:  # pylint: disable=missing-docstring
