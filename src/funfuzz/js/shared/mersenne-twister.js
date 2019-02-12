@@ -9,10 +9,12 @@
 //   * Removed parts not needed for fuzzing
 
 // in this program, procedure descriptions and comments of original source code were not removed.
-// lines commented with //c// were originally descriptions of c procedure. and a few following lines are appropriate JavaScript descriptions.
+// lines commented with //c// were originally descriptions of c procedure.
+//   And a few following lines are appropriate JavaScript descriptions.
 // lines commented with /* and */ are original comments.
 // lines commented with // are additional comments in this JavaScript version.
-// before using this version, create at least one instance of MersenneTwister19937 class, and initialize the each state, given below in c comments, of all the instances.
+// before using this version, create at least one instance of MersenneTwister19937 class,
+//   and initialize the each state, given below in c comments, of all the instances.
 
 /* global Int32Array */
 

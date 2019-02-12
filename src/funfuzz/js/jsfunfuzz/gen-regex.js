@@ -61,7 +61,11 @@ var regexMakers =
     function(dr) { return regexQuantified(dr, "*?", 0, 1); },
     function(dr) { var x = regexNumberOfMatches(); return regexQuantified(dr, "{" + x + "}", x, x); },
     function(dr) { var x = regexNumberOfMatches(); return regexQuantified(dr, "{" + x + ",}", x, x + rnd(10)); },
-    function(dr) { var min = regexNumberOfMatches(); var max = min + regexNumberOfMatches(); return regexQuantified(dr, "{" + min + "," + max + "}", min, max); },
+    function(dr) {
+      var min = regexNumberOfMatches();
+      var max = min + regexNumberOfMatches();
+      return regexQuantified(dr, "{" + min + "," + max + "}", min, max);
+    },
   ],
   [
     // Combinations: concatenation, disjunction
@@ -192,11 +196,16 @@ function regexCharCode()
 // These return matching pairs: [regex fragment, charcode for a matching one-character string].
 var regexCharacterMakers = Random.weighted([
   // Possibly incorrect
-  { w: 20, v: function() { var cc = regexCharCode(); return [      String.fromCharCode(cc), cc]; } }, // literal that doesn't need to be escaped (OR wrong)
-  { w: 4, v: function() { var cc = regexCharCode(); return ["\\" + String.fromCharCode(cc), cc]; } }, // escaped special character OR unnecessary escape (OR wrong)
-  { w: 1, v: function() { return ["\\0",  0]; } },  // null [ignoring the "do not follow this with another digit" rule which would turn it into an octal escape]
-  { w: 1, v: function() { return ["\\B", 66]; } },  // literal B -- ONLY within a character class. (Elsewhere, it's a "zero-width non-word boundary".)
-  { w: 1, v: function() { return ["\\b",  8]; } },  // backspace -- ONLY within a character class. (Elsewhere, it's a "zero-width word boundary".)
+  // literal that doesn't need to be escaped (OR wrong)
+  { w: 20, v: function() { var cc = regexCharCode(); return [      String.fromCharCode(cc), cc]; } },
+  // escaped special character OR unnecessary escape (OR wrong)
+  { w: 4, v: function() { var cc = regexCharCode(); return ["\\" + String.fromCharCode(cc), cc]; } },
+  // null [ignoring the "do not follow this with another digit" rule which would turn it into an octal escape]
+  { w: 1, v: function() { return ["\\0",  0]; } },
+  // literal B -- ONLY within a character class. (Elsewhere, it's a "zero-width non-word boundary".)
+  { w: 1, v: function() { return ["\\B", 66]; } },
+  // backspace -- ONLY within a character class. (Elsewhere, it's a "zero-width word boundary".)
+  { w: 1, v: function() { return ["\\b",  8]; } },
 
   // Correct, unless I screwed up
   { w: 1, v: function() { return ["\\t",  9]; } },  // tab
@@ -204,11 +213,21 @@ var regexCharacterMakers = Random.weighted([
   { w: 1, v: function() { return ["\\v", 11]; } },  // vertical tab
   { w: 1, v: function() { return ["\\f", 12]; } },  // form feed
   { w: 1, v: function() { return ["\\r", 13]; } },  // carriage return
-  { w: 5, v: function() { var controlCharacterCode = rnd(26) + 1; return ["\\c" + String.fromCharCode(64 + controlCharacterCode), controlCharacterCode]; } },
+  { w: 5, v: function() { var controlCharacterCode = rnd(26) + 1; return ["\\c"
+    + String.fromCharCode(64 + controlCharacterCode), controlCharacterCode];
+  } },
   // { w: 5, v: function() { var cc = regexCharCode(); return ["\\0" + cc.toString(8), cc] } }, // octal escape
-  { w: 5, v: function() { var twoHex = Random.index(hexDigits) + Random.index(hexDigits); return ["\\x" + twoHex, parseInt(twoHex, 16)]; } },
-  { w: 5, v: function() { var twoHex = Random.index(hexDigits) + Random.index(hexDigits); return ["\\u00" + twoHex, parseInt(twoHex, 16)]; } },
-  { w: 5, v: function() { var fourHex = Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits); return ["\\u" + fourHex, parseInt(fourHex, 16)]; } },
+  { w: 5, v: function() {
+    var twoHex = Random.index(hexDigits) + Random.index(hexDigits); return ["\\x" + twoHex, parseInt(twoHex, 16)];
+  } },
+  { w: 5, v: function() {
+    var twoHex = Random.index(hexDigits) + Random.index(hexDigits); return ["\\u00" + twoHex, parseInt(twoHex, 16)];
+  } },
+  { w: 5, v: function() {
+    var fourHex = Random.index(hexDigits) + Random.index(hexDigits)
+      + Random.index(hexDigits) + Random.index(hexDigits);
+    return ["\\u" + fourHex, parseInt(fourHex, 16)];
+  } },
 ]);
 
 function regexCharacter()
@@ -261,8 +280,11 @@ var regexTermMakers =
     function() { return [Random.index(regexBuiltInCharClasses), regexOneCharStringsWith(["0", "a", "_"])]; },
     function() { return ["[^]",                                 regexOneCharStringsWith(["\n"])];     },
     function() { return [".",                                   regexOneCharStringsWith(["\n"])];     },
-    function() { return [Random.index(["^", "$"]),              regexShortStringsWith(["\n"])];     },            // string boundaries or line boundaries (with /m)
-    function() { return [Random.index(["\\b", "\\B"]),          regexShortStringsWith([" ", "\n", "a", "1"])]; }, // word boundaries
+    // string boundaries or line boundaries (with /m)
+    function() { return [Random.index(["^", "$"]), regexShortStringsWith(["\n"])];     },
+    function() { return [Random.index(["\\b", "\\B"]),
+      regexShortStringsWith([" ", "\n", "a", "1"])];
+    }, // word boundaries
     /* eslint-enable no-multi-spaces */
   ];
 

@@ -125,7 +125,9 @@ function tryItOut(code)
   if (!wtt.allowParse)
     return;
 
-  code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); });
+  code = code.replace(/\/\*DUPTRY\d+\*\//,
+    function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); }
+  );
 
   if (jsStrictMode)
     code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
@@ -149,7 +151,11 @@ function tryItOut(code)
       // But leave some things out of function(){} because some bugs are only detectable at top-level, and
       // pure jsfunfuzz doesn't test top-level at all.
       // (This is a good reason to use compare_jit even if I'm not interested in finding JIT bugs!)
-      if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode))
+      if (nCode.indexOf("return") != -1 ||
+        nCode.indexOf("yield") != -1 ||
+        nCode.indexOf("const") != -1 ||
+        failsToCompileInTry(nCode)
+      )
         nCode = "(function(){" + nCode + "})()";
       dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
     }

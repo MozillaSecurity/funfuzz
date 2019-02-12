@@ -54,7 +54,8 @@ function testExpressionDecompiler(code)
 
 function tryHalves(code)
 {
-  // See if there are any especially horrible bugs that appear when the parser has to start/stop in the middle of something. this is kinda evil.
+  // See if there are any esp. horrible bugs that appear when the parser has to start/stop in the middle of something.
+  // This is kinda evil.
 
   // Stray "}"s are likely in secondHalf, so use new Function rather than eval.  "}" can't escape from new Function :)
 

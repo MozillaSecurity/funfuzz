@@ -8,7 +8,8 @@
 /*
 David Anderson suggested creating the following recursive structures:
   - recurse down an array of mixed types, car cdr kinda thing
-  - multiple recursive calls in a function, like binary search left/right, sometimes calls neither and sometimes calls both
+  - multiple recursive calls in a function, like binary search left/right,
+    sometimes calls neither and sometimes calls both
 
   the recursion support in spidermonkey only works with self-recursion.
   that is, two functions that call each other recursively will not be traced.
@@ -20,7 +21,8 @@ David Anderson suggested creating the following recursive structures:
   so far, what i've thought of means recursing from the top of a function and if..else.
   but i'd probably also want to recurse from other points, e.g. loops.
 
-  special code for tail recursion likely coming soon, but possibly as a separate patch, because it requires changes to the interpreter.
+  special code for tail recursion likely coming soon, but possibly as a separate patch,
+    because it requires changes to the interpreter.
 */
 
 // "@" indicates a point at which a statement can be inserted. XXX allow use of variables, as consts
@@ -29,7 +31,8 @@ David Anderson suggested creating the following recursive structures:
 var recursiveFunctions = [
   {
     // Unless the recursive call is in the tail position, this will throw.
-    text: "(function too_much_recursion(depth) { @; if (depth > 0) { @; too_much_recursion(depth - 1); @ } else { @ } @ })",
+    text: "(function too_much_recursion(depth) { @; if (depth > 0) { @; too_much_recursion(depth - 1); @ } "
+      + "else { @ } @ })",
     vars: ["depth"],
     args: function(d, b) { return singleRecursionDepth(d, b); },
     test: function(f) { try { f(5000); } catch (e) { } return true; },
@@ -41,21 +44,24 @@ var recursiveFunctions = [
     test: function(f) { return f(10) == 3628800; },
   },
   {
-    text: "(function factorial_tail(N, Acc) { @; if (N == 0) { @; return Acc; } @; return factorial_tail(N - 1, Acc * N); @ })",
+    text: "(function factorial_tail(N, Acc) { @; if (N == 0) { @; return Acc; } @; "
+      + "return factorial_tail(N - 1, Acc * N); @ })",
     vars: ["N", "Acc"],
     args: function(d, b) { return singleRecursionDepth(d, b) + ", 1"; },
     test: function(f) { return f(10, 1) == 3628800; },
   },
   {
     // two recursive calls
-    text: "(function fibonacci(N) { @; if (N <= 1) { @; return 1; } @; return fibonacci(N - 1) + fibonacci(N - 2); @ })",
+    text: "(function fibonacci(N) { @; if (N <= 1) { @; return 1; } @; "
+      + "return fibonacci(N - 1) + fibonacci(N - 2); @ })",
     vars: ["N"],
     args: function(d, b) { return "" + rnd(8); },
     test: function(f) { return f(6) == 13; },
   },
   {
     // do *anything* while indexing over mixed-type arrays
-    text: "(function a_indexing(array, start) { @; if (array.length == start) { @; return EXPR1; } var thisitem = array[start]; var recval = a_indexing(array, start + 1); STATEMENT1 })",
+    text: "(function a_indexing(array, start) { @; if (array.length == start) { @; return EXPR1; } "
+      + "var thisitem = array[start]; var recval = a_indexing(array, start + 1); STATEMENT1 })",
     vars: ["array", "start", "thisitem", "recval"],
     args: function(d, b) { return makeMixedTypeArray(d-1, b) + ", 0"; },
     testSub: function(text) { return text.replace(/EXPR1/, "0").replace(/STATEMENT1/, "return thisitem + recval;"); },
@@ -74,7 +80,8 @@ var recursiveFunctions = [
   },
   {
     // this lets us play a little with mixed-type arrays
-    text: "(function sum_indexing(array, start) { @; return array.length == start ? 0 : array[start] + sum_indexing(array, start + 1); })",
+    text: "(function sum_indexing(array, start) { @; "
+      + "return array.length == start ? 0 : array[start] + sum_indexing(array, start + 1); })",
     vars: ["array", "start"],
     args: function(d, b) { return makeMixedTypeArray(d-1, b) + ", 0"; },
     test: function(f) { return f([1, 2, 3, "4", 5, 6, 7], 0) == "123418"; },

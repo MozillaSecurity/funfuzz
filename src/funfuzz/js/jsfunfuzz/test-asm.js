@@ -25,7 +25,8 @@
 // Because we pass the 'sanePlease' flag to asmJSInterior,
 // * We don't expect any parse errors. (testOneAsmJSInterior currently relies on this.)
 // * We expect only the following asm.js type errors:
-//   * "numeric literal out of representable integer range" (https://github.com/dherman/asm.js/issues/67 makes composition hard)
+//   * "numeric literal out of representable integer range"
+//     (https://github.com/dherman/asm.js/issues/67 makes composition hard)
 //   * "no duplicate case labels" (because asmSwitchStatement doesn't avoid this)
 // * And the following, infrequently, due to out-of-range integer literals:
 //   * "one arg to int multiply must be a small (-2^20, 2^20) int literal"
@@ -96,7 +97,8 @@ var compareAsm = (function() {
 function nanBitsMayBeVisible(s)
 {
   // Does the code use more than one of {*int*, float32, or float64} views on the same array buffer?
-  return (s.indexOf("Uint") != -1 || s.indexOf("Int") != -1) + (s.indexOf("Float32Array") != -1) + (s.indexOf("Float64Array") != -1) > 1;
+  return (s.indexOf("Uint") != -1 || s.indexOf("Int") != -1)
+    + (s.indexOf("Float32Array") != -1) + (s.indexOf("Float64Array") != -1) > 1;
 }
 
 var pureForeign = {
