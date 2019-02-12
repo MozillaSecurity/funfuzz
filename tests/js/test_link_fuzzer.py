@@ -9,8 +9,6 @@
 import io
 import logging
 from pathlib import Path
-import tempfile
-import unittest
 
 from funfuzz.js import link_fuzzer
 
@@ -19,22 +17,21 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
-class LinkFuzzerTests(unittest.TestCase):
-    """"TestCase class for functions in link_fuzzer.py"""
-    @staticmethod
-    def test_link_fuzzer():
-        """Test that a full jsfunfuzz file can be created."""
-        with tempfile.TemporaryDirectory(suffix="link_fuzzer_test") as tmp_dir:
-            tmp_dir = Path(tmp_dir)
-            jsfunfuzz_tmp = tmp_dir / "jsfunfuzz.js"
+def test_link_fuzzer(tmpdir):
+    """Test that a full jsfunfuzz file can be created.
 
-            link_fuzzer.link_fuzzer(jsfunfuzz_tmp)
+    Args:
+        tmpdir (class): Fixture from pytest for creating a temporary directory
+    """
+    jsfunfuzz_tmp = Path(tmpdir) / "jsfunfuzz.js"
 
-            found = False
-            with io.open(str(jsfunfuzz_tmp), "r", encoding="utf-8", errors="replace") as f:
-                for line in f:
-                    if "It's looking good" in line:
-                        found = True
-                        break
+    link_fuzzer.link_fuzzer(jsfunfuzz_tmp)
 
-            assert found
+    found = False
+    with io.open(str(jsfunfuzz_tmp), "r", encoding="utf-8", errors="replace") as f:
+        for line in f:
+            if "It's looking good" in line:
+                found = True
+                break
+
+    assert found

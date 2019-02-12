@@ -8,8 +8,6 @@
 
 import logging
 from pathlib import Path
-import tempfile
-import unittest
 
 from funfuzz.util import os_ops
 
@@ -18,26 +16,26 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
-class OsOpsTests(unittest.TestCase):
-    """"TestCase class for functions in os_ops.py"""
-    @staticmethod
-    def test_make_wtmp_dir():
-        """Test that incrementally numbered wtmp directories can be created"""
-        with tempfile.TemporaryDirectory(suffix="make_wtmp_dir_test") as tmp_dir:
-            tmp_dir = Path(tmp_dir)
+def test_make_wtmp_dir(tmpdir):
+    """Test that incrementally numbered wtmp directories can be created.
 
-            wtmp_dir_1 = os_ops.make_wtmp_dir(tmp_dir)
-            assert wtmp_dir_1.is_dir()
-            assert wtmp_dir_1.name.endswith("1")
+    Args:
+        tmpdir (class): Fixture from pytest for creating a temporary directory
+    """
+    tmpdir = Path(tmpdir)
 
-            wtmp_dir_2 = os_ops.make_wtmp_dir(tmp_dir)
-            assert wtmp_dir_2.is_dir()
-            assert wtmp_dir_2.name.endswith("2")
+    wtmp_dir_1 = os_ops.make_wtmp_dir(tmpdir)
+    assert wtmp_dir_1.is_dir()
+    assert wtmp_dir_1.name.endswith("1")
 
-            wtmp_dir_3 = os_ops.make_wtmp_dir(tmp_dir)
-            assert wtmp_dir_3.is_dir()
-            assert wtmp_dir_3.name.endswith("3")
+    wtmp_dir_2 = os_ops.make_wtmp_dir(tmpdir)
+    assert wtmp_dir_2.is_dir()
+    assert wtmp_dir_2.name.endswith("2")
 
-            wtmp_dir_4 = os_ops.make_wtmp_dir(tmp_dir)
-            assert wtmp_dir_4.is_dir()
-            assert wtmp_dir_4.name.endswith("4")
+    wtmp_dir_3 = os_ops.make_wtmp_dir(tmpdir)
+    assert wtmp_dir_3.is_dir()
+    assert wtmp_dir_3.name.endswith("3")
+
+    wtmp_dir_4 = os_ops.make_wtmp_dir(tmpdir)
+    assert wtmp_dir_4.is_dir()
+    assert wtmp_dir_4.name.endswith("4")
