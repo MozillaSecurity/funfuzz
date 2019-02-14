@@ -7,7 +7,7 @@ module.exports = {
   "rules": {
     // Adapted from m-c rev 440407:2d2dee08739f (Fx64) tools/lint/eslint/.eslintrc.js
     "camelcase": "error",
-    "curly": ["error", "multi-line"],
+    "curly": ["error", "multi", "consistent"],
     "handle-callback-err": ["error", "er"],
     "indent": ["error", 2, {"SwitchCase": 1}],
     // Replaced by the "indent" rule
