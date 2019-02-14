@@ -96,12 +96,12 @@ var recursiveFunctions = [
 
 function singleRecursionDepth(d, b)
 {
-  if (rnd(2) === 0) {
+  if (rnd(2) === 0) 
     return "" + rnd(4);
-  }
-  if (rnd(10) === 0) {
+  
+  if (rnd(10) === 0) 
     return makeExpr(d - 2, b);
-  }
+  
   return "" + rnd(100000);
 }
 

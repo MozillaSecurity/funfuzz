@@ -73,10 +73,10 @@ function makeMathFunction(d, b, i)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var ivars = ["x", "y"];
-  if (rnd(10) == 0) {
+  if (rnd(10) == 0) 
     // Also use variables from the enclosing scope
     ivars = ivars.concat(b);
-  }
+  
   return "(function(x, y) { " + directivePrologue() + "return " + makeMathExpr(d, ivars, i) + "; })";
 }
 
@@ -86,9 +86,9 @@ function makeMathExpr(d, b, i)
 
   // As depth decreases, make it more likely to bottom out
   if (d < rnd(5)) {
-    if (rnd(4)) {
+    if (rnd(4)) 
       return Random.index(b);
-    }
+    
     return Random.index(numericVals);
   }
 
@@ -112,14 +112,14 @@ function makeMathExpr(d, b, i)
     }
   }
 
-  if (i > 0 && rnd(10) == 0) {
+  if (i > 0 && rnd(10) == 0) 
     // Call a *lower-numbered* mathy function. (This avoids infinite recursion.)
     return mc("mathy" + rnd(i) + "(" + mc(r()) + ", " + mc(r()) + ")");
-  }
+  
 
-  if (rnd(20) == 0) {
+  if (rnd(20) == 0) 
     return mc("(" + mc(r()) + " ? " + mc(r()) + " : " + mc(r()) + ")");
-  }
+  
 
   switch (rnd(4)) {
     /* eslint-disable no-multi-spaces */

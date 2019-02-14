@@ -26,9 +26,9 @@ if (jsshell) {
     // Run a diff between the help() outputs of different js shells.
     // Make sure the function to look out for is not located only in some
     // particular #ifdef, e.g. JS_GC_ZEAL, or controlled by --fuzzing-safe.
-    if (typeof wasmIsSupported == "function") {
+    if (typeof wasmIsSupported == "function") 
       engine = ENGINE_SPIDERMONKEY_TRUNK;
-    }
+    
 
     // Avoid accidentally waiting for user input that will never come.
     readline = function() {};

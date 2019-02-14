@@ -20,11 +20,11 @@
 //   * This creates the most "interesting" testcases.
 
 var tryRunning;
-if (xpcshell) { // Adapted from ternary operator - this longer form helps reducers reduce better
+if (xpcshell)  // Adapted from ternary operator - this longer form helps reducers reduce better
   tryRunning = useGeckoSandbox();
-} else {
+else 
   tryRunning = tryRunningDirectly;
-}
+
 
 function fillShellSandbox(sandbox)
 {

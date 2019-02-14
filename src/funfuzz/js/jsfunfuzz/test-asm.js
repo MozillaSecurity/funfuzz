@@ -70,9 +70,9 @@ var compareAsm = (function() {
       var x = asmvals[i];
       var fr = f(x);
       var gr = g(x);
-      if (!isSameNumber(fr, gr)) {
+      if (!isSameNumber(fr, gr)) 
         foundABug("asm mismatch", "(" + uneval(x) + ") -> " + uneval(fr) + " vs " + uneval(gr));
-      }
+      
     }
   }
 
@@ -84,9 +84,9 @@ var compareAsm = (function() {
         var y = asmvals[j];
         var fr = f(x, y);
         var gr = g(x, y);
-        if (!isSameNumber(fr, gr)) {
+        if (!isSameNumber(fr, gr)) 
           foundABug("asm mismatch", "(" + uneval(x) + ", " + uneval(y) + ") -> " + uneval(fr) + " vs " + uneval(gr));
-        }
+        
       }
     }
   }
@@ -114,13 +114,13 @@ var pureForeign = {
   stomp:     function() { },
 };
 
-for (var f in unaryMathFunctions) {
+for (var f in unaryMathFunctions) 
   pureForeign["Math_" + unaryMathFunctions[f]] = Math[unaryMathFunctions[f]];
-}
 
-for (var f in binaryMathFunctions) {
+
+for (var f in binaryMathFunctions) 
   pureForeign["Math_" + binaryMathFunctions[f]] = Math[binaryMathFunctions[f]];
-}
+
 
 var pureMathNames = Object.keys(pureForeign);
 

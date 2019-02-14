@@ -70,17 +70,17 @@ function hashStr(s)
 function testMathyFunction(f, inputs)
 {
   var results = [];
-  if (f) {
-    for (var j = 0; j < inputs.length; ++j) {
-      for (var k = 0; k < inputs.length; ++k) {
+  if (f) 
+    for (var j = 0; j < inputs.length; ++j) 
+      for (var k = 0; k < inputs.length; ++k) 
         try {
           results.push(f(inputs[j], inputs[k]));
         } catch (e) {
           results.push(errorToString(e));
         }
-      }
-    }
-  }
+      
+    
+  
   /* Use uneval to distinguish -0, 0, "0", etc. */
   /* Use hashStr to shorten the output and keep compare_jit files small. */
   print(hashStr(uneval(results)));
@@ -103,13 +103,13 @@ function makeMathyFunAndTest(d, b)
   var i = rnd(NUM_MATH_FUNCTIONS);
   var s = "";
 
-  if (rnd(5)) {
+  if (rnd(5)) 
     if (rnd(8)) {
       s += "mathy" + i + " = " + makeMathFunction(6, b, i) + "; ";
     } else {
       s += "mathy" + i + " = " + makeAsmJSFunction(6, b) + "; ";
     }
-  }
+  
 
   if (rnd(5)) {
     var inputsStr;

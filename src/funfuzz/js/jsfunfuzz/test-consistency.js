@@ -20,10 +20,10 @@ function sandboxResult(code, zone)
     var sandbox = newGlobal({sameZoneAs: zone});
 
     result = evalcx(code, sandbox);
-    if (typeof result != "object") {
+    if (typeof result != "object") 
       // Avoid cross-compartment excitement if it has a toString
       resultStr = "" + result;
-    }
+    
   } catch (e) {
     result = "Error: " + errorToString(e);
   }
@@ -39,9 +39,9 @@ function nestingConsistencyTest(code)
   var codeNestedOnce = nestExpr(code);
   var codeNestedDeep = code;
   var depth = (count % 7) + 14; // 16 might be special
-  for (var i = 0; i < depth; ++i) {
+  for (var i = 0; i < depth; ++i) 
     codeNestedDeep = nestExpr(codeNestedDeep);
-  }
+  
 
   // These are on the same line so that line numbers in stack traces will match.
   var resultO = sandboxResult(codeNestedOnce, null); var resultD = sandboxResult(codeNestedDeep, null);
@@ -49,10 +49,10 @@ function nestingConsistencyTest(code)
   // if (resultO != "" && resultO != "undefined" && resultO != "use strict")
   //   print("NestTest: " + resultO);
 
-  if (resultO != resultD) {
+  if (resultO != resultD) 
     foundABug("NestTest mismatch",
       "resultO: " + resultO + "\n" +
       "resultD: " + resultD);
-  }
+  
 }
 
