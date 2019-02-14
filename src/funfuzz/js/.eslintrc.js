@@ -4,12 +4,12 @@ module.exports = {
     "ecmaFeatures": {
       "jsx": true
     },
-    "sourceType": "module"
+    // "sourceType": "module"
   },
 
   "env": {
     "es6": true,
-    "node": true,
+    // "node": true,
     "mocha": true
   },
 
@@ -44,7 +44,7 @@ module.exports = {
       "functions": "never"
     }],
     "comma-spacing": ["error", { "before": false, "after": true }],
-    "comma-style": ["error", "last"],
+    "comma-style": ["off"],
     "constructor-super": "error",
     "curly": ["error", "multi-line"],
     "dot-location": ["error", "property"],
@@ -136,6 +136,7 @@ module.exports = {
     "no-self-assign": "error",
     "no-self-compare": "error",
     "no-sequences": "error",
+    "no-shadow": "error",
     "no-shadow-restricted-names": "error",
     "no-sparse-arrays": "error",
     "no-tabs": "error",
@@ -165,12 +166,14 @@ module.exports = {
     "object-curly-spacing": ["error", "always"],
     "object-property-newline": ["error", { "allowMultiplePropertiesPerLine": true }],
     "one-var": ["error", { "initialized": "never" }],
-    "operator-linebreak": ["error", "after", { "overrides": { "?": "before", ":": "before" } }],
+    // jsfunfuzz has mostly been written in the current style for a long time, may help line-based reducer Lithium too
+    "operator-linebreak": "off",
     "padded-blocks": ["error", { "blocks": "never", "switches": "never", "classes": "never" }],
     "prefer-promise-reject-errors": "error",
-    "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
+    // jsfunfuzz has mostly been written in the current style for a long time
+    "quotes": ["error", "double", { "avoidEscape": true, "allowTemplateLiterals": true }],
     "rest-spread-spacing": ["error", "never"],
-    "semi": ["error", "never"],
+    "semi": ["error", "always"],
     "semi-spacing": ["error", { "before": false, "after": true }],
     "space-before-blocks": ["error", "always"],
     "space-before-function-paren": ["error", "always"],
