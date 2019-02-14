@@ -423,8 +423,8 @@ function regressionTestDependencies(maintest)
 
     // Include web-platform-test-shims.js and testharness.js for streams tests
     if (maintest.indexOf("web-platform") != -1) {
-      files.push(js_src_tests_dir + "web-platform-test-shims.js");
-      files.push(w_pltfrm_res_dir + "testharness.js");
+      files.push(js_src_tests_dir + "web-platform-test-shims.js"); // eslint-disable-line camelcase
+      files.push(w_pltfrm_res_dir + "testharness.js"); // eslint-disable-line camelcase
     }
   }
 
