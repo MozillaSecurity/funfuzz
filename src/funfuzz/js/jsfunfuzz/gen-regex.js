@@ -27,8 +27,8 @@ var POTENTIAL_MATCHES = 10;
 
 // Stored captures
 var backrefHack = [];
-for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
-  backrefHack[i] = "";
+for (var j = 0; j < POTENTIAL_MATCHES; ++j) {
+  backrefHack[j] = "";
 }
 
 function regexNumberOfMatches()
