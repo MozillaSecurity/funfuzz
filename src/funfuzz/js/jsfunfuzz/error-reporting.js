@@ -3,6 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* exported confused, errorstack, errorToString, foundABug */
 /* global dumpln, jsshell, print, printImportant, quit */
 
 function confused(s)

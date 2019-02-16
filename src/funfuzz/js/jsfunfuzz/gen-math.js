@@ -3,6 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* exported makeMathFunction, NUM_MATH_FUNCTIONS */
 /* global directivePrologue, makeExpr, numericVals, Random, rnd, TOTALLY_RANDOM, totallyRandom */
 
 const NUM_MATH_FUNCTIONS = 6;

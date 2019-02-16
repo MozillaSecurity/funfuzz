@@ -3,6 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* exported makeRegisterStompFunction */
 /* global Random, rnd */
 
 // Using up all the registers can find bugs where a caller does not store its

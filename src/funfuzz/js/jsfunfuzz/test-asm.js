@@ -3,6 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* exported startAsmDifferential */
 /* global ArrayBuffer, asmJSInterior, binaryMathFunctions, dumpln, foundABug, gc, Int32Array, isAsmJSModule */
 /* global makeRegisterStompFunction, print, Random, rnd, unaryMathFunctions, uneval */
 
