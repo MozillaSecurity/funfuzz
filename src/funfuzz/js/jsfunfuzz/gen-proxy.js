@@ -6,14 +6,12 @@
 /* global bp:writable, makeExpr, makeFunction, Random, rnd, TOTALLY_RANDOM, totallyRandom */
 
 // In addition, can always use "undefined" or makeFunction
-// Forwarding proxy code based on http://wiki.ecmascript.org/doku.php?id=harmony:proxies
-//   "Example: a no-op forwarding proxy"
+// Forwarding proxy code based on http://wiki.ecmascript.org/doku.php?id=harmony:proxies "Example: a no-op forwarding proxy"
 // The letter 'x' is special.
 var proxyHandlerProperties = {
   getOwnPropertyDescriptor: {
     empty:    "function(){}",
-    forward:  "function(name) { var desc = Object.getOwnPropertyDescriptor(x); "
-      + "desc.configurable = true; return desc; }",
+    forward:  "function(name) { var desc = Object.getOwnPropertyDescriptor(x); desc.configurable = true; return desc; }",
     throwing: "function(name) { return {get: function() { throw 4; }, set: function() { throw 5; }}; }",
   },
   defineProperty: {
@@ -51,8 +49,7 @@ var proxyHandlerProperties = {
   get: {
     empty:    "function() { return undefined }",
     forward:  "function(receiver, name) { return x[name]; }",
-    bind:     "function(receiver, name) { var prop = x[name]; "
-      + "return (typeof prop) === 'function' ? prop.bind(x) : prop; }",
+    bind:     "function(receiver, name) { var prop = x[name]; return (typeof prop) === 'function' ? prop.bind(x) : prop; }",
   },
   set: {
     empty:    "function() { return true; }",

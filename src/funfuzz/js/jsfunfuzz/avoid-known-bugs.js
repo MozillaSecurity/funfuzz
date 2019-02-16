@@ -32,13 +32,13 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf(".findScripts") == -1              // Debugger; see bug 1250863
        && code.indexOf("Date") == -1                      // time marches on
        && code.indexOf("backtrace") == -1                 // shows memory addresses
-       && code.indexOf("drainAllocationsLog") == -1       // this returns an object with a timestamp, see bug 1066313
+       && code.indexOf("drainAllocationsLog") == -1       // drainAllocationsLog returns an object with a timestamp, see bug 1066313
        && code.indexOf("dumpObject") == -1                // shows heap addresses
        && code.indexOf("dumpHeap") == -1                  // shows heap addresses
        && code.indexOf("dumpStringRepresentation") == -1  // shows memory addresses
        && code.indexOf("evalInCooperativeThread") == -1   // causes diffs especially in --no-threads
-       && code.indexOf("evalInWorker") == -1              // causes diffs in --no-threads/--ion-offthread-compile=off
-       && code.indexOf("getBacktrace") == -1              // this returns memory addresses that differ based on flags
+       && code.indexOf("evalInWorker") == -1              // causes diffs in --no-threads vs --ion-offthread-compile=off
+       && code.indexOf("getBacktrace") == -1              // getBacktrace returns memory addresses which differs depending on flags
        && code.indexOf("getLcovInfo") == -1
        && code.indexOf("load") == -1                      // load()ed regression test might output dates, etc
        && code.indexOf("offThreadCompileScript") == -1    // causes diffs in --no-threads vs --ion-offthread-compile=off
@@ -49,15 +49,15 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("promiseID") == -1                 // Promise IDs are for debugger-use only
        && code.indexOf("runOffThreadScript") == -1
        && code.indexOf("shortestPaths") == -1             // See bug 1308743
-       && code.indexOf("inIon") == -1                     // may turn true after some runs/return a str w/--no-ion
-       && code.indexOf("inJit") == -1                     // may turn true after some runs/return a str w/--no-baseline
+       && code.indexOf("inIon") == -1                     // may become true after several iterations, or return a string with --no-ion
+       && code.indexOf("inJit") == -1                     // may become true after several iterations, or return a string with --no-baseline
        && code.indexOf("random") == -1
        && code.indexOf("timeout") == -1                   // time runs and crawls
     ,
 
     expectConsistentOutputAcrossIter: true
     // within-process, e.g. ignore the following items for nestTest mismatch
-       && code.indexOf("options") == -1  // options() - per-cx. Shell doesn't create new cx for each sandbox/compartment
+       && code.indexOf("options") == -1             // options() is per-cx, and the js shell doesn't create a new cx for each sandbox/compartment
     ,
 
     expectConsistentOutputAcrossJITs: true
@@ -69,7 +69,7 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("getAllocationMetadata") == -1        // see bug 1296243
        && code.indexOf(".length") == -1                      // bug 1027846
        /* eslint-disable no-control-regex */
-       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))  // doesn't seem to stay valid utf-8 aft. becoming Python
+       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))       // doesn't stay valid utf-8 after going through python (?)
        /* eslint-enable no-control-regex */
     ,
 
@@ -118,7 +118,7 @@ function unlikelyToHang(code)
   return true
     && code.indexOf("infloop") == -1
     && !( codeL.match( /for.*in.*uneval/ )) // can be slow to loop through the huge string uneval(this), for example
-    && !( codeL.match( /for.*for.*for/ )) // nested for loops (incl. for..in, array comprehensions) can take a while
+    && !( codeL.match( /for.*for.*for/ )) // nested for loops (including for..in, array comprehensions, etc) can take a while
     && !( codeL.match( /for.*for.*gc/ ))
   ;
 }

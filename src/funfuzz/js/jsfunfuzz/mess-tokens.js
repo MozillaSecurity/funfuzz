@@ -5,8 +5,7 @@
 
 /* global dumpln, Random, rnd, totallyRandom */
 
-// Each input to |cat| should be a token or so, OR a bigger logical piece (such as a call to makeExpr).
-//   Smaller than a token is ok too ;)
+// Each input to |cat| should be a token or so, OR a bigger logical piece (such as a call to makeExpr).  Smaller than a token is ok too ;)
 
 // When "torture" is true, it may do any of the following:
 // * skip a token
@@ -19,8 +18,7 @@
 
 // Even when not in "torture" mode, it may sneak in extra line breaks.
 
-// Why did I decide to toString at every step, instead of making larger and larger arrays
-//   (or more and more deeply nested arrays?).  no particular reason.
+// Why did I decide to toString at every step, instead of making larger and larger arrays (or more and more deeply nested arrays?).  no particular reason.
 
 function cat(toks)
 {
