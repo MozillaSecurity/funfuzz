@@ -27,9 +27,9 @@ var POTENTIAL_MATCHES = 10;
 
 // Stored captures
 var backrefHack = [];
-for (var j = 0; j < POTENTIAL_MATCHES; ++j) 
+for (var j = 0; j < POTENTIAL_MATCHES; ++j) {
   backrefHack[j] = "";
-
+}
 
 function regexNumberOfMatches()
 {
@@ -88,12 +88,12 @@ function quantifierHelper(pm, min, max, pms)
   var repeats = Math.min(min + rnd(max - min + 5) - 2, 10);
   var returnValue = "";
   for (var i = 0; i < repeats; i++)
-  
+  {
     if (rnd(100) < 80)
       returnValue = returnValue + pm;
     else
       returnValue = returnValue + Random.index(pms);
-  
+  }
   return returnValue;
 }
 
@@ -158,9 +158,9 @@ function regexGrouped(prefix, dr, postfix)
   var newStrings = [];
   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
     newStrings[i] = rnd(5) ? strings[i] : "";
-    if (prefix == "(" && strings[i].length < 40 && rnd(3) === 0) 
+    if (prefix == "(" && strings[i].length < 40 && rnd(3) === 0) {
       backrefHack[i] = strings[i];
-    
+    }
   }
   return [prefix + re + postfix, newStrings];
 }
@@ -182,9 +182,9 @@ function regexTerm()
 {
   var [re, oneString] = regexTermPair();
   var strings = [];
-  for (var i = 0; i < POTENTIAL_MATCHES; ++i) 
+  for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
     strings[i] = rnd(5) ? oneString : regexTermPair()[1];
-  
+  }
   return [re, strings];
 }
 
@@ -253,9 +253,9 @@ var regexBuiltInCharClasses = [
 // Returns POTENTIAL_MATCHES one-character strings, mostly consisting of the input characters
 function regexOneCharStringsWith(frequentChars) {
   var matches = [];
-  for (var i = 0; i < POTENTIAL_MATCHES; ++i) 
+  for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
     matches.push(rnd(8) ? Random.index(frequentChars) : String.fromCharCode(regexCharCode()));
-  
+  }
   return matches;
 }
 
@@ -264,9 +264,9 @@ function regexShortStringsWith(frequentChars) {
   var matches = [];
   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
     var s = "";
-    while (rnd(3)) 
+    while (rnd(3)) {
       s += rnd(4) ? Random.index(frequentChars) : String.fromCharCode(regexCharCode());
-    
+    }
     matches.push(s);
   }
   return matches;
@@ -302,9 +302,9 @@ function regexCharacterClass()
   var charBucket = [String.fromCharCode(regexCharCode())]; // from which potenial matches will be drawn
 
   var re = "[";
-  if (!inRange) 
+  if (!inRange) {
     re += "^";
-  
+  }
 
   var lo;
   var hi;
@@ -313,9 +313,9 @@ function regexCharacterClass()
     if (rnd(100) == 0) {
       // Confuse things by tossing in an extra "-"
       re += "-";
-      if (rnd(2)) 
+      if (rnd(2)) {
         re += String.fromCharCode(regexCharCode());
-      
+      }
     }
 
     if (rnd(3) == 1) {
@@ -328,11 +328,11 @@ function regexCharacterClass()
       // Add a range, like "a-z"
       var a = regexCharacter();
       var b = regexCharacter();
-      if ((a[1] <= b[1]) == !!rnd(10)) 
+      if ((a[1] <= b[1]) == !!rnd(10)) {
         [lo, hi] = [a, b];
-      else 
+      } else {
         [lo, hi] = [b, a];
-      
+      }
 
       re += lo[0] + "-" + hi[0];
       charBucket.push(String.fromCharCode(lo[1] + rnd(3) - 1));
@@ -353,8 +353,8 @@ function regexCharacterClass()
 function pickN(bucket, picks)
 {
   var picked = [];
-  for (var i = 0; i < picks; ++i) 
+  for (var i = 0; i < picks; ++i) {
     picked.push(Random.index(bucket));
-  
+  }
   return picked;
 }

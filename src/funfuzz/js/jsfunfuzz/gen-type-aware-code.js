@@ -107,9 +107,9 @@ var makeEvilCallback;
   {
     var s = "";
     var extras = rnd(4);
-    for (var i = 0; i < extras; ++i) 
+    for (var i = 0; i < extras; ++i) {
       s += "try { " + makeBuilderStatement(d - 2, b) + " } catch(e" + i + ") { } ";
-    
+    }
     s += makeBuilderStatement(d - 1, b);
     return s;
   }
@@ -263,9 +263,9 @@ var makeEvilCallback;
   {
     var arglist = [];
     arglist.push(f());
-    while (rnd(2)) 
+    while (rnd(2)) {
       arglist.push(f());
-    
+    }
     return arglist;
   }
 

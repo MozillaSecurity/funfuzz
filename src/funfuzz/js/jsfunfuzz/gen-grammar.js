@@ -24,9 +24,9 @@ function makeScript(d, ignoredB)
 
 function makeScriptBody(d, ignoredB)
 {
-  if (rnd(3) == 0) 
+  if (rnd(3) == 0) {
     return makeMathyFunAndTest(d, ["x"]);
-  
+  }
   return makeStatement(d, ["x"]);
 }
 
@@ -78,20 +78,20 @@ function forLoopHead(d, b, v, reps)
     case 0: // Generates constructs like `for (var x = 3; x > 0; x--) { ... }`
       sInit = Random.index(varBinderFor) + v + " = " + reps;
       sCond = v + " > 0";
-      if (rnd(2)) 
+      if (rnd(2)) {
         sNext = "--" + v;
-      else 
+      } else {
         sNext = v + "--";
-      
+      }
       break;
     default: // Generates constructs like `for (var x = 0; x < 3; x++) { ... }`
       sInit = Random.index(varBinderFor) + v + " = 0";
       sCond = v + " < " + reps;
-      if (rnd(2)) 
+      if (rnd(2)) {
         sNext = "++" + v;
-      else 
+      } else {
         sNext = v + "++";
-      
+      }
   }
 
   while (rnd(10) === 0)
@@ -420,39 +420,39 @@ var statementMakers = Random.weighted([
   // makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
 ]);
 
-if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) 
+if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) {
   statementMakers = statementMakers.concat([
     function(d, b) { return "oomTest(" + makeFunction(d - 1, b) + ")"; },
     function(d, b) { return "oomTest(" + makeFunction(d - 1, b) + ", { keepFailing: true })"; },
   ]);
-
+}
 
 
 function makeUseRegressionTest(d, b)
 {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  if (typeof regressionTestList != "object") 
+  if (typeof regressionTestList != "object") {
     return "/* no regression tests found */";
-  
+  }
 
   var maintest = regressionTestsRoot + Random.index(regressionTestList);
   var files = regressionTestDependencies(maintest);
 
   var s = "";
 
-  if (rnd(5) == 0) 
+  if (rnd(5) == 0) {
     // Many tests call assertEq, intending to throw if something unexpected happens.
     // Sometimes, override it with a function that compares but does not throw.
     s += "assertEq = function(x, y) { if (x != y) { print(0); } }; ";
-  
+  }
 
   for (var i = 0; i < files.length; ++i) {
     var file = files[i];
 
-    if (regressionTestIsEvil(read(file))) 
+    if (regressionTestIsEvil(read(file))) {
       continue;
-    
+    }
 
     switch (rnd(2)) {
       case 0:
@@ -472,14 +472,14 @@ function makeUseRegressionTest(d, b)
 
 function regressionTestIsEvil(contents)
 {
-  if (contents.indexOf("SIMD") != -1) 
+  if (contents.indexOf("SIMD") != -1) {
     // Disable SIMD testing until it's more stable (and we can get better stacks?)
     return true;
-  
-  if (contents.indexOf("print = ") != -1) 
+  }
+  if (contents.indexOf("print = ") != -1) {
     // A testcase that clobbers the |print| function would confuse js_interesting
     return true;
-  
+  }
   return false;
 }
 
@@ -505,11 +505,11 @@ function inlineTest(filename)
     "PerfMeasurement",
   ];
 
-  for (var f of noDiffTestingFunctions) 
-    if (s.indexOf(f) != -1) 
+  for (var f of noDiffTestingFunctions) {
+    if (s.indexOf(f) != -1) {
       return "/*NODIFF*/ " + s;
-    
-  
+    }
+  }
 
   return s;
 }
@@ -521,19 +521,19 @@ function regressionTestDependencies(maintest)
 
   if (rnd(3)) {
     // Include the chain of 'shell.js' files in their containing directories (starting from regressionTestsRoot)
-    for (var i = regressionTestsRoot.length; i < maintest.length; ++i) 
+    for (var i = regressionTestsRoot.length; i < maintest.length; ++i) {
       if (maintest.charAt(i) == "/" || maintest.charAt(i) == "\\") {
         var shelljs = maintest.substr(0, i + 1) + "shell.js";
-        if (regressionTestList.indexOf(shelljs) != -1) 
+        if (regressionTestList.indexOf(shelljs) != -1) {
           files.push(shelljs);
-        
+        }
       }
-    
+    }
 
     // Include prologue.js for jit-tests
-    if (maintest.indexOf("jit-test") != -1) 
+    if (maintest.indexOf("jit-test") != -1) {
       files.push(libdir + "prologue.js");
-    
+    }
 
     // Include web-platform-test-shims.js and testharness.js for streams tests
     if (maintest.indexOf("web-platform") != -1) {
@@ -561,18 +561,18 @@ function makeNamedFunctionAndUse(d, b) {
   var bv = formalArgList.length == 1 ? b.concat(formalArgList) : b;
   var declStatement = cat(["/*hhh*/function ", funcName, "(", formalArgList, ")", "{", makeStatement(d - 1, bv), "}"]);
   var useStatement;
-  if (rnd(2)) 
+  if (rnd(2)) {
     // Direct call
     useStatement = cat([funcName, "(", makeActualArgList(d, b), ")", ";"]);
-  else 
+  } else {
     // Any statement, allowed to use the name of the function
     useStatement = "/*iii*/" + makeStatement(d - 1, b.concat([funcName]));
-  
-  if (rnd(2)) 
+  }
+  if (rnd(2)) {
     return declStatement + useStatement;
-  else 
+  } else {
     return useStatement + declStatement;
-  
+  }
 }
 
 function makePrintStatement(d, b)
@@ -833,10 +833,10 @@ function makeTryBlock(d, b)
     s +=   cat(["catch", "(", catchId, ")", " { ", catchBlock, " } "]);
   }
 
-  if (numCatches == 0 || rnd(2) === 1) 
+  if (numCatches == 0 || rnd(2) === 1) {
     // Add a finally.
     s += cat(["finally", " { ", makeExceptionyStatement(d, b), " } "]);
-  
+  }
 
   return s;
 }
@@ -1221,21 +1221,21 @@ function makeTestingFunctionCall(d, b)
 
 // SpiderMonkey shell (but not xpcshell) has an "evalcx" function and a "newGlobal" function.
 // This tests sandboxes and cross-compartment wrappers.
-if (typeof evalcx == "function") 
+if (typeof evalcx == "function") {
   exprMakers = exprMakers.concat([
     function(d, b) { return makeGlobal(d, b); },
     function(d, b) { return "evalcx(" + uneval(makeScriptForEval(d, b)) + ", " + makeExpr(d, b) + ")"; },
     function(d, b) { return "evalcx(" + uneval(makeScriptForEval(d, b)) + ", " + makeGlobal(d, b) + ")"; },
   ]);
-
+}
 
 // xpcshell (but not SpiderMonkey shell) has some XPC wrappers available.
-if (typeof XPCNativeWrapper == "function") 
+if (typeof XPCNativeWrapper == "function") {
   exprMakers = exprMakers.extend([
     function(d, b) { return "new XPCNativeWrapper(" + makeExpr(d, b) + ")"; },
     function(d, b) { return "new XPCSafeJSObjectWrapper(" + makeExpr(d, b) + ")"; },
   ]);
-
+}
 
 function makeNewGlobalArg(d, b)
 {
@@ -1280,7 +1280,7 @@ function makeGlobal(d, b)
   return gs;
 }
 
-if (xpcshell) 
+if (xpcshell) {
   exprMakers = exprMakers.concat([
     function(d, b) { var n = rnd(4); return "newGeckoSandbox(" + n + ")"; },
     function(d, b) { var n = rnd(4); return "s" + n + " = newGeckoSandbox(" + n + ")"; },
@@ -1292,7 +1292,7 @@ if (xpcshell)
     function(d, b) { return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
     function(d, b) { return "(Components.classes ? quit() : gc()); }"; },
   ]);
-
+}
 
 
 function makeShapeyConstructor(d, b)
@@ -1305,17 +1305,17 @@ function makeShapeyConstructor(d, b)
 
   var nPropNames = rnd(6) + 1;
   var propNames = [];
-  for (var i = 0; i < nPropNames; ++i) 
+  for (var i = 0; i < nPropNames; ++i) {
     propNames[i] = makePropertyName(d, b);
-  
+  }
 
   var nStatements = rnd(11);
   for (var i = 0; i < nStatements; ++i) {
     var propName = Random.index(propNames);
     var tprop = t + "[" + propName + "]";
-    if (rnd(5) === 0) 
+    if (rnd(5) === 0) {
       funText += "if (" + (rnd(2) ? argName : makeExpr(d, bp)) + ") ";
-    
+    }
     switch (rnd(8)) {
       /* eslint-disable no-multi-spaces */
       case 0:  funText += "delete " + tprop + ";"; break;
@@ -1642,18 +1642,18 @@ var functionMakers = [
   function(d, b) { return Random.index(constructors); },
 ];
 
-if (typeof XPCNativeWrapper == "function") 
+if (typeof XPCNativeWrapper == "function") {
   functionMakers = functionMakers.concat([
     function(d, b) { return "XPCNativeWrapper"; },
     function(d, b) { return "XPCSafeJSObjectWrapper"; },
   ]);
+}
 
-
-if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) 
+if (typeof oomTest == "function" && engine != ENGINE_JAVASCRIPTCORE) {
   functionMakers = functionMakers.concat([
     function(d, b) { return "oomTest"; },
   ]);
-
+}
 
 
 
@@ -1694,9 +1694,9 @@ function makeTypedArrayStatements(d, b)
       statements += viewZero + " = " + makeNumber(d - 2, b) + "; ";
     bv.push(view + "[" + rnd(11) + "]");
   }
-  for (var j = 0; j < numExtraStatements; ++j) 
+  for (var j = 0; j < numExtraStatements; ++j) {
     statements += makeStatement(d - numExtraStatements, bv);
-  
+  }
   return statements;
 }
 
@@ -1795,14 +1795,14 @@ function makeFormalArgList(d, b)
   var argList = [];
 
   var nArgs = rnd(5) ? rnd(3) : rnd(100);
-  for (var i = 0; i < nArgs; ++i) 
+  for (var i = 0; i < nArgs; ++i) {
     argList.push(makeFormalArg(d - i, b));
-  
+  }
 
-  if (rnd(5) === 0) 
+  if (rnd(5) === 0) {
     // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/rest_parameters
     argList.push("..." + makeId(d, b));
-  
+  }
 
   return argList.join(", ");
 }
@@ -2071,9 +2071,9 @@ var termMakers = [
 function randomUnitStringLiteral()
 {
   var s = "\"\\u";
-  for (var i = 0; i < 4; ++i) 
+  for (var i = 0; i < 4; ++i) {
     s += "0123456789ABCDEF".charAt(rnd(16));
-  
+  }
   s += "\"";
   return s;
 }
@@ -2090,12 +2090,12 @@ function maybeMakeTerm(d, b)
 
 function makeCrazyToken()
 {
-  if (rnd(3) === 0) 
+  if (rnd(3) === 0) {
     return String.fromCharCode(32 + rnd(128 - 32));
-  
-  if (rnd(6) === 0) 
+  }
+  if (rnd(6) === 0) {
     return String.fromCharCode(rnd(65536));
-  
+  }
 
   return Random.index([
 
@@ -2245,9 +2245,9 @@ function makeMixedTypeArray(d, b)
   // Pick two to five values to use as array entries.
   var q = rnd(4) + 2;
   var picks = [];
-  for (var j = 0; j < q; ++j) 
+  for (var j = 0; j < q; ++j) {
     picks.push(mixedTypeArrayElem(d, b));
-  
+  }
 
   // Create a large array literal by randomly repeating the values.
   var c = [];
@@ -2258,9 +2258,9 @@ function makeMixedTypeArray(d, b)
     // (This is needed for shape warmup, but not for JIT warmup)
     var repeat = count === 0 ? rnd(4)===0 : rnd(50)===0;
     var repeats = repeat ? rnd(30) : 1;
-    for (var k = 0; k < repeats; ++k) 
+    for (var k = 0; k < repeats; ++k) {
       c.push(elem);
-    
+    }
   }
 
   return "/*MARR*/" + "[" + c.join(", ") + "]";

@@ -70,9 +70,9 @@ function MersenneTwister19937()
 
   this.seed = function(s) {
     mt[0] = s | 0;
-    for (mti=1; mti<N; mti++) 
+    for (mti=1; mti<N; mti++) {
       mt[mti] = Math.imul(1812433253, mt[mti-1] ^ (mt[mti-1] >>> 30)) + mti;
-    
+    }
   };
 
   /* eslint-disable camelcase */

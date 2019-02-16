@@ -21,9 +21,9 @@ function start(glob)
   // Can be set to true if makeStatement has side effects, such as crashing, so you have to reduce "the hard way".
   var dumpEachSeed = false;
 
-  if (dumpEachSeed) 
+  if (dumpEachSeed) {
     dumpln(cookie + "Random.init(0);");
-  
+  }
 
   mathInitFCM();
 
@@ -38,9 +38,9 @@ function start(glob)
     do {
       testOne();
       var elapsed1 = new Date() - lastTime;
-      if (elapsed1 > 1000) 
+      if (elapsed1 > 1000) {
         print("That took " + elapsed1 + "ms!");
-      
+      }
       lastTime = new Date();
     } while (lastTime - startTime < MAX_TOTAL_TIME);
   } else {
@@ -79,10 +79,10 @@ function start(glob)
 
     var code = makeScript(depth);
 
-    if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) 
+    if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
       code = "tryRunning = useSpidermonkeyShellSandbox(" + rnd(4) + ");";
       // print("Sane mode!")
-    
+    }
 
     //  if (rnd(10) === 1) {
     //    var dp = "/*infloop-deParen*/" + Random.index(deParen(code));

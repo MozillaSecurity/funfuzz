@@ -99,9 +99,9 @@ function makeProxyHandlerFactory(d, b)
 
     for (var p in proxyHandlerProperties) {
       var funText;
-      if (proxyHandlerProperties[p][preferred] && rnd(10) <= fidelity) 
+      if (proxyHandlerProperties[p][preferred] && rnd(10) <= fidelity) {
         funText = proxyMunge(proxyHandlerProperties[p][preferred], p);
-      else 
+      } else {
         switch (rnd(7)) {
           /* eslint-disable no-multi-spaces */
           case 0:  funText = makeFunction(d - 3, bp); break;
@@ -110,7 +110,7 @@ function makeProxyHandlerFactory(d, b)
           default: funText = proxyMunge(proxyHandlerProperties[p][fallback], p);
           /* eslint-enable no-multi-spaces */
         }
-      
+      }
       handlerFactoryText += p + ": " + funText + ", ";
     }
 

@@ -12,9 +12,9 @@ function makeRegisterStompFunction(d, b, pure)
 {
   var args = [];
   var nArgs = (rnd(10) ? rnd(20) : rnd(100)) + 1;
-  for (var i = 0; i < nArgs; ++i) 
+  for (var i = 0; i < nArgs; ++i) {
     args.push("a" + i);
-  
+  }
 
   var bv = b.concat(args);
 
@@ -42,7 +42,7 @@ function makeRegisterStompBody(d, b, pure)
     return value() + Random.index([" + ", " - ", " / ", " * ", " % ", " | ", " & ", " ^ "]) + value();
   }
 
-  while (rnd(100)) 
+  while (rnd(100)) {
     if (bv.length == 0 || rnd(4)) {
       var newVar = "r" + lastRVar;
       ++lastRVar;
@@ -53,7 +53,7 @@ function makeRegisterStompBody(d, b, pure)
     } else {
       s += Random.index(bv) + " = " + expr() + "; ";
     }
-  
+  }
 
   return s;
 }

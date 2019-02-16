@@ -73,10 +73,10 @@ function tryEnsureSanity()
   // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
   try { eval(""); } catch (e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
 
-  if (!this) 
+  if (!this) {
     // Strict mode. Great.
     return;
-  
+  }
 
   try {
     if ("__defineSetter__" in this) {
@@ -139,7 +139,7 @@ function tryItOut(code)
     dumpln("Compiling threw: " + errorToString(compileError));
   }
 
-  if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossJITs) 
+  if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossJITs) {
     if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 &&
         code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 &&
         code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
@@ -159,15 +159,15 @@ function tryItOut(code)
         nCode = "(function(){" + nCode + "})()";
       dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
     }
-  
+  }
 
-  if (tryRunning != tryRunningDirectly) 
+  if (tryRunning != tryRunningDirectly) {
     optionalTests(f, code, wtt);
-  
+  }
 
-  if (wtt.allowExec && f) 
+  if (wtt.allowExec && f) {
     tryRunning(f, code, wtt);
-  
+  }
 
   if (verbose)
     dumpln("Done trying out that function!");

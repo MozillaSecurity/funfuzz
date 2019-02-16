@@ -44,9 +44,9 @@ function asmJSInterior(foreignFunctions, sanePlease)
 function importForeign(foreignFunctions)
 {
   var s = "";
-  for (let h of foreignFunctions) 
+  for (let h of foreignFunctions) {
     s += "  var " + h + " = foreign." + h + ";\n";
-  
+  }
   return s;
 }
 
@@ -70,11 +70,11 @@ function asmJsFunction(globalEnv, name, ret, args)
   var env = {globalEnv: globalEnv, locals: locals, ret: ret};
 
   // Add assignment statements
-  if (locals.length) 
-    while (rnd(5)) 
+  if (locals.length) {
+    while (rnd(5)) {
       s += asmStatement("    ", env, 6);
-    
-  
+    }
+  }
 
   // Add the required return statement at the end of the function
   if (ret != "void" || rnd(2))
@@ -90,18 +90,18 @@ function asmStatement(indent, env, d)
   if (!env.globalEnv.sanePlease && rnd(100) === 0)
     return makeStatement(3, ["x"]);
 
-  if (rnd(5) === 0 && d > 0) 
+  if (rnd(5) === 0 && d > 0) {
     return indent + "{\n" + asmStatement(indent + "  ", env, d - 1) + indent + "}\n";
-  
-  if (rnd(20) === 0 && d > 3) 
+  }
+  if (rnd(20) === 0 && d > 3) {
     return asmSwitchStatement(indent, env, d);
-  
-  if (rnd(10) === 0) 
+  }
+  if (rnd(10) === 0) {
     return asmReturnStatement(indent, env);
-  
-  if (rnd(50) === 0 && env.globalEnv.foreignFunctions.length) 
+  }
+  if (rnd(50) === 0 && env.globalEnv.foreignFunctions.length) {
     return asmVoidCallStatement(indent, env);
-  
+  }
   if (rnd(100) === 0)
     return ";";
   return asmAssignmentStatement(indent, env);
@@ -114,20 +114,20 @@ function asmVoidCallStatement(indent, env)
 
 function asmAssignmentStatement(indent, env)
 {
-  if (rnd(5) === 0 || !env.locals.length) 
+  if (rnd(5) === 0 || !env.locals.length) {
     if (rnd(2)) {
       return indent + intishMemberExpr(8, env) + " = " + intishExpr(10, env) + ";\n";
     } else {
       return indent + doublishMemberExpr(8, env) + " = " + doublishExpr(10, env) + ";\n";
     }
-  
+  }
 
   var local = Random.index(env.locals);
-  if (local.charAt(0) == "d") 
+  if (local.charAt(0) == "d") {
     return indent + local + " = " + doubleExpr(10, env) + ";\n";
-  else 
+  } else {
     return indent + local + " = " + intExpr(10, env) + ";\n";
-  
+  }
 }
 
 function asmReturnStatement(indent, env)
@@ -382,24 +382,24 @@ function doubleLiteral()
 
 function positiveDoubleLiteral()
 {
-  if (rnd(3) === 0) 
+  if (rnd(3) === 0) {
     Random.index(["0.0", "1.0", "1.2345e60"]);
-  
+  }
 
   // A power of two
   var value = Math.pow(2, rnd(100) - 10);
 
   // One more or one less
-  if (rnd(3)) 
+  if (rnd(3)) {
     value += 1;
-  else if (value > 1 && rnd(2)) 
+  } else if (value > 1 && rnd(2)) {
     value -= 1;
-  
+  }
 
   var str = value + "";
-  if (str.indexOf(".") == -1) 
+  if (str.indexOf(".") == -1) {
     return str + ".0";
-  
+  }
   // Numbers with decimal parts, or numbers serialized with exponential notation
   return str;
 }
