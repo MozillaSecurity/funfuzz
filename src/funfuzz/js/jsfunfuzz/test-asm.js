@@ -41,7 +41,7 @@ var compareAsm = (function () {
     if (a === 0 && b === 0) { return 1 / a === 1 / b; }
 
     // Don't differentiate between NaNs
-    return a === b || (a !== a && b !== b);
+    return a === b || (a !== a && b !== b); // eslint-disable-line no-self-compare
   }
 
   var asmvals = [
