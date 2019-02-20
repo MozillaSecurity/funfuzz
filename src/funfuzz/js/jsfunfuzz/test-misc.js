@@ -61,7 +61,7 @@ function tryHalves (code) { // eslint-disable-line require-jsdoc
   try {
     firstHalf = code.substr(0, code.length / 2);
     if (verbose) { dumpln("First half: " + firstHalf); }
-    f = new Function(firstHalf);
+    f = new Function(firstHalf); // eslint-disable-line no-new-func
     void ("" + f);
   } catch (e) {
     if (verbose) { dumpln("First half compilation error: " + e); }
@@ -70,7 +70,7 @@ function tryHalves (code) { // eslint-disable-line require-jsdoc
   try {
     secondHalf = code.substr(code.length / 2, code.length);
     if (verbose) { dumpln("Second half: " + secondHalf); }
-    f = new Function(secondHalf);
+    f = new Function(secondHalf); // eslint-disable-line no-new-func
     void ("" + f);
   } catch (e) {
     if (verbose) { dumpln("Second half compilation error: " + e); }

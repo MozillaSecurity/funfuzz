@@ -14,7 +14,7 @@
 // Hack to make line numbers be consistent, to make spidermonkey
 // disassemble() comparison testing easier (e.g. for round-trip testing)
 function directEvalC (s) { var c; /* evil closureizer */ return eval(s); } // eslint-disable-line no-eval,require-jsdoc
-function newFun (s) { return new Function(s); } // eslint-disable-line require-jsdoc
+function newFun (s) { return new Function(s); } // eslint-disable-line no-new-func,require-jsdoc
 
 function tryRunningDirectly (f, code, wtt) { // eslint-disable-line require-jsdoc
   if (count % 23 == 3) {
@@ -119,7 +119,7 @@ function tryItOut (code) { // eslint-disable-line require-jsdoc
 
   var f;
   try {
-    f = new Function(code);
+    f = new Function(code); // eslint-disable-line no-new-func
   } catch (compileError) {
     dumpln("Compiling threw: " + errorToString(compileError));
   }

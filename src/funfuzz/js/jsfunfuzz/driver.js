@@ -95,7 +95,7 @@ function failsToCompileInTry (code) { // eslint-disable-line require-jsdoc
   // Why would this happen? One way is "let x, x"
   try {
     var codeInTry = "try { " + code + " } catch(e) { }";
-    void new Function(codeInTry);
+    void new Function(codeInTry); // eslint-disable-line no-new-func
     return false;
   } catch (e) {
     return true;
