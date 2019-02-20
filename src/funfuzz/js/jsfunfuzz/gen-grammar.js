@@ -17,18 +17,18 @@
  * GRAMMAR-BASED GENERATION *
  * ************************ */
 
-function makeScript (d, ignoredB) {
+function makeScript (d, ignoredB) { // eslint-disable-line require-jsdoc
   return directivePrologue() + makeScriptBody(d, ignoredB);
 }
 
-function makeScriptBody (d, ignoredB) {
+function makeScriptBody (d, ignoredB) { // eslint-disable-line require-jsdoc
   if (rnd(3) == 0) {
     return makeMathyFunAndTest(d, ["x"]);
   }
   return makeStatement(d, ["x"]);
 }
 
-function makeScriptForEval (d, b) {
+function makeScriptForEval (d, b) { // eslint-disable-line require-jsdoc
   switch (rnd(4)) {
     /* eslint-disable no-multi-spaces */
     case 0:  return makeExpr(d - 1, b);
@@ -40,7 +40,7 @@ function makeScriptForEval (d, b) {
 }
 
 // Statement or block of statements
-function makeStatement (d, b) {
+function makeStatement (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (rnd(2)) { return makeBuilderStatement(d, b); }
@@ -61,7 +61,7 @@ var varBinderFor = ["var ", "let ", ""]; // const is a syntax error in for loops
 // The reason there are several types of loops here is to create different
 // types of scripts without introducing infinite loops.
 
-function forLoopHead (d, b, v, reps) {
+function forLoopHead (d, b, v, reps) { // eslint-disable-line require-jsdoc
   var sInit = "";
   var sCond = "";
   var sNext = "";
@@ -102,7 +102,7 @@ function forLoopHead (d, b, v, reps) {
   return "for (" + sInit + "; " + sCond + "; " + sNext + ")";
 }
 
-function makeOpaqueIdiomaticLoop (d, b) {
+function makeOpaqueIdiomaticLoop (d, b) { // eslint-disable-line require-jsdoc
   var reps = loopCount();
   var vHidden = uniqueVarName();
   return "/*oLoop*/" + forLoopHead(d, b, vHidden, reps) + " { " +
@@ -110,7 +110,7 @@ function makeOpaqueIdiomaticLoop (d, b) {
       " } ";
 }
 
-function makeTransparentIdiomaticLoop (d, b) {
+function makeTransparentIdiomaticLoop (d, b) { // eslint-disable-line require-jsdoc
   var reps = loopCount();
   var vHidden = uniqueVarName();
   var vVisible = makeNewId(d, b);
@@ -121,7 +121,7 @@ function makeTransparentIdiomaticLoop (d, b) {
     " } ";
 }
 
-function makeBranchUnstableLoop (d, b) {
+function makeBranchUnstableLoop (d, b) { // eslint-disable-line require-jsdoc
   var reps = loopCount();
   var v = uniqueVarName();
   var mod = loopModulo();
@@ -132,14 +132,14 @@ function makeBranchUnstableLoop (d, b) {
     " } ";
 }
 
-function makeTypeUnstableLoop (d, b) {
+function makeTypeUnstableLoop (d, b) { // eslint-disable-line require-jsdoc
   var a = makeMixedTypeArray(d, b);
   var v = makeNewId(d, b);
   var bv = b.concat([v]);
   return "/*tLoop*/for (let " + v + " of " + a + ") { " + makeStatement(d - 2, bv) + " }";
 }
 
-function makeFunOnCallChain (d, b) {
+function makeFunOnCallChain (d, b) { // eslint-disable-line require-jsdoc
   var s = "arguments.callee";
   while (rnd(2)) { s += ".caller"; }
   return s;
@@ -307,7 +307,7 @@ if (typeof oomTest === "function" && engine != ENGINE_JAVASCRIPTCORE) {
   ]);
 }
 
-function makeUseRegressionTest (d, b) {
+function makeUseRegressionTest (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (typeof regressionTestList !== "object") {
@@ -347,7 +347,7 @@ function makeUseRegressionTest (d, b) {
   return s;
 }
 
-function regressionTestIsEvil (contents) {
+function regressionTestIsEvil (contents) { // eslint-disable-line require-jsdoc
   if (contents.indexOf("SIMD") != -1) {
     // Disable SIMD testing until it's more stable (and we can get better stacks?)
     return true;
@@ -359,7 +359,7 @@ function regressionTestIsEvil (contents) {
   return false;
 }
 
-function inlineTest (filename) {
+function inlineTest (filename) { // eslint-disable-line require-jsdoc
   // Inline a regression test, adding NODIFF (to disable differential testing) if it calls a testing function that might throw.
 
   const s = "/* " + filename + " */ " + read(filename) + "\n";
@@ -387,7 +387,7 @@ function inlineTest (filename) {
   return s;
 }
 
-function regressionTestDependencies (maintest) {
+function regressionTestDependencies (maintest) { // eslint-disable-line require-jsdoc
   var files = [];
 
   if (rnd(3)) {
@@ -417,12 +417,12 @@ function regressionTestDependencies (maintest) {
   return files;
 }
 
-function linkedList (x, n) {
+function linkedList (x, n) { // eslint-disable-line require-jsdoc
   for (var i = 0; i < n; ++i) { x = { a: x }; }
   return x;
 }
 
-function makeNamedFunctionAndUse (d, b) {
+function makeNamedFunctionAndUse (d, b) { // eslint-disable-line require-jsdoc
   // Use a unique function name to make it less likely that we'll accidentally make a recursive call
   var funcName = uniqueVarName();
   var formalArgList = makeFormalArgList(d, b);
@@ -443,22 +443,22 @@ function makeNamedFunctionAndUse (d, b) {
   }
 }
 
-function makePrintStatement (d, b) {
+function makePrintStatement (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(2) && b.length) { return "print(" + Random.index(b) + ");"; } else { return "print(" + makeExpr(d, b) + ");"; }
 }
 
-function maybeLabel () {
+function maybeLabel () { // eslint-disable-line require-jsdoc
   if (rnd(4) === 1) { return cat([Random.index(["L", "M"]), ":"]); } else { return ""; }
 }
 
-function uniqueVarName () {
+function uniqueVarName () { // eslint-disable-line require-jsdoc
   // Make a random variable name.
   var s = "";
   for (var i = 0; i < 6; ++i) { s += String.fromCharCode(97 + rnd(26)); } // a lowercase english letter
   return s;
 }
 
-function makeSwitchBody (d, b) {
+function makeSwitchBody (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var haveSomething = false;
@@ -493,7 +493,7 @@ function makeSwitchBody (d, b) {
   return output;
 }
 
-function makeLittleStatement (d, b) {
+function makeLittleStatement (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   d = d - 1;
@@ -546,7 +546,7 @@ var littleStatementMakers =
 
 // makeStatementOrBlock exists because often, things have different behaviors depending on where there are braces.
 // for example, if braces are added or removed, the meaning of "let" can change.
-function makeStatementOrBlock (d, b) {
+function makeStatementOrBlock (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   return (Random.index(statementBlockMakers))(d - 1, b);
@@ -561,7 +561,7 @@ var statementBlockMakers = [
 
 // Extra-hard testing for try/catch/finally and related things.
 
-function makeExceptionyStatement (d, b) {
+function makeExceptionyStatement (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   d = d - 1;
@@ -620,7 +620,7 @@ var exceptionyStatementMakers = [
 */
 ];
 
-function makeTryBlock (d, b) {
+function makeTryBlock (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   // Catches: 1/6 chance of having none
@@ -659,7 +659,7 @@ function makeTryBlock (d, b) {
 }
 
 // Creates a string that sorta makes sense as an expression
-function makeExpr (d, b) {
+function makeExpr (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (d <= 0 || (rnd(7) === 1)) { return makeTerm(d - 1, b); }
@@ -935,9 +935,9 @@ var fuzzTestingFunctions = fuzzTestingFunctionsCtor(!jsshell, fuzzTestingFunctio
 // Ensure that even if makeExpr returns "" or "1, 2", we only pass one argument to functions like schedulegc
 // (null || (" + makeExpr(d - 2, b) + "))
 // Darn, only |this| and local variables are safe: an expression with side effects breaks the statement-level compare_jit hack
-function fuzzTestingFunctionArg (d, b) { return "this"; }
+function fuzzTestingFunctionArg (d, b) { return "this"; } // eslint-disable-line require-jsdoc
 
-function makeTestingFunctionCall (d, b) {
+function makeTestingFunctionCall (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var callStatement = Random.index(fuzzTestingFunctions.testingFunctions)(d, b);
@@ -984,7 +984,7 @@ if (typeof XPCNativeWrapper === "function") {
   ]);
 }
 
-function makeNewGlobalArg (d, b) {
+function makeNewGlobalArg (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   // Make an options object to pass to the |newGlobal| shell builtin.
@@ -998,7 +998,7 @@ function makeNewGlobalArg (d, b) {
   return "{ " + propStrs.join(", ") + " }";
 }
 
-function makeGlobal (d, b) {
+function makeGlobal (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (rnd(10)) { return "this"; }
@@ -1029,7 +1029,7 @@ if (xpcshell) {
   ]);
 }
 
-function makeShapeyConstructor (d, b) {
+function makeShapeyConstructor (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
   var argName = uniqueVarName();
   var t = rnd(4) ? "this" : argName;
@@ -1076,15 +1076,15 @@ var propertyNameMakers = Random.weighted([
   { w: 5, v: function (d, b) { return simpleSource(Random.index(allMethodNames)); } }
 ]);
 
-function maybeNeg () { return rnd(5) ? "" : "-"; }
+function maybeNeg () { return rnd(5) ? "" : "-"; } // eslint-disable-line require-jsdoc
 
-function makePropertyName (d, b) {
+function makePropertyName (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   return (Random.index(propertyNameMakers))(d, b);
 }
 
-function makeShapeyConstructorLoop (d, b) {
+function makeShapeyConstructorLoop (d, b) { // eslint-disable-line require-jsdoc
   var a = makeIterable(d, b);
   var v = makeNewId(d, b);
   var v2 = uniqueVarName(d, b);
@@ -1099,7 +1099,7 @@ function makeShapeyConstructorLoop (d, b) {
   " }";
 }
 
-function makePropertyDescriptor (d, b) {
+function makePropertyDescriptor (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var s = "({";
@@ -1128,7 +1128,7 @@ function makePropertyDescriptor (d, b) {
   return s;
 }
 
-function makeBoolean (d, b) {
+function makeBoolean (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
   switch (rnd(4)) {
     /* eslint-disable no-multi-spaces */
@@ -1140,7 +1140,7 @@ function makeBoolean (d, b) {
   }
 }
 
-function makeObjLiteralPart (d, b) {
+function makeObjLiteralPart (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   switch (rnd(8)) {
@@ -1156,7 +1156,7 @@ function makeObjLiteralPart (d, b) {
   }
 }
 
-function makeToXFunction (d, b) {
+function makeToXFunction (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   switch (rnd(4)) {
@@ -1169,7 +1169,7 @@ function makeToXFunction (d, b) {
   }
 }
 
-function makeObjLiteralName (d, b) {
+function makeObjLiteralName (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   switch (rnd(6)) {
@@ -1183,7 +1183,7 @@ function makeObjLiteralName (d, b) {
   }
 }
 
-function makeFunction (d, b) {
+function makeFunction (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   d = d - 1;
@@ -1195,18 +1195,18 @@ function makeFunction (d, b) {
   return (Random.index(functionMakers))(d, b);
 }
 
-function maybeName (d, b) {
+function maybeName (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(2) === 0) { return " " + makeId(d, b) + " "; } else { return ""; }
 }
 
-function directivePrologue () {
+function directivePrologue () { // eslint-disable-line require-jsdoc
   var s = "";
   if (rnd(3) === 0) { s += '"use strict"; '; }
   if (rnd(30) === 0) { s += '"use asm"; '; }
   return s;
 }
 
-function makeFunctionBody (d, b) {
+function makeFunctionBody (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   switch (rnd(6)) {
@@ -1221,7 +1221,7 @@ function makeFunctionBody (d, b) {
   }
 }
 
-function functionPrefix () {
+function functionPrefix () { // eslint-disable-line require-jsdoc
   return (rnd(2) == 0 ? "" : "async ")
     + "function"
     + (rnd(2) == 0 ? "" : "*");
@@ -1336,7 +1336,7 @@ var typedArrayConstructors = [
   "Uint8ClampedArray"
 ];
 
-function makeTypedArrayStatements (d, b) {
+function makeTypedArrayStatements (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (d < 0) return "";
@@ -1364,7 +1364,7 @@ function makeTypedArrayStatements (d, b) {
   return statements;
 }
 
-function makeNumber (d, b) {
+function makeNumber (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var signStr = rnd(2) ? "-" : "";
@@ -1402,7 +1402,7 @@ function makeNumber (d, b) {
   }
 }
 
-function makeLetHead (d, b) {
+function makeLetHead (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var items = (d > 0 || rnd(2) === 0) ? rnd(10) + 1 : 1;
@@ -1416,7 +1416,7 @@ function makeLetHead (d, b) {
   return result;
 }
 
-function makeLetHeadItem (d, b) {
+function makeLetHeadItem (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   d = d - 1;
@@ -1424,7 +1424,7 @@ function makeLetHeadItem (d, b) {
   if (d < 0 || rnd(2) === 0) { return rnd(2) ? uniqueVarName() : makeId(d, b); } else if (rnd(5) === 0) { return makeDestructuringLValue(d, b) + " = " + makeExpr(d, b); } else { return makeId(d, b) + " = " + makeExpr(d, b); }
 }
 
-function makeActualArgList (d, b) {
+function makeActualArgList (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var nArgs = rnd(3);
@@ -1438,7 +1438,7 @@ function makeActualArgList (d, b) {
   return argList;
 }
 
-function makeFormalArgList (d, b) {
+function makeFormalArgList (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var argList = [];
@@ -1456,7 +1456,7 @@ function makeFormalArgList (d, b) {
   return argList.join(", ");
 }
 
-function makeFormalArg (d, b) {
+function makeFormalArg (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (rnd(8) === 1) { return makeDestructuringLValue(d, b); }
@@ -1464,13 +1464,13 @@ function makeFormalArg (d, b) {
   return makeId(d, b) + (rnd(5) ? "" : " = " + makeExpr(d, b));
 }
 
-function makeNewId (d, b) {
+function makeNewId (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   return Random.index(["a", "b", "c", "d", "e", "w", "x", "y", "z"]);
 }
 
-function makeId (d, b) {
+function makeId (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (rnd(3) === 1 && b.length) { return Random.index(b); }
@@ -1512,7 +1512,7 @@ function makeId (d, b) {
   // but bad things happen if you have "eval setter". so let's not put eval in this list.
 }
 
-function makeComprehension (d, b) {
+function makeComprehension (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (d < 0) { return ""; }
@@ -1532,12 +1532,12 @@ function makeComprehension (d, b) {
 }
 
 // for..in LHS can be a single variable OR it can be a destructuring array of exactly two elements.
-function makeForInLHS (d, b) {
+function makeForInLHS (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
   return makeLValue(d, b);
 }
 
-function makeLValue (d, b) {
+function makeLValue (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (d <= 0 || (rnd(2) === 1)) { return makeId(d - 1, b); }
@@ -1583,7 +1583,7 @@ var lvalueMakers = [
   function (d, b) { return makeExpr(d, b); }
 ];
 
-function makeDestructuringLValue (d, b) {
+function makeDestructuringLValue (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   d = d - 1;
@@ -1635,13 +1635,13 @@ var destructuringLValueMakers = [
 ];
 
 // Allow "holes".
-function maybeMakeDestructuringLValue (d, b) {
+function maybeMakeDestructuringLValue (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(2) === 0) { return ""; }
 
   return makeDestructuringLValue(d, b);
 }
 
-function makeTerm (d, b) {
+function makeTerm (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   return (Random.index(termMakers))(d, b);
@@ -1683,7 +1683,7 @@ var termMakers = [
   makeRegex
 ];
 
-function randomUnitStringLiteral () {
+function randomUnitStringLiteral () { // eslint-disable-line require-jsdoc
   var s = "\"\\u";
   for (var i = 0; i < 4; ++i) {
     s += "0123456789ABCDEF".charAt(rnd(16));
@@ -1692,11 +1692,11 @@ function randomUnitStringLiteral () {
   return s;
 }
 
-function maybeMakeTerm (d, b) {
+function maybeMakeTerm (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(2)) { return makeTerm(d - 1, b); } else { return ""; }
 }
 
-function makeCrazyToken () {
+function makeCrazyToken () { // eslint-disable-line require-jsdoc
   if (rnd(3) === 0) {
     return String.fromCharCode(32 + rnd(128 - 32));
   }
@@ -1747,7 +1747,7 @@ function makeCrazyToken () {
   ]);
 }
 
-function makeShapeyValue (d, b) {
+function makeShapeyValue (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (rnd(10) === 0) { return makeExpr(d, b); }
@@ -1829,14 +1829,14 @@ function makeShapeyValue (d, b) {
   return Random.index(Random.index(a));
 }
 
-function mixedTypeArrayElem (d, b) {
+function mixedTypeArrayElem (d, b) { // eslint-disable-line require-jsdoc
   while (true) {
     var s = makeShapeyValue(d - 3, b);
     if (s.length < 60) { return s; }
   }
 }
 
-function makeMixedTypeArray (d, b) {
+function makeMixedTypeArray (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   // Pick two to five values to use as array entries.
@@ -1863,7 +1863,7 @@ function makeMixedTypeArray (d, b) {
   return "/*MARR*/" + "[" + c.join(", ") + "]";
 }
 
-function makeArrayLiteral (d, b) {
+function makeArrayLiteral (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (rnd(2) === 0) { return makeMixedTypeArray(d, b); }
@@ -1873,7 +1873,7 @@ function makeArrayLiteral (d, b) {
   return "/*FARR*/" + "[" + elems.join(", ") + "]";
 }
 
-function makeArrayLiteralElem (d, b) {
+function makeArrayLiteralElem (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   switch (rnd(5)) {
@@ -1885,7 +1885,7 @@ function makeArrayLiteralElem (d, b) {
   }
 }
 
-function makeIterable (d, b) {
+function makeIterable (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (d < 1) { return "[]"; }
@@ -1919,7 +1919,7 @@ var iterableExprMakers = Random.weighted([
   { w: 1, v: makeExpr }
 ]);
 
-function strTimes (s, n) {
+function strTimes (s, n) { // eslint-disable-line require-jsdoc
   if (n == 0) return "";
   if (n == 1) return s;
   var s2 = s + s;
@@ -1929,14 +1929,14 @@ function strTimes (s, n) {
   return r ? m + s : m;
 }
 
-function makeAsmJSModule (d, b) {
+function makeAsmJSModule (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var interior = asmJSInterior([]);
   return '(function(stdlib, foreign, heap){ "use asm"; ' + interior + " })";
 }
 
-function makeAsmJSFunction (d, b) {
+function makeAsmJSFunction (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var interior = asmJSInterior(["ff"]);

@@ -71,7 +71,7 @@ var proxyHandlerProperties = {
   }
 };
 
-function makeProxyHandlerFactory (d, b) {
+function makeProxyHandlerFactory (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (d < 1) { return "({/*TOODEEP*/})"; }
@@ -118,12 +118,12 @@ function makeProxyHandlerFactory (d, b) {
   }
 }
 
-function proxyMunge (funText, p) {
+function proxyMunge (funText, p) { // eslint-disable-line require-jsdoc
   // funText = funText.replace(/\{/, "{ var yum = 'PCAL'; dumpln(yum + 'LED: " + p + "');");
   return funText;
 }
 
-function makeProxyHandler (d, b) {
+function makeProxyHandler (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   return makeProxyHandlerFactory(d, b) + "(" + makeExpr(d - 3, b) + ")";

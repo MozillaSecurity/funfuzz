@@ -68,11 +68,11 @@ var gcIsQuiet = !(gc()); // see bug 706433
 //   "recompile any loop that is run more than X times"
 // this should be set to the highest such X.
 var HOTLOOP = 60;
-function loopCount () { return rnd(rnd(HOTLOOP * 3)); }
-function loopModulo () { return (rnd(2) ? rnd(rnd(HOTLOOP * 2)) : rnd(5)) + 2; }
+function loopCount () { return rnd(rnd(HOTLOOP * 3)); } // eslint-disable-line require-jsdoc
+function loopModulo () { return (rnd(2) ? rnd(rnd(HOTLOOP * 2)) : rnd(5)) + 2; } // eslint-disable-line require-jsdoc
 
-function simpleSource (st) {
-  function hexify (c) {
+function simpleSource (st) { // eslint-disable-line require-jsdoc
+  function hexify (c) { // eslint-disable-line require-jsdoc
     var code = c.charCodeAt(0);
     var hex = code.toString(16);
     while (hex.length < 4) { hex = "0" + hex; }

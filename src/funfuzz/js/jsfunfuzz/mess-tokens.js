@@ -21,7 +21,7 @@
 
 // Why did I decide to toString at every step, instead of making larger and larger arrays (or more and more deeply nested arrays?).  no particular reason.
 
-function cat (toks) {
+function cat (toks) { // eslint-disable-line require-jsdoc
   if (rnd(1700) === 0) { return totallyRandom(2, ["x"]); }
 
   var torture = (rnd(1700) === 57);
@@ -100,17 +100,17 @@ var UNTERMINATED_COMMENT = "/*"; /* this comment is here so my text editor won't
 var UNTERMINATED_STRING_LITERAL = "'";
 var UNTERMINATED_REGEXP_LITERAL = "/";
 
-function maybeLineBreak () {
+function maybeLineBreak () { // eslint-disable-line require-jsdoc
   if (rnd(900) === 3) { return Random.index(["\r", "\n", "//h\n", "/*\n*/"]); } // line break to trigger semicolon insertion and stuff
   else if (rnd(400) === 3) { return rnd(2) ? "\u000C" : "\t"; } // weird space-like characters
   else { return ""; }
 }
 
-function maybeSpace () {
+function maybeSpace () { // eslint-disable-line require-jsdoc
   if (rnd(2) === 0) { return " "; } else { return ""; }
 }
 
-function stripSemicolon (c) {
+function stripSemicolon (c) { // eslint-disable-line require-jsdoc
   var len = c.length;
   if (c.charAt(len - 1) == ";") { return c.substr(0, len - 1); } else { return c; }
 }

@@ -56,7 +56,7 @@
    email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
 */
 
-function MersenneTwister19937 () {
+function MersenneTwister19937 () { // eslint-disable-line require-jsdoc
   const N = 624;
   const M = 397;
   const MAG01 = new Int32Array([0, 0x9908b0df]);
@@ -80,7 +80,7 @@ function MersenneTwister19937 () {
   this.import_mti = function (_mti) { mti = _mti; };
   /* eslint-enable camelcase */
 
-  function mag01 (y) {
+  function mag01 (y) { // eslint-disable-line require-jsdoc
     return MAG01[y & 0x1];
   }
 

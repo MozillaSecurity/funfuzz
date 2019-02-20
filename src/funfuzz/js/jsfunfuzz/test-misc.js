@@ -7,7 +7,7 @@
 /* global count, disassemble, dumpln, engine, ENGINE_SPIDERMONKEY_TRUNK, foundABug, getBuildConfiguration */
 /* global nestingConsistencyTest, Reflect, tryEnsureSanity, verbose */
 
-function optionalTests (f, code, wtt) {
+function optionalTests (f, code, wtt) { // eslint-disable-line require-jsdoc
   if (count % 100 == 1) {
     tryHalves(code);
   }
@@ -36,7 +36,7 @@ function optionalTests (f, code, wtt) {
   }
 }
 
-function testExpressionDecompiler (code) {
+function testExpressionDecompiler (code) { // eslint-disable-line require-jsdoc
   var fullCode = "(function() { try { \n" + code + "\n; throw 1; } catch(exx) { this.nnn.nnn } })()";
 
   try {
@@ -49,7 +49,7 @@ function testExpressionDecompiler (code) {
   }
 }
 
-function tryHalves (code) {
+function tryHalves (code) { // eslint-disable-line require-jsdoc
   // See if there are any especially horrible bugs that appear when the parser has to start/stop in the middle of something. this is kinda evil.
 
   // Stray "}"s are likely in secondHalf, so use new Function rather than eval.  "}" can't escape from new Function :)

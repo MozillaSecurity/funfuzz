@@ -7,7 +7,7 @@
 /* global count:writable, dumpln, engine, ENGINE_SPIDERMONKEY_TRUNK, jsshell */
 /* global makeScript, mathInitFCM, print, printImportant, Random, rnd, tryItOut, uneval */
 
-function start (glob) {
+function start (glob) { // eslint-disable-line require-jsdoc
   var fuzzSeed = Math.floor(Math.random() * Math.pow(2, 28));
   dumpln("fuzzSeed: " + fuzzSeed);
   Random.init(fuzzSeed);
@@ -47,7 +47,7 @@ function start (glob) {
     setTimeout(testStuffForAWhile, 200); // eslint-disable-line no-undef
   }
 
-  function testStuffForAWhile () {
+  function testStuffForAWhile () { // eslint-disable-line require-jsdoc
     for (var j = 0; j < 100; ++j) { testOne(); }
 
     if (count % 10000 < 100) { printImportant("Iterations: " + count); }
@@ -55,7 +55,7 @@ function start (glob) {
     setTimeout(testStuffForAWhile, 30); // eslint-disable-line no-undef
   }
 
-  function testOne () {
+  function testOne () { // eslint-disable-line require-jsdoc
     ++count;
 
     // Sometimes it makes sense to start with simpler functions:
@@ -91,7 +91,7 @@ function start (glob) {
   }
 }
 
-function failsToCompileInTry (code) {
+function failsToCompileInTry (code) { // eslint-disable-line require-jsdoc
   // Why would this happen? One way is "let x, x"
   try {
     var codeInTry = "try { " + code + " } catch(e) { }";

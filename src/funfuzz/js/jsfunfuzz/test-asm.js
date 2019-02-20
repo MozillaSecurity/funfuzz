@@ -34,7 +34,7 @@
 //   * "unsigned is not a subtype of signed or doublish" [Math.abs]
 
 var compareAsm = (function () {
-  function isSameNumber (a, b) {
+  function isSameNumber (a, b) { // eslint-disable-line require-jsdoc
     if (!(typeof a === "number" && typeof b === "number")) { return false; }
 
     // Differentiate between 0 and -0
@@ -59,7 +59,7 @@ var compareAsm = (function () {
   ];
   var asmvalsLen = asmvals.length;
 
-  function compareUnaryFunctions (f, g) {
+  function compareUnaryFunctions (f, g) { // eslint-disable-line require-jsdoc
     for (var i = 0; i < asmvalsLen; ++i) {
       var x = asmvals[i];
       var fr = f(x);
@@ -70,7 +70,7 @@ var compareAsm = (function () {
     }
   }
 
-  function compareBinaryFunctions (f, g) {
+  function compareBinaryFunctions (f, g) { // eslint-disable-line require-jsdoc
     for (var i = 0; i < asmvalsLen; ++i) {
       var x = asmvals[i];
       for (var j = 0; j < asmvalsLen; ++j) {
@@ -87,7 +87,7 @@ var compareAsm = (function () {
   return { compareUnaryFunctions: compareUnaryFunctions, compareBinaryFunctions: compareBinaryFunctions };
 })();
 
-function nanBitsMayBeVisible (s) {
+function nanBitsMayBeVisible (s) { // eslint-disable-line require-jsdoc
   // Does the code use more than one of {*int*, float32, or float64} views on the same array buffer?
   return (s.indexOf("Uint") != -1 || s.indexOf("Int") != -1) + (s.indexOf("Float32Array") != -1) + (s.indexOf("Float64Array") != -1) > 1;
 }
@@ -115,12 +115,12 @@ for (var f in binaryMathFunctions) {
 
 var pureMathNames = Object.keys(pureForeign);
 
-function generateAsmDifferential () {
+function generateAsmDifferential () { // eslint-disable-line require-jsdoc
   var foreignFunctions = rnd(10) ? [] : pureMathNames;
   return asmJSInterior(foreignFunctions, true);
 }
 
-function testAsmDifferential (stdlib, interior) {
+function testAsmDifferential (stdlib, interior) { // eslint-disable-line require-jsdoc
   if (nanBitsMayBeVisible(interior)) {
     dumpln("Skipping correctness test for asm module that could expose low bits of NaN");
     return;
@@ -145,7 +145,7 @@ function testAsmDifferential (stdlib, interior) {
 }
 
 // Call this instead of start() to run asm-differential tests
-function startAsmDifferential () {
+function startAsmDifferential () { // eslint-disable-line require-jsdoc
   var asmFuzzSeed = Math.floor(Math.random() * Math.pow(2, 28));
   dumpln("asmFuzzSeed: " + asmFuzzSeed);
   Random.init(asmFuzzSeed);

@@ -20,8 +20,8 @@ var makeEvilCallback;
   var ARRAY_SIZE = 20;
   var OBJECTS_PER_TYPE = 3;
   var smallPowersOfTwo = [1, 2, 4, 8]; // The largest typed array views are 64-bit aka 8-byte
-  function bufsize () { return rnd(ARRAY_SIZE) * Random.index(smallPowersOfTwo); }
-  function arrayIndex (d, b) {
+  function bufsize () { return rnd(ARRAY_SIZE) * Random.index(smallPowersOfTwo); } // eslint-disable-line require-jsdoc
+  function arrayIndex (d, b) { // eslint-disable-line require-jsdoc
     switch (rnd(8)) {
       /* eslint-disable no-multi-spaces */
       case 0:  return m("v");
@@ -33,7 +33,7 @@ var makeEvilCallback;
   }
 
   // Emit a variable name for type-abbreviation t.
-  function m (t) {
+  function m (t) { // eslint-disable-line require-jsdoc
     if (!t) { t = "aosmevbtihgfp"; }
     t = t.charAt(rnd(t.length));
     var name = t + rnd(OBJECTS_PER_TYPE);
@@ -47,13 +47,13 @@ var makeEvilCallback;
     }
   }
 
-  function val (d, b) {
+  function val (d, b) { // eslint-disable-line require-jsdoc
     if (rnd(10)) { return m(); }
     return makeExpr(d, b);
   }
 
   // Emit an assignment (or a roughly-equivalent getter)
-  function assign (d, b, t, rhs) {
+  function assign (d, b, t, rhs) { // eslint-disable-line require-jsdoc
     switch (rnd(18)) {
       // Could have two forms of the getter: one that computes it each time on demand,
       // and one that computes a constant-function closure
@@ -71,7 +71,7 @@ var makeEvilCallback;
     }
   }
 
-  function makeCounterClosure (d, b) {
+  function makeCounterClosure (d, b) { // eslint-disable-line require-jsdoc
     // A closure with a counter. Do stuff depending on the counter.
     var v = uniqueVarName();
     var infrequently = infrequentCondition(v, 10);
@@ -89,13 +89,13 @@ var makeEvilCallback;
       "})()");
   }
 
-  function fdecl (d, b) {
+  function fdecl (d, b) { // eslint-disable-line require-jsdoc
     var argName = m();
     var bv = b.concat([argName]);
     return "function " + m("f") + "(" + argName + ") " + makeFunctionBody(d, bv);
   }
 
-  function makeBuilderStatements (d, b) {
+  function makeBuilderStatements (d, b) { // eslint-disable-line require-jsdoc
     var s = "";
     var extras = rnd(4);
     for (var i = 0; i < extras; ++i) {
@@ -126,7 +126,7 @@ var makeEvilCallback;
 
   var handlerTraps = ["getOwnPropertyDescriptor", "defineProperty", "getOwnPropertyNames", "delete", "fix", "has", "hasOwn", "get", "set", "iterate", "enumerate", "keys"];
 
-  function forwardingHandler (d, b) {
+  function forwardingHandler (d, b) { // eslint-disable-line require-jsdoc
     return (
       "({" +
         "getOwnPropertyDescriptor: function(name) { Z; var desc = Object.getOwnPropertyDescriptor(X); desc.configurable = true; return desc; }, " +
@@ -155,11 +155,11 @@ var makeEvilCallback;
       });
   }
 
-  function propertyDescriptorPrefix (d, b) {
+  function propertyDescriptorPrefix (d, b) { // eslint-disable-line require-jsdoc
     return "configurable: " + makeBoolean(d, b) + ", " + "enumerable: " + makeBoolean(d, b) + ", ";
   }
 
-  function strToEval (d, b) {
+  function strToEval (d, b) { // eslint-disable-line require-jsdoc
     switch (rnd(5)) {
       /* eslint-disable no-multi-spaces */
       case 0:  return simpleSource(fdecl(d, b));
@@ -169,7 +169,7 @@ var makeEvilCallback;
     }
   }
 
-  function evaluateFlags (d, b) {
+  function evaluateFlags (d, b) { // eslint-disable-line require-jsdoc
     // Options are in js.cpp: Evaluate() and ParseCompileOptions()
     return ("({ global: " + m("g") +
       ", fileName: " + Random.index(["'evaluate.js'", "null"]) +
@@ -189,7 +189,7 @@ var makeEvilCallback;
   }
 
   var initializedEverything = false;
-  function initializeEverything (d, b) {
+  function initializeEverything (d, b) { // eslint-disable-line require-jsdoc
     if (initializedEverything) { return ";"; }
     initializedEverything = true;
 
@@ -215,7 +215,7 @@ var makeEvilCallback;
   //   Array.prototype.push.apply(a1, [x])
   //   Array.prototype.push.call(a1, x)
   //   a1.push(x)
-  function method (d, b, clazz, obj, meth, arglist) {
+  function method (d, b, clazz, obj, meth, arglist) { // eslint-disable-line require-jsdoc
     // Sometimes ignore our arguments
     if (rnd(10) == 0) { arglist = []; }
 
@@ -232,7 +232,7 @@ var makeEvilCallback;
     }
   }
 
-  function severalargs (f) {
+  function severalargs (f) { // eslint-disable-line require-jsdoc
     var arglist = [];
     arglist.push(f());
     while (rnd(2)) {
@@ -422,7 +422,7 @@ var makeEvilCallback;
   };
 })();
 
-function infrequentCondition (v, n) {
+function infrequentCondition (v, n) { // eslint-disable-line require-jsdoc
   switch (rnd(20)) {
     case 0: return true;
     case 1: return false;

@@ -89,7 +89,7 @@ var recursiveFunctions = [
   }
 ];
 
-function singleRecursionDepth (d, b) {
+function singleRecursionDepth (d, b) { // eslint-disable-line require-jsdoc
   if (rnd(2) === 0) {
     return "" + rnd(4);
   }
@@ -109,7 +109,7 @@ function singleRecursionDepth (d, b) {
   }
 })();
 
-function makeImmediateRecursiveCall (d, b, cheat1, cheat2) {
+function makeImmediateRecursiveCall (d, b, cheat1, cheat2) { // eslint-disable-line require-jsdoc
   if (rnd(10) !== 0) { return "(4277)"; }
 
   var a = (cheat1 == null) ? Random.index(recursiveFunctions) : recursiveFunctions[cheat1];

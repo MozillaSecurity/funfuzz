@@ -27,7 +27,7 @@ if (xpcshell) { // Adapted from ternary operator - this longer form helps reduce
   tryRunning = tryRunningDirectly;
 }
 
-function fillShellSandbox (sandbox) {
+function fillShellSandbox (sandbox) { // eslint-disable-line require-jsdoc
   var safeFuns = [
     "print",
     "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
@@ -53,7 +53,7 @@ function fillShellSandbox (sandbox) {
   return sandbox;
 }
 
-function useSpidermonkeyShellSandbox (sandboxType) {
+function useSpidermonkeyShellSandbox (sandboxType) { // eslint-disable-line require-jsdoc
   var primarySandbox;
 
   switch (sandboxType) {
@@ -80,7 +80,7 @@ function useSpidermonkeyShellSandbox (sandboxType) {
 // When in xpcshell,
 // * Run all testing in a sandbox so it doesn't accidentally wipe my hard drive.
 // * Test interaction between sandboxes with same or different principals.
-function newGeckoSandbox (n) {
+function newGeckoSandbox (n) { // eslint-disable-line require-jsdoc
   var t = (typeof n === "number") ? n : 1;
   var s = Components.utils.Sandbox("http://x" + t + ".example.com/"); // eslint-disable-line no-undef
 
@@ -94,7 +94,7 @@ function newGeckoSandbox (n) {
   return s;
 }
 
-function useGeckoSandbox () {
+function useGeckoSandbox () { // eslint-disable-line require-jsdoc
   var primarySandbox = newGeckoSandbox(0);
 
   return function (f, code, wtt) {

@@ -13,9 +13,10 @@
 
 // Hack to make line numbers be consistent, to make spidermonkey
 // disassemble() comparison testing easier (e.g. for round-trip testing)
-function directEvalC (s) { var c; /* evil closureizer */ return eval(s); } function newFun (s) { return new Function(s); }
+function directEvalC (s) { var c; /* evil closureizer */ return eval(s); } // eslint-disable-line require-jsdoc
+function newFun (s) { return new Function(s); } // eslint-disable-line require-jsdoc
 
-function tryRunningDirectly (f, code, wtt) {
+function tryRunningDirectly (f, code, wtt) { // eslint-disable-line require-jsdoc
   if (count % 23 == 3) {
     dumpln("Plain eval!");
     try { eval(code); } catch (e) { }
@@ -49,7 +50,7 @@ var realGC = gc;
 var realUneval = uneval;
 var realToString = toString;
 
-function tryEnsureSanity () {
+function tryEnsureSanity () { // eslint-disable-line require-jsdoc
   // The script might have set up oomAfterAllocations or oomAtAllocation.
   // Turn it off so we can test only generated code with it.
   try {
@@ -96,7 +97,7 @@ function tryEnsureSanity () {
   if (Function != realFunction) { confused("Fuzz script replaced |Function|"); }
 }
 
-function tryItOut (code) {
+function tryItOut (code) { // eslint-disable-line require-jsdoc
   // Accidentally leaving gczeal enabled for a long time would make jsfunfuzz really slow.
   if (typeof gczeal === "function") { gczeal(0); }
 

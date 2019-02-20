@@ -32,12 +32,12 @@ for (var j = 0; j < POTENTIAL_MATCHES; ++j) {
   backrefHack[j] = "";
 }
 
-function regexNumberOfMatches () {
+function regexNumberOfMatches () { // eslint-disable-line require-jsdoc
   if (rnd(10)) { return rnd(5); }
   return Math.pow(2, rnd(40)) + rnd(3) - 1;
 }
 
-function regexPattern (depth, parentWasQuantifier) {
+function regexPattern (depth, parentWasQuantifier) { // eslint-disable-line require-jsdoc
   if (depth == 0 || (rnd(depth) == 0)) { return regexTerm(); }
 
   var dr = depth - 1;
@@ -75,7 +75,7 @@ var regexMakers =
   ]
 ];
 
-function quantifierHelper (pm, min, max, pms) {
+function quantifierHelper (pm, min, max, pms) { // eslint-disable-line require-jsdoc
   var repeats = Math.min(min + rnd(max - min + 5) - 2, 10);
   var returnValue = "";
   for (var i = 0; i < repeats; i++) {
@@ -84,14 +84,14 @@ function quantifierHelper (pm, min, max, pms) {
   return returnValue;
 }
 
-function regexQuantified (dr, operator, min, max) {
+function regexQuantified (dr, operator, min, max) { // eslint-disable-line require-jsdoc
   var [re, pms] = regexPattern(dr, true);
   var newpms = [];
   for (var i = 0; i < POTENTIAL_MATCHES; i++) { newpms[i] = quantifierHelper(pms[i], min, max, pms); }
   return [re + operator, newpms];
 }
 
-function regexConcatenation (dr) {
+function regexConcatenation (dr) { // eslint-disable-line require-jsdoc
   var [re1, strings1] = regexPattern(dr, false);
   var [re2, strings2] = regexPattern(dr, false);
   var newStrings = [];
@@ -104,7 +104,7 @@ function regexConcatenation (dr) {
   return [re1 + re2, newStrings];
 }
 
-function regexDisjunction (dr) {
+function regexDisjunction (dr) { // eslint-disable-line require-jsdoc
   var [re1, strings1] = regexPattern(dr, false);
   var [re2, strings2] = regexPattern(dr, false);
   var newStrings = [];
@@ -116,7 +116,7 @@ function regexDisjunction (dr) {
   return [re1 + "|" + re2, newStrings];
 }
 
-function regexGrouped (prefix, dr, postfix) {
+function regexGrouped (prefix, dr, postfix) { // eslint-disable-line require-jsdoc
   var [re, strings] = regexPattern(dr, false);
   var newStrings = [];
   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
@@ -140,7 +140,7 @@ var hexDigits = [
   "A", "B", "C", "D", "E", "F"
 ];
 
-function regexTerm () {
+function regexTerm () { // eslint-disable-line require-jsdoc
   var [re, oneString] = regexTermPair();
   var strings = [];
   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
@@ -149,7 +149,7 @@ function regexTerm () {
   return [re, strings];
 }
 
-function regexCharCode () {
+function regexCharCode () { // eslint-disable-line require-jsdoc
   return rnd(2) ? rnd(256) : rnd(65536);
 }
 
@@ -175,7 +175,7 @@ var regexCharacterMakers = Random.weighted([
   { w: 5, v: function () { var fourHex = Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits); return ["\\u" + fourHex, parseInt(fourHex, 16)]; } }
 ]);
 
-function regexCharacter () {
+function regexCharacter () { // eslint-disable-line require-jsdoc
   var [matcher, charcode] = Random.index(regexCharacterMakers)();
   switch (rnd(10)) {
     /* eslint-disable no-multi-spaces */
@@ -194,7 +194,7 @@ var regexBuiltInCharClasses = [
 ];
 
 // Returns POTENTIAL_MATCHES one-character strings, mostly consisting of the input characters
-function regexOneCharStringsWith (frequentChars) {
+function regexOneCharStringsWith (frequentChars) { // eslint-disable-line require-jsdoc
   var matches = [];
   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
     matches.push(rnd(8) ? Random.index(frequentChars) : String.fromCharCode(regexCharCode()));
@@ -203,7 +203,7 @@ function regexOneCharStringsWith (frequentChars) {
 }
 
 // Returns POTENTIAL_MATCHES short strings, using the input characters a lot.
-function regexShortStringsWith (frequentChars) {
+function regexShortStringsWith (frequentChars) { // eslint-disable-line require-jsdoc
   var matches = [];
   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
     var s = "";
@@ -228,13 +228,13 @@ var regexTermMakers =
     /* eslint-enable no-multi-spaces */
   ];
 
-function regexTerm () {
+function regexTerm () { // eslint-disable-line require-jsdoc
   return Random.index(regexTermMakers)();
 }
 
 // Returns a pair: [(regex char class), (POTENTIAL_MATCHES number of strings that might match)]
 // e.g. ["[a-z0-9]", ["a", "8", ...]]
-function regexCharacterClass () {
+function regexCharacterClass () { // eslint-disable-line require-jsdoc
   var ranges = rnd(5);
   var inRange = rnd(2);
   var charBucket = [String.fromCharCode(regexCharCode())]; // from which potenial matches will be drawn
@@ -288,7 +288,7 @@ function regexCharacterClass () {
   return [re, pickN(charBucket, POTENTIAL_MATCHES)];
 }
 
-function pickN (bucket, picks) {
+function pickN (bucket, picks) { // eslint-disable-line require-jsdoc
   var picked = [];
   for (var i = 0; i < picks; ++i) {
     picked.push(Random.index(bucket));

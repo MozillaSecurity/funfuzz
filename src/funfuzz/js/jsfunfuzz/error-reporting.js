@@ -6,7 +6,7 @@
 /* exported confused, errorstack, errorToString, foundABug */
 /* global dumpln, jsshell, print, printImportant, quit */
 
-function confused (s) {
+function confused (s) { // eslint-disable-line require-jsdoc
   if (jsshell) {
     // Magic string that js_interesting looks for
     // Currently disabled until its use can be figured out
@@ -17,7 +17,7 @@ function confused (s) {
   }
 }
 
-function foundABug (summary, details) {
+function foundABug (summary, details) { // eslint-disable-line require-jsdoc
   // Magic pair of strings that js_interesting looks for
   // Break up the following string so internal js functions do not print it deliberately
   printImportant("Found" + " a bug: " + summary);
@@ -30,7 +30,7 @@ function foundABug (summary, details) {
   }
 }
 
-function errorToString (e) {
+function errorToString (e) { // eslint-disable-line require-jsdoc
   try {
     return ("" + e);
   } catch (e2) {
@@ -38,7 +38,7 @@ function errorToString (e) {
   }
 }
 
-function errorstack () {
+function errorstack () { // eslint-disable-line require-jsdoc
   print("EEE");
   try {
     void ([].qwerty.qwerty);
