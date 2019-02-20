@@ -140,15 +140,6 @@ var hexDigits = [
   "A", "B", "C", "D", "E", "F"
 ];
 
-function regexTerm () { // eslint-disable-line require-jsdoc
-  var [re, oneString] = regexTermPair();
-  var strings = [];
-  for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
-    strings[i] = rnd(5) ? oneString : regexTermPair()[1];
-  }
-  return [re, strings];
-}
-
 function regexCharCode () { // eslint-disable-line require-jsdoc
   return rnd(2) ? rnd(256) : rnd(65536);
 }
@@ -232,6 +223,16 @@ function regexTerm () { // eslint-disable-line require-jsdoc
   return Random.index(regexTermMakers)();
 }
 
+// Alternative regexTerm implementation that was no longer used
+// function regexTerm () { // eslint-disable-line require-jsdoc
+//   var [re, oneString] = regexTermPair();
+//   var strings = [];
+//   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
+//     strings[i] = rnd(5) ? oneString : regexTermPair()[1];
+//   }
+//   return [re, strings];
+// }
+
 // Returns a pair: [(regex char class), (POTENTIAL_MATCHES number of strings that might match)]
 // e.g. ["[a-z0-9]", ["a", "8", ...]]
 function regexCharacterClass () { // eslint-disable-line require-jsdoc
@@ -278,9 +279,9 @@ function regexCharacterClass () { // eslint-disable-line require-jsdoc
       charBucket.push(String.fromCharCode(lo[1] + rnd(Math.max(hi[1] - lo[1], 1)))); // something in the middle
     } else {
       // Add a single character
-      var a = regexCharacter();
-      re += a[0];
-      charBucket.push(String.fromCharCode(a[1]));
+      let c = regexCharacter();
+      re += c[0];
+      charBucket.push(String.fromCharCode(c[1]));
     }
   }
 

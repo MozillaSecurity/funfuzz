@@ -105,11 +105,11 @@ var pureForeign = {
   stomp: function () { }
 };
 
-for (var f in unaryMathFunctions) {
+for (let f in unaryMathFunctions) {
   pureForeign["Math_" + unaryMathFunctions[f]] = Math[unaryMathFunctions[f]];
 }
 
-for (var f in binaryMathFunctions) {
+for (let f in binaryMathFunctions) {
   pureForeign["Math_" + binaryMathFunctions[f]] = Math[binaryMathFunctions[f]];
 }
 

@@ -639,16 +639,16 @@ function makeTryBlock (d, b) { // eslint-disable-line require-jsdoc
   while (rnd(3) === 0) {
     // Add a guarded catch, using an expression or a function call.
     ++numCatches;
-    var catchId = makeId(d, b);
-    var catchBlock = makeExceptionyStatement(d, b.concat([catchId]));
+    let catchId = makeId(d, b);
+    let catchBlock = makeExceptionyStatement(d, b.concat([catchId]));
     if (rnd(2)) { s += cat(["catch", "(", catchId, " if ", makeExpr(d, b), ")", " { ", catchBlock, " } "]); } else { s += cat(["catch", "(", catchId, " if ", "(function(){", makeExceptionyStatement(d, b), "})())", " { ", catchBlock, " } "]); }
   }
 
   if (rnd(2)) {
     // Add an unguarded catch.
     ++numCatches;
-    var catchId = makeId(d, b);
-    var catchBlock = makeExceptionyStatement(d, b.concat([catchId]));
+    let catchId = makeId(d, b); // eslint-disable-line no-redeclare
+    let catchBlock = makeExceptionyStatement(d, b.concat([catchId])); // eslint-disable-line no-redeclare
     s += cat(["catch", "(", catchId, ")", " { ", catchBlock, " } "]);
   }
 
@@ -1045,7 +1045,7 @@ function makeShapeyConstructor (d, b) { // eslint-disable-line require-jsdoc
   }
 
   var nStatements = rnd(11);
-  for (var i = 0; i < nStatements; ++i) {
+  for (var j = 0; j < nStatements; ++j) {
     var propName = Random.index(propNames);
     var tprop = t + "[" + propName + "]";
     if (rnd(5) === 0) {
@@ -1360,7 +1360,7 @@ function makeTypedArrayStatements (d, b) { // eslint-disable-line require-jsdoc
     if (rnd(3)) { statements += viewZero + " = " + makeNumber(d - 2, b) + "; "; }
     bv.push(view + "[" + rnd(11) + "]");
   }
-  for (var j = 0; j < numExtraStatements; ++j) {
+  for (var k = 0; k < numExtraStatements; ++k) {
     statements += makeStatement(d - numExtraStatements, bv);
   }
   return statements;
@@ -1844,7 +1844,7 @@ function makeMixedTypeArray (d, b) { // eslint-disable-line require-jsdoc
   // Pick two to five values to use as array entries.
   var q = rnd(4) + 2;
   var picks = [];
-  for (var j = 0; j < q; ++j) {
+  for (var i = 0; i < q; ++i) {
     picks.push(mixedTypeArrayElem(d, b));
   }
 
