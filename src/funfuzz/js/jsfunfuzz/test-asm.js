@@ -89,7 +89,7 @@ var compareAsm = (function () {
 
 function nanBitsMayBeVisible (s) { // eslint-disable-line require-jsdoc
   // Does the code use more than one of {*int*, float32, or float64} views on the same array buffer?
-  return (s.indexOf("Uint") != -1 || s.indexOf("Int") != -1) + (s.indexOf("Float32Array") != -1) + (s.indexOf("Float64Array") != -1) > 1;
+  return (s.indexOf("Uint") !== -1 || s.indexOf("Int") !== -1) + (s.indexOf("Float32Array") !== -1) + (s.indexOf("Float64Array") !== -1) > 1;
 }
 
 var pureForeign = {

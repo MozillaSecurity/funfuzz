@@ -69,7 +69,7 @@ function asmJsFunction (globalEnv, name, ret, args) { // eslint-disable-line req
   }
 
   // Add the required return statement at the end of the function
-  if (ret != "void" || rnd(2)) { s += asmReturnStatement("    ", env); }
+  if (ret !== "void" || rnd(2)) { s += asmReturnStatement("    ", env); }
 
   s += "  }\n";
 
@@ -109,7 +109,7 @@ function asmAssignmentStatement (indent, env) { // eslint-disable-line require-j
   }
 
   var local = Random.index(env.locals);
-  if (local.charAt(0) == "d") {
+  if (local.charAt(0) === "d") {
     return indent + local + " = " + doubleExpr(10, env) + ";\n";
   } else {
     return indent + local + " = " + intExpr(10, env) + ";\n";
@@ -118,9 +118,9 @@ function asmAssignmentStatement (indent, env) { // eslint-disable-line require-j
 
 function asmReturnStatement (indent, env) { // eslint-disable-line require-jsdoc
   var ret = rnd(2) ? env.ret : Random.index(["double", "signed", "void"]); // eslint-disable-line no-unused-vars
-  if (env.ret == "double") {
+  if (env.ret === "double") {
     return indent + "return +" + doublishExpr(10, env) + ";\n";
-  } else if (env.ret == "signed") {
+  } else if (env.ret === "signed") {
     return indent + "return (" + intishExpr(10, env) + ")|0;\n";
   } else { // (env.ret == "void")
     return indent + "return;\n";
@@ -146,7 +146,7 @@ function parameterTypeAnnotations (args) { // eslint-disable-line require-jsdoc
   var s = "";
   for (var a = 0; a < args.length; ++a) {
     var arg = args[a];
-    if (arg.charAt(0) == "i") { s += "    " + arg + " = " + arg + "|0;\n"; } else { s += "    " + arg + " = " + "+" + arg + ";\n"; }
+    if (arg.charAt(0) === "i") { s += "    " + arg + " = " + arg + "|0;\n"; } else { s += "    " + arg + " = " + "+" + arg + ";\n"; }
   }
   return s;
 }
@@ -305,7 +305,7 @@ function intVar (e) { // eslint-disable-line require-jsdoc
   var locals = e.locals;
   if (!locals.length) { return intLiteralRange(-0x8000000, 0xffffffff); }
   var local = Random.index(locals);
-  if (local.charAt(0) == "i") { return local; }
+  if (local.charAt(0) === "i") { return local; }
   return intLiteralRange(-0x8000000, 0xffffffff);
 }
 
@@ -313,7 +313,7 @@ function doubleVar (e) { // eslint-disable-line require-jsdoc
   var locals = e.locals;
   if (!locals.length) { return doubleLiteral(); }
   var local = Random.index(locals);
-  if (local.charAt(0) == "d") { return local; }
+  if (local.charAt(0) === "d") { return local; }
   return doubleLiteral();
 }
 
@@ -337,7 +337,7 @@ function positiveDoubleLiteral () { // eslint-disable-line require-jsdoc
   }
 
   var str = value + "";
-  if (str.indexOf(".") == -1) {
+  if (str.indexOf(".") === -1) {
     return str + ".0";
   }
   // Numbers with decimal parts, or numbers serialized with exponential notation

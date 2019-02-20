@@ -95,7 +95,7 @@ function mathInitFCM () { // eslint-disable-line require-jsdoc
 }
 
 function makeMathyFunAndTest (d, b) { // eslint-disable-line require-jsdoc
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+  if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
   var i = rnd(NUM_MATH_FUNCTIONS);
   var s = "";
@@ -125,7 +125,7 @@ function makeMathyFunAndTest (d, b) { // eslint-disable-line require-jsdoc
 }
 
 function makeMathyFunRef (d, b) { // eslint-disable-line require-jsdoc
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+  if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
   return "mathy" + rnd(NUM_MATH_FUNCTIONS);
 }

@@ -8,30 +8,30 @@
 /* global nestingConsistencyTest, Reflect, tryEnsureSanity, verbose */
 
 function optionalTests (f, code, wtt) { // eslint-disable-line require-jsdoc
-  if (count % 100 == 1) {
+  if (count % 100 === 1) {
     tryHalves(code);
   }
 
-  if (count % 100 == 2 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+  if (count % 100 === 2 && engine === ENGINE_SPIDERMONKEY_TRUNK) {
     try {
       Reflect.parse(code);
     } catch (e) {
     }
   }
 
-  if (count % 100 == 3 && f && typeof disassemble === "function") {
+  if (count % 100 === 3 && f && typeof disassemble === "function") {
     // It's hard to use the recursive disassembly in the comparator,
     // but let's at least make sure the disassembler itself doesn't crash.
     disassemble("-r", f);
   }
 
-  if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+  if (0 && f && wtt.allowExec && engine === ENGINE_SPIDERMONKEY_TRUNK) {
     testExpressionDecompiler(code);
     tryEnsureSanity();
   }
 
-  if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter
-    && engine == ENGINE_SPIDERMONKEY_TRUNK && getBuildConfiguration()["more-deterministic"]) {
+  if (count % 100 === 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter
+    && engine === ENGINE_SPIDERMONKEY_TRUNK && getBuildConfiguration()["more-deterministic"]) {
     nestingConsistencyTest(code);
   }
 }
@@ -42,7 +42,7 @@ function testExpressionDecompiler (code) { // eslint-disable-line require-jsdoc
   try {
     eval(fullCode); // eslint-disable-line no-eval
   } catch (e) {
-    if (e.message != "this.nnn is undefined" && e.message.indexOf("redeclaration of") == -1) {
+    if (e.message !== "this.nnn is undefined" && e.message.indexOf("redeclaration of") === -1) {
       // Break up the following string intentionally, to prevent matching when contents of jsfunfuzz is printed.
       foundABug("Wrong error " + "message", e);
     }

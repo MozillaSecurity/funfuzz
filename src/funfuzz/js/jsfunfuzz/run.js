@@ -17,14 +17,14 @@ function directEvalC (s) { var c; /* evil closureizer */ return eval(s); } // es
 function newFun (s) { return new Function(s); } // eslint-disable-line no-new-func,require-jsdoc
 
 function tryRunningDirectly (f, code, wtt) { // eslint-disable-line require-jsdoc
-  if (count % 23 == 3) {
+  if (count % 23 === 3) {
     dumpln("Plain eval!");
     try { eval(code); } catch (e) { } // eslint-disable-line no-eval
     tryEnsureSanity();
     return;
   }
 
-  if (count % 23 == 4) {
+  if (count % 23 === 4) {
     dumpln("About to recompile, using eval hack.");
     f = directEvalC("(function(){" + code + "});");
   }
@@ -95,8 +95,8 @@ function tryEnsureSanity () { // eslint-disable-line require-jsdoc
   }
 
   // These can fail if the page creates a getter for "eval", for example.
-  if (this.eval != realEval) { confused("Fuzz script replaced |eval|"); } // eslint-disable-line no-eval
-  if (Function != realFunction) { confused("Fuzz script replaced |Function|"); }
+  if (this.eval !== realEval) { confused("Fuzz script replaced |eval|"); } // eslint-disable-line no-eval
+  if (Function !== realFunction) { confused("Fuzz script replaced |Function|"); }
 }
 
 function tryItOut (code) { // eslint-disable-line require-jsdoc
@@ -104,7 +104,7 @@ function tryItOut (code) { // eslint-disable-line require-jsdoc
   if (typeof gczeal === "function") { gczeal(0); }
 
   // SpiderMonkey shell does not schedule GC on its own.  Help it not use too much memory.
-  if (count % 1000 == 0) {
+  if (count % 1000 === 0) {
     dumpln("Paranoid GC (count=" + count + ")!");
     realGC();
   }
@@ -125,9 +125,9 @@ function tryItOut (code) { // eslint-disable-line require-jsdoc
   }
 
   if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossJITs) {
-    if (code.indexOf("\n") == -1 && code.indexOf("\r") == -1 && code.indexOf("\f") == -1 && code.indexOf("\0") == -1 &&
-        code.indexOf("\u2028") == -1 && code.indexOf("\u2029") == -1 &&
-        code.indexOf("<--") == -1 && code.indexOf("-->") == -1 && code.indexOf("//") == -1) {
+    if (code.indexOf("\n") === -1 && code.indexOf("\r") === -1 && code.indexOf("\f") === -1 && code.indexOf("\0") === -1 &&
+        code.indexOf("\u2028") === -1 && code.indexOf("\u2029") === -1 &&
+        code.indexOf("<--") === -1 && code.indexOf("-->") === -1 && code.indexOf("//") === -1) {
       // FCM cookie, lines with this cookie are used for compare_jit
       var cookie1 = "/*F";
       var cookie2 = "CM*/";
@@ -136,12 +136,12 @@ function tryItOut (code) { // eslint-disable-line require-jsdoc
       // But leave some things out of function(){} because some bugs are only detectable at top-level, and
       // pure jsfunfuzz doesn't test top-level at all.
       // (This is a good reason to use compare_jit even if I'm not interested in finding JIT bugs!)
-      if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode)) { nCode = "(function(){" + nCode + "})()"; }
+      if (nCode.indexOf("return") !== -1 || nCode.indexOf("yield") !== -1 || nCode.indexOf("const") !== -1 || failsToCompileInTry(nCode)) { nCode = "(function(){" + nCode + "})()"; }
       dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
     }
   }
 
-  if (tryRunning != tryRunningDirectly) {
+  if (tryRunning !== tryRunningDirectly) {
     optionalTests(f, code, wtt);
   }
 

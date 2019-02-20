@@ -116,5 +116,5 @@ function maybeSpace () { // eslint-disable-line require-jsdoc
 
 function stripSemicolon (c) { // eslint-disable-line require-jsdoc
   var len = c.length;
-  if (c.charAt(len - 1) == ";") { return c.substr(0, len - 1); } else { return c; }
+  if (c.charAt(len - 1) === ";") { return c.substr(0, len - 1); } else { return c; }
 }

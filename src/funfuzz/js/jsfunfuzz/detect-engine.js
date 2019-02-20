@@ -40,12 +40,12 @@ if (jsshell) {
     engine = ENGINE_JAVASCRIPTCORE;
   }
 } else {
-  if (navigator.userAgent.indexOf("WebKit") != -1) { // eslint-disable-line no-undef
+  if (navigator.userAgent.indexOf("WebKit") !== -1) { // eslint-disable-line no-undef
     // XXX detect Google Chrome for V8
     engine = ENGINE_JAVASCRIPTCORE;
     // This worked in Safari 3.0, but it might not work in Safari 3.1.
     dump = function (s) { console.log(s); };
-  } else if (navigator.userAgent.indexOf("Gecko") != -1) { // eslint-disable-line no-undef
+  } else if (navigator.userAgent.indexOf("Gecko") !== -1) { // eslint-disable-line no-undef
     engine = ENGINE_SPIDERMONKEY_TRUNK;
   } else if (typeof dump !== "function") {
     // In other browsers, jsfunfuzz does not know how to log anything.
@@ -93,4 +93,4 @@ function simpleSource (st) { // eslint-disable-line require-jsdoc
 var haveRealUneval = (typeof uneval === "function");
 if (!haveRealUneval) { uneval = simpleSource; }
 
-if (engine == ENGINE_UNKNOWN) { printImportant("Targeting an unknown JavaScript engine!"); } else if (engine == ENGINE_SPIDERMONKEY_TRUNK) { printImportant("Targeting SpiderMonkey / Gecko (trunk)."); } else if (engine == ENGINE_JAVASCRIPTCORE) { printImportant("Targeting JavaScriptCore / WebKit."); }
+if (engine === ENGINE_UNKNOWN) { printImportant("Targeting an unknown JavaScript engine!"); } else if (engine === ENGINE_SPIDERMONKEY_TRUNK) { printImportant("Targeting SpiderMonkey / Gecko (trunk)."); } else if (engine === ENGINE_JAVASCRIPTCORE) { printImportant("Targeting JavaScriptCore / WebKit."); }
