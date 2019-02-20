@@ -1279,8 +1279,10 @@ var functionMakers = [
   // Wrapping with upvar: escaping, may or may not be modified
   function (d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap2*/(" + functionPrefix() + "(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; var " + v2 + " = " + makeFunction(d, b.concat([v1])) + "; return " + v2 + ";})()"; },
 
+  /* eslint-disable no-multi-spaces */
   // Wrapping with upvar: non-escaping
-  function (d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap3*/(" + functionPrefix() + "(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
+  function (d, b) { var v1 = uniqueVarName();                           return "/*wrap3*/(" + functionPrefix() + "(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
+  /* eslint-enable no-multi-spaces */
 
   // Apply, call
   function (d, b) { return "(" + makeFunction(d - 1, b) + ").apply"; },

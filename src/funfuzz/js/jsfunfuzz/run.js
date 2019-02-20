@@ -31,7 +31,7 @@ function tryRunningDirectly (f, code, wtt) { // eslint-disable-line require-jsdo
 
   try {
     if (verbose) { dumpln("About to run it!"); }
-    var rv = f();
+    f();
     if (verbose) { dumpln("It ran!"); }
   } catch (runError) {
     if (verbose) { dumpln("Running threw!  About to toString to error."); }

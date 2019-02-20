@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 /* exported letters */
-/* global Random, regexTermPair, rnd */
+/* global Random, rnd */
 
 /* ***************************** *
  * GENERATING REGEXPS AND INPUTS *
