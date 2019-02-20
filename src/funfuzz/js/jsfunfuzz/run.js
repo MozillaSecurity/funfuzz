@@ -13,10 +13,9 @@
 
 // Hack to make line numbers be consistent, to make spidermonkey
 // disassemble() comparison testing easier (e.g. for round-trip testing)
-function directEvalC(s) { var c; /* evil closureizer */ return eval(s); } function newFun(s) { return new Function(s); }
+function directEvalC (s) { var c; /* evil closureizer */ return eval(s); } function newFun (s) { return new Function(s); }
 
-function tryRunningDirectly(f, code, wtt)
-{
+function tryRunningDirectly (f, code, wtt) {
   if (count % 23 == 3) {
     dumpln("Plain eval!");
     try { eval(code); } catch (e) { }
@@ -30,21 +29,17 @@ function tryRunningDirectly(f, code, wtt)
   }
 
   try {
-    if (verbose)
-      dumpln("About to run it!");
+    if (verbose) { dumpln("About to run it!"); }
     var rv = f();
-    if (verbose)
-      dumpln("It ran!");
+    if (verbose) { dumpln("It ran!"); }
   } catch (runError) {
-    if (verbose)
-      dumpln("Running threw!  About to toString to error.");
+    if (verbose) { dumpln("Running threw!  About to toString to error."); }
     var err = errorToString(runError);
     dumpln("Running threw: " + err);
   }
 
   tryEnsureSanity();
 }
-
 
 // Store things now so we can restore sanity later.
 var realEval = eval;
@@ -54,21 +49,17 @@ var realGC = gc;
 var realUneval = uneval;
 var realToString = toString;
 
-
-function tryEnsureSanity()
-{
+function tryEnsureSanity () {
   // The script might have set up oomAfterAllocations or oomAtAllocation.
   // Turn it off so we can test only generated code with it.
   try {
-    if (typeof resetOOMFailure == "function")
-      resetOOMFailure();
+    if (typeof resetOOMFailure === "function") { resetOOMFailure(); }
   } catch (e) { }
 
   try {
     // The script might have turned on gczeal.
     // Turn it off to avoid slowness.
-    if (typeof gczeal == "function")
-      gczeal(0);
+    if (typeof gczeal === "function") { gczeal(0); }
   } catch (e) { }
 
   // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
@@ -82,8 +73,7 @@ function tryEnsureSanity()
   try {
     if ("__defineSetter__" in this) {
       // The only way to get rid of getters/setters is to delete the property.
-      if (!jsStrictMode)
-        delete this.eval;
+      if (!jsStrictMode) { delete this.eval; }
       delete this.Math;
       delete this.Function;
       delete this.gc;
@@ -102,18 +92,13 @@ function tryEnsureSanity()
   }
 
   // These can fail if the page creates a getter for "eval", for example.
-  if (this.eval != realEval)
-    confused("Fuzz script replaced |eval|");
-  if (Function != realFunction)
-    confused("Fuzz script replaced |Function|");
+  if (this.eval != realEval) { confused("Fuzz script replaced |eval|"); }
+  if (Function != realFunction) { confused("Fuzz script replaced |Function|"); }
 }
 
-
-function tryItOut(code)
-{
+function tryItOut (code) {
   // Accidentally leaving gczeal enabled for a long time would make jsfunfuzz really slow.
-  if (typeof gczeal == "function")
-    gczeal(0);
+  if (typeof gczeal === "function") { gczeal(0); }
 
   // SpiderMonkey shell does not schedule GC on its own.  Help it not use too much memory.
   if (count % 1000 == 0) {
@@ -123,13 +108,11 @@ function tryItOut(code)
 
   var wtt = whatToTest(code);
 
-  if (!wtt.allowParse)
-    return;
+  if (!wtt.allowParse) { return; }
 
-  code = code.replace(/\/\*DUPTRY\d+\*\//, function(k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); });
+  code = code.replace(/\/\*DUPTRY\d+\*\//, function (k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); });
 
-  if (jsStrictMode)
-    code = "'use strict'; " + code; // ES5 10.1.1: new Function does not inherit strict mode
+  if (jsStrictMode) { code = "'use strict'; " + code; } // ES5 10.1.1: new Function does not inherit strict mode
 
   var f;
   try {
@@ -150,8 +133,7 @@ function tryItOut(code)
       // But leave some things out of function(){} because some bugs are only detectable at top-level, and
       // pure jsfunfuzz doesn't test top-level at all.
       // (This is a good reason to use compare_jit even if I'm not interested in finding JIT bugs!)
-      if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode))
-        nCode = "(function(){" + nCode + "})()";
+      if (nCode.indexOf("return") != -1 || nCode.indexOf("yield") != -1 || nCode.indexOf("const") != -1 || failsToCompileInTry(nCode)) { nCode = "(function(){" + nCode + "})()"; }
       dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
     }
   }
@@ -164,8 +146,7 @@ function tryItOut(code)
     tryRunning(f, code, wtt);
   }
 
-  if (verbose)
-    dumpln("Done trying out that function!");
+  if (verbose) { dumpln("Done trying out that function!"); }
 
   dumpln("");
 }

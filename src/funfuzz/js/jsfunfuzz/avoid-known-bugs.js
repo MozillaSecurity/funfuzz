@@ -7,8 +7,7 @@
 /* global engine, ENGINE_JAVASCRIPTCORE, ENGINE_SPIDERMONKEY_TRUNK, gcIsQuiet, jsshell */
 
 /* eslint-disable complexity, no-multi-spaces */
-function whatToTestSpidermonkeyTrunk(code)
-{
+function whatToTestSpidermonkeyTrunk (code) {
   // regexps can't match across lines, so replace whitespace with spaces.
   var codeL = code.replace(/\s/g, " ");
 
@@ -70,56 +69,46 @@ function whatToTestSpidermonkeyTrunk(code)
        && code.indexOf("getAllocationMetadata") == -1        // see bug 1296243
        && code.indexOf(".length") == -1                      // bug 1027846
        /* eslint-disable no-control-regex */
-       && !( codeL.match(/\/.*[\u0000\u0080-\uffff]/))       // doesn't stay valid utf-8 after going through python (?)
+       && !(codeL.match(/\/.*[\u0000\u0080-\uffff]/))       // doesn't stay valid utf-8 after going through python (?)
        /* eslint-enable no-control-regex */
-    ,
 
   };
 }
 /* eslint-enable complexity, no-multi-spaces */
 
-function whatToTestJavaScriptCore(code)
-{
+function whatToTestJavaScriptCore (code) {
   return {
 
     allowParse: true,
     allowExec: unlikelyToHang(code),
     expectConsistentOutput: false,
     expectConsistentOutputAcrossIter: false,
-    expectConsistentOutputAcrossJITs: false,
+    expectConsistentOutputAcrossJITs: false
 
   };
 }
 
-function whatToTestGeneric(code)
-{
+function whatToTestGeneric (code) {
   return {
     allowParse: true,
     allowExec: unlikelyToHang(code),
     expectConsistentOutput: false,
     expectConsistentOutputAcrossIter: false,
-    expectConsistentOutputAcrossJITs: false,
+    expectConsistentOutputAcrossJITs: false
   };
 }
 
 var whatToTest;
-if (engine == ENGINE_SPIDERMONKEY_TRUNK)
-  whatToTest = whatToTestSpidermonkeyTrunk;
-else if (engine == ENGINE_JAVASCRIPTCORE)
-  whatToTest = whatToTestJavaScriptCore;
-else
-  whatToTest = whatToTestGeneric;
+if (engine == ENGINE_SPIDERMONKEY_TRUNK) { whatToTest = whatToTestSpidermonkeyTrunk; } else if (engine == ENGINE_JAVASCRIPTCORE) { whatToTest = whatToTestJavaScriptCore; } else { whatToTest = whatToTestGeneric; }
 
-
-function unlikelyToHang(code)
-{
+function unlikelyToHang (code) {
   var codeL = code.replace(/\s/g, " ");
 
   // Things that are likely to hang in all JavaScript engines
   return true
     && code.indexOf("infloop") == -1
-    && !( codeL.match( /for.*in.*uneval/ )) // can be slow to loop through the huge string uneval(this), for example
-    && !( codeL.match( /for.*for.*for/ )) // nested for loops (including for..in, array comprehensions, etc) can take a while
-    && !( codeL.match( /for.*for.*gc/ ))
+    && !(codeL.match(/for.*in.*uneval/)) // can be slow to loop through the huge string uneval(this), for example
+    && !(codeL.match(/for.*for.*for/)) // nested for loops (including for..in, array comprehensions, etc) can take a while
+    && !(codeL.match(/for.*for.*gc/))
   ;
 }

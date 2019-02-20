@@ -26,12 +26,9 @@ var allPropertyNames = []; // "length"
 var builtinObjectNames = []; // "Array", "Array.prototype", ... (indexes into the builtinObjects)
 var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
 
-(function exploreBuiltins(glob, debugMode) {
-
-  function exploreDeeper(a, an)
-  {
-    if (!a)
-      return;
+(function exploreBuiltins (glob, debugMode) {
+  function exploreDeeper (a, an) {
+    if (!a) { return; }
     var hns = Object.getOwnPropertyNames(a);
     var propertyNames = [];
     for (var j = 0; j < hns.length; ++j) {
@@ -52,7 +49,7 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
         h = null;
       }
 
-      if (typeof h == "function" && hn != "constructor") {
+      if (typeof h === "function" && hn != "constructor") {
         allMethodNames.push(hn);
         builtinFunctions.push(fullName);
       }
@@ -61,16 +58,15 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
     builtinObjectNames.push(an);
   }
 
-  function exploreConstructors()
-  {
+  function exploreConstructors () {
     var gns = Object.getOwnPropertyNames(glob);
     for (var i = 0; i < gns.length; ++i) {
       var gn = gns[i];
       // Assume that most uppercase names are constructors.
       // Skip Worker in shell (removed in bug 771281).
-      if (0x40 < gn.charCodeAt(0) && gn.charCodeAt(0) < 0x60 && gn != "PerfMeasurement" && !(jsshell && gn == "Worker")) {
+      if (gn.charCodeAt(0) > 0x40 && gn.charCodeAt(0) < 0x60 && gn != "PerfMeasurement" && !(jsshell && gn == "Worker")) {
         var g = glob[gn];
-        if (typeof g == "function" && g.toString().indexOf("[native code]") != -1) {
+        if (typeof g === "function" && g.toString().indexOf("[native code]") != -1) {
           constructors.push(gn);
           builtinProperties.push(gn);
           builtinFunctions.push(gn);
@@ -96,5 +92,4 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
     print(uneval(builtinObjects));
     quit();
   }
-
 })(this, false);

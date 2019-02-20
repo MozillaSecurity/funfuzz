@@ -27,8 +27,7 @@ if (xpcshell) { // Adapted from ternary operator - this longer form helps reduce
   tryRunning = tryRunningDirectly;
 }
 
-function fillShellSandbox(sandbox)
-{
+function fillShellSandbox (sandbox) {
   var safeFuns = [
     "print",
     "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
@@ -37,7 +36,7 @@ function fillShellSandbox(sandbox)
     "evalcx", "newGlobal", "evaluate",
     "dumpln", "fillShellSandbox",
     "testMathyFunction", "hashStr",
-    "isAsmJSCompilationAvailable",
+    "isAsmJSCompilationAvailable"
   ];
 
   for (var i = 0; i < safeFuns.length; ++i) {
@@ -54,23 +53,22 @@ function fillShellSandbox(sandbox)
   return sandbox;
 }
 
-function useSpidermonkeyShellSandbox(sandboxType)
-{
+function useSpidermonkeyShellSandbox (sandboxType) {
   var primarySandbox;
 
   switch (sandboxType) {
     /* eslint-disable no-multi-spaces */
     case 0:  primarySandbox = evalcx("");
     case 1:  primarySandbox = evalcx("lazy");
-    case 2:  primarySandbox = newGlobal({sameCompartmentAs: {}});
-    case 3:  primarySandbox = newGlobal({sameZoneAs: {}}); // same zone
+    case 2:  primarySandbox = newGlobal({ sameCompartmentAs: {} });
+    case 3:  primarySandbox = newGlobal({ sameZoneAs: {} }); // same zone
     default: primarySandbox = newGlobal(); // new zone
     /* eslint-enable no-multi-spaces */
   }
 
   fillShellSandbox(primarySandbox);
 
-  return function(f, code, wtt) {
+  return function (f, code, wtt) {
     try {
       evalcx(code, primarySandbox);
     } catch (e) {
@@ -82,25 +80,24 @@ function useSpidermonkeyShellSandbox(sandboxType)
 // When in xpcshell,
 // * Run all testing in a sandbox so it doesn't accidentally wipe my hard drive.
 // * Test interaction between sandboxes with same or different principals.
-function newGeckoSandbox(n)
-{
-  var t = (typeof n == "number") ? n : 1;
+function newGeckoSandbox (n) {
+  var t = (typeof n === "number") ? n : 1;
   var s = Components.utils.Sandbox("http://x" + t + ".example.com/"); // eslint-disable-line no-undef
 
   // Allow the sandbox to do a few things
   s.newGeckoSandbox = newGeckoSandbox;
-  s.evalInSandbox = function(str, sbx) {
+  s.evalInSandbox = function (str, sbx) {
     return Components.utils.evalInSandbox(str, sbx); // eslint-disable-line no-undef
   };
-  s.print = function(str) { print(str); };
+  s.print = function (str) { print(str); };
 
   return s;
 }
 
-function useGeckoSandbox() {
+function useGeckoSandbox () {
   var primarySandbox = newGeckoSandbox(0);
 
-  return function(f, code, wtt) {
+  return function (f, code, wtt) {
     try {
       Components.utils.evalInSandbox(code, primarySandbox); // eslint-disable-line no-undef
     } catch (e) {

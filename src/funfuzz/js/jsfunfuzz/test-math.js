@@ -12,10 +12,10 @@ var numericVals = [
   // Special float values
   "0", "-0", "0/0", "1/0", "-1/0",
   // Boundaries of int, signed, unsigned (near +/- 2^31, +/- 2^32)
-  "0x07fffffff",  "0x080000000",  "0x080000001",
+  "0x07fffffff", "0x080000000", "0x080000001",
   "-0x07fffffff", "-0x080000000", "-0x080000001",
-  "0x0ffffffff",  "0x100000000",  "0x100000001",
-  "-0x0ffffffff", "-0x100000000",  "-0x100000001",
+  "0x0ffffffff", "0x100000000", "0x100000001",
+  "-0x0ffffffff", "-0x100000000", "-0x100000001",
   // Boundaries of double
   "Number.MIN_VALUE", "-Number.MIN_VALUE",
   "Number.MAX_VALUE", "-Number.MAX_VALUE",
@@ -25,7 +25,7 @@ var numericVals = [
   "Number.MAX_SAFE_INTEGER", "-Number.MAX_SAFE_INTEGER",
   "(2**53)-2", "(2**53)", "(2**53)+2",
   // See bug 1350097 - 1.79...e308 is the largest (by module) finite number
-  "0.000000000000001", "1.7976931348623157e308",
+  "0.000000000000001", "1.7976931348623157e308"
 ];
 
 var confusableVals = [
@@ -54,11 +54,10 @@ var confusableVals = [
   "(new String(''))",
   "(new Number(0))",
   "(new Number(-0))",
-  "createIsHTMLDDA()",
+  "createIsHTMLDDA()"
 ];
 
-function hashStr(s)
-{
+function hashStr (s) {
   var hash = 0;
   var L = s.length;
   for (var i = 0; i < L; i++) {
@@ -68,8 +67,7 @@ function hashStr(s)
   return hash;
 }
 
-function testMathyFunction(f, inputs)
-{
+function testMathyFunction (f, inputs) {
   var results = [];
   if (f) {
     for (var j = 0; j < inputs.length; ++j) {
@@ -87,8 +85,7 @@ function testMathyFunction(f, inputs)
   print(hashStr(uneval(results)));
 }
 
-function mathInitFCM()
-{
+function mathInitFCM () {
   // FCM cookie, lines with this cookie are used for compare_jit
   var cookie = "/*F" + "CM*/";
 
@@ -97,8 +94,7 @@ function mathInitFCM()
   print(cookie + testMathyFunction.toString().replace(/\r/g, "\n").replace(/\n/g, " "));
 }
 
-function makeMathyFunAndTest(d, b)
-{
+function makeMathyFunAndTest (d, b) {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var i = rnd(NUM_MATH_FUNCTIONS);
@@ -128,8 +124,7 @@ function makeMathyFunAndTest(d, b)
   return s;
 }
 
-function makeMathyFunRef(d, b)
-{
+function makeMathyFunRef (d, b) {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   return "mathy" + rnd(NUM_MATH_FUNCTIONS);

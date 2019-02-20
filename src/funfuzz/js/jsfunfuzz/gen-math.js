@@ -17,11 +17,11 @@ var binaryMathOps = [
   " == ", " != ",
   " === ", " !== ",
   " & ", " | ", " ^ ", " && ", " || ",
-  " , ",
+  " , "
 ];
 
 var leftUnaryMathOps = [
-  " ! ", " + ", " - ", " ~ ",
+  " ! ", " + ", " - ", " ~ "
 ];
 
 // unaryMathFunctions and binaryMathFunctions updated on 2017-01-21 and added from:
@@ -56,7 +56,7 @@ var unaryMathFunctions = [
   "sqrt",
   "tan",
   "tanh",
-  "trunc",
+  "trunc"
 ];
 
 // n-ary functions will also be tested with varying numbers of parameters by makeFunction
@@ -66,11 +66,10 @@ var binaryMathFunctions = [
   "imul",
   "max", // n-ary
   "min", // n-ary
-  "pow",
+  "pow"
 ];
 
-function makeMathFunction(d, b, i)
-{
+function makeMathFunction (d, b, i) {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var ivars = ["x", "y"];
@@ -81,8 +80,7 @@ function makeMathFunction(d, b, i)
   return "(function(x, y) { " + directivePrologue() + "return " + makeMathExpr(d, ivars, i) + "; })";
 }
 
-function makeMathExpr(d, b, i)
-{
+function makeMathExpr (d, b, i) {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   // As depth decreases, make it more likely to bottom out
@@ -93,15 +91,14 @@ function makeMathExpr(d, b, i)
     return Random.index(numericVals);
   }
 
-  if (rnd(500) == 0 && d > 0)
-    return makeExpr(d - 1, b);
+  if (rnd(500) == 0 && d > 0) { return makeExpr(d - 1, b); }
 
-  function r() { return makeMathExpr(d - 1, b, i); }
+  function r () { return makeMathExpr(d - 1, b, i); }
 
   // Frequently, coerce both the inputs and outputs to the same "numeric sub-type"
   // (asm.js formalizes this concept, but JITs may have their own variants)
   var commonCoercion = rnd(10);
-  function mc(expr) {
+  function mc (expr) {
     switch (rnd(3) ? commonCoercion : rnd(10)) {
       /* eslint-disable no-multi-spaces */
       case 0:  return "(" + " + " + expr + ")";     // f64 (asm.js)

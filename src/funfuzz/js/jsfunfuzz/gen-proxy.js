@@ -11,72 +11,70 @@
 // The letter 'x' is special.
 var proxyHandlerProperties = {
   getOwnPropertyDescriptor: {
-    empty:    "function(){}",
-    forward:  "function(name) { var desc = Object.getOwnPropertyDescriptor(x); desc.configurable = true; return desc; }",
-    throwing: "function(name) { return {get: function() { throw 4; }, set: function() { throw 5; }}; }",
+    empty: "function(){}",
+    forward: "function(name) { var desc = Object.getOwnPropertyDescriptor(x); desc.configurable = true; return desc; }",
+    throwing: "function(name) { return {get: function() { throw 4; }, set: function() { throw 5; }}; }"
   },
   defineProperty: {
-    empty:    "function(){}",
-    forward:  "function(name, desc) { Object.defineProperty(x, name, desc); }",
+    empty: "function(){}",
+    forward: "function(name, desc) { Object.defineProperty(x, name, desc); }"
   },
   getOwnPropertyNames: {
-    empty:    "function() { return []; }",
-    forward:  "function() { return Object.getOwnPropertyNames(x); }",
+    empty: "function() { return []; }",
+    forward: "function() { return Object.getOwnPropertyNames(x); }"
   },
   delete: {
-    empty:    "function() { return true; }",
-    yes:      "function() { return true; }",
-    no:       "function() { return false; }",
-    forward:  "function(name) { return delete x[name]; }",
+    empty: "function() { return true; }",
+    yes: "function() { return true; }",
+    no: "function() { return false; }",
+    forward: "function(name) { return delete x[name]; }"
   },
   fix: {
-    empty:    "function() { return []; }",
-    yes:      "function() { return []; }",
-    no:       "function() { }",
-    forward:  "function() { if (Object.isFrozen(x)) { return Object.getOwnProperties(x); } }",
+    empty: "function() { return []; }",
+    yes: "function() { return []; }",
+    no: "function() { }",
+    forward: "function() { if (Object.isFrozen(x)) { return Object.getOwnProperties(x); } }"
   },
   has: {
-    empty:    "function() { return false; }",
-    yes:      "function() { return true; }",
-    no:       "function() { return false; }",
-    forward:  "function(name) { return name in x; }",
+    empty: "function() { return false; }",
+    yes: "function() { return true; }",
+    no: "function() { return false; }",
+    forward: "function(name) { return name in x; }"
   },
   hasOwn: {
-    empty:    "function() { return false; }",
-    yes:      "function() { return true; }",
-    no:       "function() { return false; }",
-    forward:  "function(name) { return Object.prototype.hasOwnProperty.call(x, name); }",
+    empty: "function() { return false; }",
+    yes: "function() { return true; }",
+    no: "function() { return false; }",
+    forward: "function(name) { return Object.prototype.hasOwnProperty.call(x, name); }"
   },
   get: {
-    empty:    "function() { return undefined }",
-    forward:  "function(receiver, name) { return x[name]; }",
-    bind:     "function(receiver, name) { var prop = x[name]; return (typeof prop) === 'function' ? prop.bind(x) : prop; }",
+    empty: "function() { return undefined }",
+    forward: "function(receiver, name) { return x[name]; }",
+    bind: "function(receiver, name) { var prop = x[name]; return (typeof prop) === 'function' ? prop.bind(x) : prop; }"
   },
   set: {
-    empty:    "function() { return true; }",
-    yes:      "function() { return true; }",
-    no:       "function() { return false; }",
-    forward:  "function(receiver, name, val) { x[name] = val; return true; }",
+    empty: "function() { return true; }",
+    yes: "function() { return true; }",
+    no: "function() { return false; }",
+    forward: "function(receiver, name, val) { x[name] = val; return true; }"
   },
   iterate: {
-    forward:  "function() { return (function() { for (var name in x) { yield name; } })(); }",
+    forward: "function() { return (function() { for (var name in x) { yield name; } })(); }"
   },
   enumerate: {
-    empty:    "function() { return []; }",
-    forward:  "function() { var result = []; for (var name in x) { result.push(name); }; return result; }",
+    empty: "function() { return []; }",
+    forward: "function() { var result = []; for (var name in x) { result.push(name); }; return result; }"
   },
   keys: {
-    empty:    "function() { return []; }",
-    forward:  "function() { return Object.keys(x); }",
-  },
+    empty: "function() { return []; }",
+    forward: "function() { return Object.keys(x); }"
+  }
 };
 
-function makeProxyHandlerFactory(d, b)
-{
+function makeProxyHandlerFactory (d, b) {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
-  if (d < 1)
-    return "({/*TOODEEP*/})";
+  if (d < 1) { return "({/*TOODEEP*/})"; }
 
   try { // in case we screwed Object.prototype, breaking proxyHandlerProperties
     var preferred = Random.index(["empty", "forward", "yes", "no", "bind", "throwing"]);
@@ -120,14 +118,12 @@ function makeProxyHandlerFactory(d, b)
   }
 }
 
-function proxyMunge(funText, p)
-{
+function proxyMunge (funText, p) {
   // funText = funText.replace(/\{/, "{ var yum = 'PCAL'; dumpln(yum + 'LED: " + p + "');");
   return funText;
 }
 
-function makeProxyHandler(d, b)
-{
+function makeProxyHandler (d, b) {
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   return makeProxyHandlerFactory(d, b) + "(" + makeExpr(d - 3, b) + ")";

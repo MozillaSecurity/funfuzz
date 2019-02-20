@@ -32,35 +32,35 @@ var recursiveFunctions = [
     // Unless the recursive call is in the tail position, this will throw.
     text: "(function too_much_recursion(depth) { @; if (depth > 0) { @; too_much_recursion(depth - 1); @ } else { @ } @ })",
     vars: ["depth"],
-    args: function(d, b) { return singleRecursionDepth(d, b); },
-    test: function(f) { try { f(5000); } catch (e) { } return true; },
+    args: function (d, b) { return singleRecursionDepth(d, b); },
+    test: function (f) { try { f(5000); } catch (e) { } return true; }
   },
   {
     text: "(function factorial(N) { @; if (N == 0) { @; return 1; } @; return N * factorial(N - 1); @ })",
     vars: ["N"],
-    args: function(d, b) { return singleRecursionDepth(d, b); },
-    test: function(f) { return f(10) == 3628800; },
+    args: function (d, b) { return singleRecursionDepth(d, b); },
+    test: function (f) { return f(10) == 3628800; }
   },
   {
     text: "(function factorial_tail(N, Acc) { @; if (N == 0) { @; return Acc; } @; return factorial_tail(N - 1, Acc * N); @ })",
     vars: ["N", "Acc"],
-    args: function(d, b) { return singleRecursionDepth(d, b) + ", 1"; },
-    test: function(f) { return f(10, 1) == 3628800; },
+    args: function (d, b) { return singleRecursionDepth(d, b) + ", 1"; },
+    test: function (f) { return f(10, 1) == 3628800; }
   },
   {
     // two recursive calls
     text: "(function fibonacci(N) { @; if (N <= 1) { @; return 1; } @; return fibonacci(N - 1) + fibonacci(N - 2); @ })",
     vars: ["N"],
-    args: function(d, b) { return "" + rnd(8); },
-    test: function(f) { return f(6) == 13; },
+    args: function (d, b) { return "" + rnd(8); },
+    test: function (f) { return f(6) == 13; }
   },
   {
     // do *anything* while indexing over mixed-type arrays
     text: "(function a_indexing(array, start) { @; if (array.length == start) { @; return EXPR1; } var thisitem = array[start]; var recval = a_indexing(array, start + 1); STATEMENT1 })",
     vars: ["array", "start", "thisitem", "recval"],
-    args: function(d, b) { return makeMixedTypeArray(d-1, b) + ", 0"; },
-    testSub: function(text) { return text.replace(/EXPR1/, "0").replace(/STATEMENT1/, "return thisitem + recval;"); },
-    randSub: function(text, varMap, d, b) {
+    args: function (d, b) { return makeMixedTypeArray(d - 1, b) + ", 0"; },
+    testSub: function (text) { return text.replace(/EXPR1/, "0").replace(/STATEMENT1/, "return thisitem + recval;"); },
+    randSub: function (text, varMap, d, b) {
       /* eslint-disable indent, no-multi-spaces */
       var expr1 =      makeExpr(d, b.concat([varMap["array"], varMap["start"]]));
       var statement1 = rnd(2) ?
@@ -70,26 +70,26 @@ var recursiveFunctions = [
       return (text.replace(/EXPR1/,      expr1)
                   .replace(/STATEMENT1/, statement1)
       /* eslint-enable indent, no-multi-spaces */
-      ); },
-    test: function(f) { return f([1, 2, 3, "4", 5, 6, 7], 0) == "123418"; },
+      );
+    },
+    test: function (f) { return f([1, 2, 3, "4", 5, 6, 7], 0) == "123418"; }
   },
   {
     // this lets us play a little with mixed-type arrays
     text: "(function sum_indexing(array, start) { @; return array.length == start ? 0 : array[start] + sum_indexing(array, start + 1); })",
     vars: ["array", "start"],
-    args: function(d, b) { return makeMixedTypeArray(d-1, b) + ", 0"; },
-    test: function(f) { return f([1, 2, 3, "4", 5, 6, 7], 0) == "123418"; },
+    args: function (d, b) { return makeMixedTypeArray(d - 1, b) + ", 0"; },
+    test: function (f) { return f([1, 2, 3, "4", 5, 6, 7], 0) == "123418"; }
   },
   {
     text: "(function sum_slicing(array) { @; return array.length == 0 ? 0 : array[0] + sum_slicing(array.slice(1)); })",
     vars: ["array"],
-    args: function(d, b) { return makeMixedTypeArray(d-1, b); },
-    test: function(f) { return f([1, 2, 3, "4", 5, 6, 7]) == "123418"; },
-  },
+    args: function (d, b) { return makeMixedTypeArray(d - 1, b); },
+    test: function (f) { return f([1, 2, 3, "4", 5, 6, 7]) == "123418"; }
+  }
 ];
 
-function singleRecursionDepth(d, b)
-{
+function singleRecursionDepth (d, b) {
   if (rnd(2) === 0) {
     return "" + rnd(4);
   }
@@ -99,21 +99,18 @@ function singleRecursionDepth(d, b)
   return "" + rnd(100000);
 }
 
-(function testAllRecursiveFunctions() {
+(function testAllRecursiveFunctions () {
   for (var i = 0; i < recursiveFunctions.length; ++i) {
     var a = recursiveFunctions[i];
     var text = a.text;
     if (a.testSub) text = a.testSub(text);
     var f = eval(text.replace(/@/g, ""));
-    if (!a.test(f))
-      throw "Failed test of: " + a.text;
+    if (!a.test(f)) { throw "Failed test of: " + a.text; }
   }
 })();
 
-function makeImmediateRecursiveCall(d, b, cheat1, cheat2)
-{
-  if (rnd(10) !== 0)
-    return "(4277)";
+function makeImmediateRecursiveCall (d, b, cheat1, cheat2) {
+  if (rnd(10) !== 0) { return "(4277)"; }
 
   var a = (cheat1 == null) ? Random.index(recursiveFunctions) : recursiveFunctions[cheat1];
   var s = a.text;
@@ -125,7 +122,7 @@ function makeImmediateRecursiveCall(d, b, cheat1, cheat2)
   }
   var actualArgs = cheat2 == null ? a.args(d, b) : cheat2;
   s = s + "(" + actualArgs + ")";
-  s = s.replace(/@/g, function() { if (rnd(4) === 0) return makeStatement(d-2, b); return ""; });
+  s = s.replace(/@/g, function () { if (rnd(4) === 0) return makeStatement(d - 2, b); return ""; });
   if (a.randSub) s = a.randSub(s, varMap, d, b);
   s = "(" + s + ")";
   return s;

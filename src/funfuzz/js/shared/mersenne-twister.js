@@ -51,15 +51,12 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
    Any feedback is very welcome.
    http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
    email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
 */
 
-
-function MersenneTwister19937()
-{
+function MersenneTwister19937 () {
   const N = 624;
   const M = 397;
   const MAG01 = new Int32Array([0, 0x9908b0df]);
@@ -67,42 +64,41 @@ function MersenneTwister19937()
   var mt = new Int32Array(N); /* the array for the state vector */
   var mti = 625;
 
-  this.seed = function(s) {
+  this.seed = function (s) {
     mt[0] = s | 0;
-    for (mti=1; mti<N; mti++) {
-      mt[mti] = Math.imul(1812433253, mt[mti-1] ^ (mt[mti-1] >>> 30)) + mti;
+    for (mti = 1; mti < N; mti++) {
+      mt[mti] = Math.imul(1812433253, mt[mti - 1] ^ (mt[mti - 1] >>> 30)) + mti;
     }
   };
 
   /* eslint-disable camelcase */
-  this.export_state = function() { return [mt, mti]; };
-  this.import_state = function(s) { mt = s[0]; mti = s[1]; };
-  this.export_mta = function() { return mt; };
-  this.import_mta = function(_mta) { mt = _mta; };
-  this.export_mti = function() { return mti; };
-  this.import_mti = function(_mti) { mti = _mti; };
+  this.export_state = function () { return [mt, mti]; };
+  this.import_state = function (s) { mt = s[0]; mti = s[1]; };
+  this.export_mta = function () { return mt; };
+  this.import_mta = function (_mta) { mt = _mta; };
+  this.export_mti = function () { return mti; };
+  this.import_mti = function (_mti) { mti = _mti; };
   /* eslint-enable camelcase */
 
-  function mag01(y)
-  {
+  function mag01 (y) {
     return MAG01[y & 0x1];
   }
 
-  this.int32 = function() {
+  this.int32 = function () {
     var y;
     var kk;
 
     if (mti >= N) { /* generate N words at one time */
-      for (kk=0;kk<N-M;kk++) {
-        y = ((mt[kk]&0x80000000)|(mt[kk+1]&0x7fffffff));
-        mt[kk] = (mt[kk+M] ^ (y >>> 1) ^ mag01(y));
+      for (kk = 0; kk < N - M; kk++) {
+        y = ((mt[kk] & 0x80000000) | (mt[kk + 1] & 0x7fffffff));
+        mt[kk] = (mt[kk + M] ^ (y >>> 1) ^ mag01(y));
       }
-      for (;kk<N-1;kk++) {
-        y = ((mt[kk]&0x80000000)|(mt[kk+1]&0x7fffffff));
-        mt[kk] = (mt[kk+(M-N)] ^ (y >>> 1) ^ mag01(y));
+      for (;kk < N - 1; kk++) {
+        y = ((mt[kk] & 0x80000000) | (mt[kk + 1] & 0x7fffffff));
+        mt[kk] = (mt[kk + (M - N)] ^ (y >>> 1) ^ mag01(y));
       }
-      y = ((mt[N-1]&0x80000000)|(mt[0]&0x7fffffff));
-      mt[N-1] = (mt[M-1] ^ (y >>> 1) ^ mag01(y));
+      y = ((mt[N - 1] & 0x80000000) | (mt[0] & 0x7fffffff));
+      mt[N - 1] = (mt[M - 1] ^ (y >>> 1) ^ mag01(y));
       mti = 0;
     }
 

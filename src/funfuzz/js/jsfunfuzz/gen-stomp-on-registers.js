@@ -9,8 +9,7 @@
 // Using up all the registers can find bugs where a caller does not store its
 // registers properly, or a callee violates an ABI.
 
-function makeRegisterStompFunction(d, b, pure)
-{
+function makeRegisterStompFunction (d, b, pure) {
   var args = [];
   var nArgs = (rnd(10) ? rnd(20) : rnd(100)) + 1;
   for (var i = 0; i < nArgs; ++i) {
@@ -27,19 +26,16 @@ function makeRegisterStompFunction(d, b, pure)
   );
 }
 
-function makeRegisterStompBody(d, b, pure)
-{
+function makeRegisterStompBody (d, b, pure) {
   var bv = b.slice(0);
   var lastRVar = 0;
   var s = "";
 
-  function value()
-  {
+  function value () {
     return rnd(3) && bv.length ? Random.index(bv) : "" + rnd(10);
   }
 
-  function expr()
-  {
+  function expr () {
     return value() + Random.index([" + ", " - ", " / ", " * ", " % ", " | ", " & ", " ^ "]) + value();
   }
 
@@ -58,4 +54,3 @@ function makeRegisterStompBody(d, b, pure)
 
   return s;
 }
-
