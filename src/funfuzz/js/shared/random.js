@@ -17,7 +17,7 @@ var Random = {
   },
   number: function (limit) {
     // Returns an integer in [0, limit). Uniform distribution.
-    if (limit == 0) {
+    if (limit === 0) {
       return limit;
     }
     if (limit == null || limit === undefined) {
@@ -76,7 +76,7 @@ var Random = {
       Utils.traceback();
       throw new TypeError("Random.chance() received a non number type: '" + limit + "'");
     }
-    return this.number(limit) == 1;
+    return this.number(limit) === 1;
   },
   choose: function (list, flat) {
     if (!(list instanceof Array)) {
@@ -90,7 +90,7 @@ var Random = {
     var n = this.number(total);
     for (let j = 0; j < list.length; j++) {
       if (n < list[j][0]) {
-        if (flat == true) {
+        if (flat === true) {
           return list[j][1];
         } else {
           return this.pick([list[j][1]]);
@@ -98,7 +98,7 @@ var Random = {
       }
       n = n - list[j][0];
     }
-    if (flat == true) {
+    if (flat === true) {
       return list[0][1];
     }
     return this.pick([list[0][1]]);
