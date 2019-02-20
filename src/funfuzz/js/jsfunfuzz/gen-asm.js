@@ -241,7 +241,7 @@ var externExpr = autoExpr(Random.weighted([
 ]));
 
 var intishMemberExpr = autoExpr(Random.weighted([
-  { w: 1, v: function (d, e) { return ensureView(e, Random.index(["Int8Array", "Uint8Array" ])) + "[" + asmIndex(d, e, 0) + "]"; } },
+  { w: 1, v: function (d, e) { return ensureView(e, Random.index(["Int8Array", "Uint8Array"])) + "[" + asmIndex(d, e, 0) + "]"; } },
   { w: 1, v: function (d, e) { return ensureView(e, Random.index(["Int16Array", "Uint16Array"])) + "[" + asmIndex(d, e, 1) + "]"; } },
   { w: 1, v: function (d, e) { return ensureView(e, Random.index(["Int32Array", "Uint32Array"])) + "[" + asmIndex(d, e, 2) + "]"; } }
 ]), true);

@@ -150,12 +150,12 @@ function makeFunOnCallChain (d, b) { // eslint-disable-line require-jsdoc
 var statementMakers = Random.weighted([
 
   // Any two statements in sequence
-  { w: 15, v: function (d, b) { return cat([makeStatement(d - 1, b), makeStatement(d - 1, b) ]); } },
+  { w: 15, v: function (d, b) { return cat([makeStatement(d - 1, b), makeStatement(d - 1, b)]); } },
   { w: 15, v: function (d, b) { return cat([makeStatement(d - 1, b), "\n", makeStatement(d - 1, b), "\n"]); } },
 
   // Stripping semilcolons.  What happens if semicolons are missing?  Especially with line breaks used in place of semicolons (semicolon insertion).
   { w: 1, v: function (d, b) { return cat([stripSemicolon(makeStatement(d, b)), "\n", makeStatement(d, b)]); } },
-  { w: 1, v: function (d, b) { return cat([stripSemicolon(makeStatement(d, b)), "\n" ]); } },
+  { w: 1, v: function (d, b) { return cat([stripSemicolon(makeStatement(d, b)), "\n"]); } },
   { w: 1, v: function (d, b) { return stripSemicolon(makeStatement(d, b)); } }, // usually invalid, but can be ok e.g. at the end of a block with curly braces
 
   // Simple variable declarations, followed (or preceded) by statements using those variables
@@ -777,7 +777,7 @@ var exprMakers =
   // These are mostly interesting to fuzzers in the sense of "what happens if i do strange things from a filter function?"  e.g. modify the array.. :)
   // This fuzzer isn't the best for attacking this kind of thing, since it's unlikely that the code in the function will attempt to modify the array or make it go away.
   // The second parameter to "map" is used as the "this" for the function.
-  function (d, b) { return cat([makeArrayLiteral(d, b), ".", Random.index(["map", "filter", "some", "sort"]) ]); },
+  function (d, b) { return cat([makeArrayLiteral(d, b), ".", Random.index(["map", "filter", "some", "sort"])]); },
   function (d, b) { return cat([makeArrayLiteral(d, b), ".", Random.index(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ", ", makeExpr(d, b), ")"]); },
   function (d, b) { return cat([makeArrayLiteral(d, b), ".", Random.index(["map", "filter", "some", "sort"]), "(", makeFunction(d, b), ")"]); },
 
@@ -794,9 +794,9 @@ var exprMakers =
   function (d, b) { return cat(["(", makeFunction(d, b), ")", "(", makeActualArgList(d, b), ")"]); },
 
   // Try to call things that may or may not be functions.
-  function (d, b) { return cat([ makeExpr(d, b), "(", makeActualArgList(d, b), ")"]); },
+  function (d, b) { return cat([makeExpr(d, b), "(", makeActualArgList(d, b), ")"]); },
   function (d, b) { return cat(["(", makeExpr(d, b), ")", "(", makeActualArgList(d, b), ")"]); },
-  function (d, b) { return cat([ makeFunction(d, b), "(", makeActualArgList(d, b), ")"]); },
+  function (d, b) { return cat([makeFunction(d, b), "(", makeActualArgList(d, b), ")"]); },
 
   // Try to test function.call heavily.
   function (d, b) { return cat(["(", makeFunction(d, b), ")", ".", "call", "(", makeExpr(d, b), ", ", makeActualArgList(d, b), ")"]); },
@@ -831,13 +831,13 @@ var exprMakers =
   function (d, b) { return cat([ makeLValue(d, b), " = ", makeExpr(d, b) ]); },
   function (d, b) { return cat([ makeLValue(d, b), " = ", makeExpr(d, b) ]); },
   function (d, b) { return cat(["(", makeLValue(d, b), " = ", makeExpr(d, b), ")"]); },
-  function (d, b) { return cat(["(", makeLValue(d, b), ")", " = ", makeExpr(d, b) ]); },
+  function (d, b) { return cat(["(", makeLValue(d, b), ")", " = ", makeExpr(d, b)]); },
 
   // Destructuring assignment
   function (d, b) { return cat([ makeDestructuringLValue(d, b), " = ", makeExpr(d, b) ]); },
   function (d, b) { return cat([ makeDestructuringLValue(d, b), " = ", makeExpr(d, b) ]); },
   function (d, b) { return cat(["(", makeDestructuringLValue(d, b), " = ", makeExpr(d, b), ")"]); },
-  function (d, b) { return cat(["(", makeDestructuringLValue(d, b), ")", " = ", makeExpr(d, b) ]); },
+  function (d, b) { return cat(["(", makeDestructuringLValue(d, b), ")", " = ", makeExpr(d, b)]); },
 
   // Destructuring assignment with lots of group assignment
   function (d, b) { return cat([makeDestructuringLValue(d, b), " = ", makeDestructuringLValue(d, b)]); },
@@ -1242,10 +1242,8 @@ var functionMakers = [
   function (d, b) {                          return cat([functionPrefix(), " ", maybeName(d, b), "(", makeFormalArgList(d, b), ")", makeFunctionBody(d, b)]); },
   /* eslint-enable no-multi-spaces */
 
-  /* eslint-disable no-multi-spaces */
   // Arrow functions with one argument (no parens needed) (no destructuring allowed in this form?)
-  function (d, b) { var v = makeNewId(d, b); return cat([     v,                            " => ", makeFunctionBody(d, b.concat([v]))]); },
-  /* eslint-enable no-multi-spaces */
+  function (d, b) { var v = makeNewId(d, b); return cat([v, " => ", makeFunctionBody(d, b.concat([v]))]); },
 
   /* eslint-disable no-multi-spaces */
   // Arrow functions with multiple arguments
@@ -1679,8 +1677,8 @@ var termMakers = [
     ]);
   },
   makeNumber,
-  function (d, b) { return Random.index([ "true", "false", "undefined", "null"]); },
-  function (d, b) { return Random.index([ "this", "window" ]); },
+  function (d, b) { return Random.index(["true", "false", "undefined", "null"]); },
+  function (d, b) { return Random.index(["this", "window"]); },
   function (d, b) { return Random.index([" \"\" ", " '' "]); },
   randomUnitStringLiteral, // unicode escaped
   function (d, b) { return Random.index([" /x/ ", " /x/g "]); },
@@ -1798,7 +1796,7 @@ function makeShapeyValue (d, b) { // eslint-disable-line require-jsdoc
     [" \"\" ", " '' ", " 'A' ", " '\\0' ", ' "use strict" '],
 
     // Regular expression literals
-    [ " /x/ ", " /x/g "],
+    [ " /x/ ", " /x/g " ],
 
     // Booleans
     [ "true", "false" ],
@@ -1810,7 +1808,7 @@ function makeShapeyValue (d, b) { // eslint-disable-line require-jsdoc
     [ "[]", "[1]", "[(void 0)]", "{}", "{x:3}", "({})", "({x:3})" ],
 
     // Variables that really should have been constants in the ecmascript spec
-    [ "NaN", "Infinity", "-Infinity", "undefined"],
+    [ "NaN", "Infinity", "-Infinity", "undefined" ],
 
     // Boxed booleans
     [ "new Boolean(true)", "new Boolean(false)" ],
