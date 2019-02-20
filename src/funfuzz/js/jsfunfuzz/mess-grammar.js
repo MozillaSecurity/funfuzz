@@ -19,7 +19,7 @@ function totallyRandom (d, b) { // eslint-disable-line require-jsdoc
   if (typeof val !== "string") {
     print(maker.name);
     print(maker);
-    throw "We generated something that isn't a string!";
+    throw new Error("We generated something that isn't a string!");
   }
   return val;
 }
