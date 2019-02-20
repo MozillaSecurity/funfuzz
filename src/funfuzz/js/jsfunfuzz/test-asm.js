@@ -127,7 +127,7 @@ function testAsmDifferential (stdlib, interior) { // eslint-disable-line require
   }
 
   var asmJs = "(function(stdlib, foreign, heap) { 'use asm'; " + interior + " })";
-  var asmModule = eval(asmJs);
+  var asmModule = eval(asmJs); // eslint-disable-line no-eval
 
   if (isAsmJSModule(asmModule)) {
     var asmHeap = new ArrayBuffer(4096);
@@ -137,7 +137,7 @@ function testAsmDifferential (stdlib, interior) { // eslint-disable-line require
     var normalHeap = new ArrayBuffer(4096);
     (new Int32Array(normalHeap))[0] = 0x12345678;
     var normalJs = "(function(stdlib, foreign, heap) { " + interior + " })";
-    var normalModule = eval(normalJs);
+    var normalModule = eval(normalJs); // eslint-disable-line no-eval
     var normalFun = normalModule(stdlib, pureForeign, normalHeap);
 
     compareAsm.compareBinaryFunctions(asmFun, normalFun);
@@ -153,7 +153,7 @@ function startAsmDifferential () { // eslint-disable-line require-jsdoc
   while (true) {
     var stompStr = makeRegisterStompFunction(8, [], true);
     print(stompStr);
-    pureForeign.stomp = eval(stompStr);
+    pureForeign.stomp = eval(stompStr); // eslint-disable-line no-eval
 
     for (var i = 0; i < 100; ++i) {
       var interior = generateAsmDifferential();

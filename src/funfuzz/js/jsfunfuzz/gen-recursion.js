@@ -104,7 +104,7 @@ function singleRecursionDepth (d, b) { // eslint-disable-line require-jsdoc
     var a = recursiveFunctions[i];
     var text = a.text;
     if (a.testSub) text = a.testSub(text);
-    var f = eval(text.replace(/@/g, ""));
+    var f = eval(text.replace(/@/g, "")); // eslint-disable-line no-eval
     if (!a.test(f)) { throw "Failed test of: " + a.text; }
   }
 })();

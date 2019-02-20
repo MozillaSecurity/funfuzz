@@ -40,7 +40,7 @@ function testExpressionDecompiler (code) { // eslint-disable-line require-jsdoc
   var fullCode = "(function() { try { \n" + code + "\n; throw 1; } catch(exx) { this.nnn.nnn } })()";
 
   try {
-    eval(fullCode);
+    eval(fullCode); // eslint-disable-line no-eval
   } catch (e) {
     if (e.message != "this.nnn is undefined" && e.message.indexOf("redeclaration of") == -1) {
       // Break up the following string intentionally, to prevent matching when contents of jsfunfuzz is printed.

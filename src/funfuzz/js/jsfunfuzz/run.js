@@ -13,13 +13,13 @@
 
 // Hack to make line numbers be consistent, to make spidermonkey
 // disassemble() comparison testing easier (e.g. for round-trip testing)
-function directEvalC (s) { var c; /* evil closureizer */ return eval(s); } // eslint-disable-line require-jsdoc
+function directEvalC (s) { var c; /* evil closureizer */ return eval(s); } // eslint-disable-line no-eval,require-jsdoc
 function newFun (s) { return new Function(s); } // eslint-disable-line require-jsdoc
 
 function tryRunningDirectly (f, code, wtt) { // eslint-disable-line require-jsdoc
   if (count % 23 == 3) {
     dumpln("Plain eval!");
-    try { eval(code); } catch (e) { }
+    try { eval(code); } catch (e) { } // eslint-disable-line no-eval
     tryEnsureSanity();
     return;
   }
@@ -43,7 +43,7 @@ function tryRunningDirectly (f, code, wtt) { // eslint-disable-line require-jsdo
 }
 
 // Store things now so we can restore sanity later.
-var realEval = eval;
+var realEval = eval; // eslint-disable-line no-eval
 var realMath = Math;
 var realFunction = Function;
 var realGC = gc;
@@ -64,7 +64,9 @@ function tryEnsureSanity () { // eslint-disable-line require-jsdoc
   } catch (e) { }
 
   // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
-  try { eval(""); } catch (e) { dumpln("That really shouldn't have thrown: " + errorToString(e)); }
+  try { eval(""); } catch (e) { // eslint-disable-line no-eval
+    dumpln("That really shouldn't have thrown: " + errorToString(e));
+  }
 
   if (!this) {
     // Strict mode. Great.
@@ -74,7 +76,7 @@ function tryEnsureSanity () { // eslint-disable-line require-jsdoc
   try {
     if ("__defineSetter__" in this) {
       // The only way to get rid of getters/setters is to delete the property.
-      if (!jsStrictMode) { delete this.eval; }
+      if (!jsStrictMode) { delete this.eval; } // eslint-disable-line no-eval
       delete this.Math;
       delete this.Function;
       delete this.gc;
@@ -83,7 +85,7 @@ function tryEnsureSanity () { // eslint-disable-line require-jsdoc
     }
 
     this.Math = realMath;
-    this.eval = realEval;
+    this.eval = realEval; // eslint-disable-line no-eval
     this.Function = realFunction;
     this.gc = realGC;
     this.uneval = realUneval;
@@ -93,7 +95,7 @@ function tryEnsureSanity () { // eslint-disable-line require-jsdoc
   }
 
   // These can fail if the page creates a getter for "eval", for example.
-  if (this.eval != realEval) { confused("Fuzz script replaced |eval|"); }
+  if (this.eval != realEval) { confused("Fuzz script replaced |eval|"); } // eslint-disable-line no-eval
   if (Function != realFunction) { confused("Fuzz script replaced |Function|"); }
 }
 
