@@ -223,16 +223,6 @@ function regexTerm () { // eslint-disable-line require-jsdoc
   return Random.index(regexTermMakers)();
 }
 
-// Alternative regexTerm implementation that was no longer used
-// function regexTerm () { // eslint-disable-line require-jsdoc
-//   var [re, oneString] = regexTermPair();
-//   var strings = [];
-//   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
-//     strings[i] = rnd(5) ? oneString : regexTermPair()[1];
-//   }
-//   return [re, strings];
-// }
-
 // Returns a pair: [(regex char class), (POTENTIAL_MATCHES number of strings that might match)]
 // e.g. ["[a-z0-9]", ["a", "8", ...]]
 function regexCharacterClass () { // eslint-disable-line require-jsdoc
