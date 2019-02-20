@@ -58,10 +58,10 @@ function useSpidermonkeyShellSandbox (sandboxType) { // eslint-disable-line requ
 
   switch (sandboxType) {
     /* eslint-disable no-multi-spaces */
-    case 0:  primarySandbox = evalcx("");
-    case 1:  primarySandbox = evalcx("lazy");
-    case 2:  primarySandbox = newGlobal({ sameCompartmentAs: {} });
-    case 3:  primarySandbox = newGlobal({ sameZoneAs: {} }); // same zone
+    case 0:  primarySandbox = evalcx(""); break;
+    case 1:  primarySandbox = evalcx("lazy"); break;
+    case 2:  primarySandbox = newGlobal({ sameCompartmentAs: {} }); break;
+    case 3:  primarySandbox = newGlobal({ sameZoneAs: {} }); break; // same zone
     default: primarySandbox = newGlobal(); // new zone
     /* eslint-enable no-multi-spaces */
   }
