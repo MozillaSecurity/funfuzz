@@ -82,7 +82,7 @@ function simpleSource (st) { // eslint-disable-line require-jsdoc
   if (typeof st === "string") {
     return ("\"" +
       st.replace(/\\/g, "\\\\")
-        .replace(/\"/g, "\\\"")
+        .replace(/"/g, "\\\"")
         .replace(/\0/g, "\\0")
         .replace(/\n/g, "\\n")
         .replace(/[^ -~]/g, hexify) + // not space (32) through tilde (126)

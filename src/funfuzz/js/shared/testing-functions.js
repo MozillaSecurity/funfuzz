@@ -125,7 +125,7 @@ function fuzzTestingFunctionsCtor (browser, fGlobal, fObject) { // eslint-disabl
     { w: 10, v: function (d, b) { return prefix + "baselineCompile" + "();"; } },
 
     // Force inline cache.
-    { w: 1, v: function (d, b) { return prefix + "setJitCompilerOption" + "('ion.forceinlineCaches\', " + rnd(2) + ");"; } },
+    { w: 1, v: function (d, b) { return prefix + "setJitCompilerOption" + "('ion.forceinlineCaches', " + rnd(2) + ");"; } },
 
     // Run-time equivalents to --no-ion, --no-baseline
     // These can throw: "Can't turn off JITs with JIT code on the stack."
