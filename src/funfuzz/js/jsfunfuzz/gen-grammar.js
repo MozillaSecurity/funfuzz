@@ -47,8 +47,9 @@ function makeStatement (d, b) { // eslint-disable-line require-jsdoc
 
   if (d < 6 && rnd(3) === 0) { return makePrintStatement(d, b); }
 
-  if (d < rnd(8)) // frequently for small depth, infrequently for large depth
-  { return makeLittleStatement(d, b); }
+  if (d < rnd(8)) { // frequently for small depth, infrequently for large depth
+    return makeLittleStatement(d, b);
+  }
 
   d = rnd(d); // !
 
@@ -88,9 +89,10 @@ function forLoopHead (d, b, v, reps) { // eslint-disable-line require-jsdoc
 
   while (rnd(10) === 0) { sInit += ", " + makeLetHeadItem(d - 2, b); }
   while (rnd(10) === 0) { sInit += ", " + makeExpr(d - 2, b); } // NB: only makes sense if our varBinder is ""
-  while (rnd(1000) === 0)
+  while (rnd(1000) === 0) {
   // never causes the loop to be run, but stuff like register allocation may be happening in the background
-  { sInit = Random.index(varBinderFor) + v; }
+    sInit = Random.index(varBinderFor) + v;
+  }
   while (rnd(10000) === 0) { sInit = ""; } // mostly throws ReferenceError, so make this rare
 
   while (rnd(20) === 0) { sCond = sCond + " && (" + makeExpr(d - 2, b) + ")"; }

@@ -101,9 +101,13 @@ var UNTERMINATED_STRING_LITERAL = "'";
 var UNTERMINATED_REGEXP_LITERAL = "/";
 
 function maybeLineBreak () { // eslint-disable-line require-jsdoc
-  if (rnd(900) === 3) { return Random.index(["\r", "\n", "//h\n", "/*\n*/"]); } // line break to trigger semicolon insertion and stuff
-  else if (rnd(400) === 3) { return rnd(2) ? "\u000C" : "\t"; } // weird space-like characters
-  else { return ""; }
+  if (rnd(900) === 3) { // line break to trigger semicolon insertion and stuff
+    return Random.index(["\r", "\n", "//h\n", "/*\n*/"]);
+  } else if (rnd(400) === 3) { // weird space-like characters
+    return rnd(2) ? "\u000C" : "\t";
+  } else {
+    return "";
+  }
 }
 
 function maybeSpace () { // eslint-disable-line require-jsdoc
