@@ -17,7 +17,7 @@ hg clone https://hg.mozilla.org/mozilla-central/ ~/trees/mozilla-central/
 
 Some parts of the harness assume a clean **Mercurial** clone of the mozilla trees. There is insufficient testing with Git for now - please file an issue if you hit problems with Git repositories of mozilla trees.
 
-If you want to use these scripts to compile SpiderMonkey or Firefox, install the usual prerequisites for [building Firefox](https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Build_Instructions) or [building SpiderMonkey](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Build_Documentation). There are [additional requirements for building with Address Sanitizer](https://developer.mozilla.org/en-US/docs/Mozilla/Testing/Firefox_and_Address_Sanitizer).
+If you want to use these scripts to compile SpiderMonkey, install the usual prerequisites for [building SpiderMonkey](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Build_Documentation). There are [additional requirements for building with Address Sanitizer](https://developer.mozilla.org/en-US/docs/Mozilla/Testing/Firefox_and_Address_Sanitizer).
 
 ### Windows (only 64-bit supported)
 
@@ -54,12 +54,12 @@ especially after updating major/minor OS versions. This sometimes manifests on M
 2. Install 32-bit libraries to compile 32-bit binaries:
   * Debian/Ubuntu: ```sudo apt-get install lib32z1 gcc-multilib g++-multilib```
   * Fedora: (Fedora is known to work, however the exact library names are unknown for now.)
-  ** Note that parts of the code which contain ```if isLinux and float(platform.linux_distribution()[1]) > 15.04``` might fail on Fedora, as they assume Ubuntu's versioning scheme. Patches welcome.
 3. Install gdb:
   * Debian/Ubuntu: ```sudo apt-get install gdb```
   * Fedora: Please ensure that all development packages are installed (see ```rpm -qa "*devel"```), and run ```yum install gdb```
 4. Install clang for clang/ASan builds:
   * Debian/Ubuntu: ```sudo apt-get install clang```
+  * Clang is used for 64-bit builds, while GCC is used for some older 32-bit builds
 
 
 ## Running funfuzz
@@ -78,6 +78,7 @@ In js mode, loop_bot makes use of:
 * [jsfunfuzz](src/funfuzz/js/jsfunfuzz)
 * [compare_jit](src/funfuzz/js/compare_jit.py) (if testing deterministic builds)
 * randorderfuzz (included in funfuzz, if tests are present in the mozilla repository)
+* funbind (Linux-only, included in funfuzz, if [binaryen](https://github.com/WebAssembly/binaryen/releases) can be downloaded)
 * [autobisectjs](src/funfuzz/autobisectjs/README.md) (if the mozilla repository is present).
 
 The parameters in `-b` get passed into [compile_shell](js/compile_shell.py) and [autobisectjs](src/funfuzz/autobisectjs/README.md).
@@ -102,27 +103,26 @@ Replace anything between `<` and `>` with your desired parameters.
 
 **A:** compile_shell has been tested on:
 
-* Windows 10 and 7, with [MozillaBuild 3.2](https://wiki.mozilla.org/MozillaBuild)
-* Mac OS X 10.13
+* Windows 10 with [MozillaBuild 3.2](https://wiki.mozilla.org/MozillaBuild)
+* macOS 10.13 and 10.14
 * Ubuntu 18.04 LTS (only LTS versions supported going forward)
 
 Fedora Linux and openSUSE Leap (42.3 and later) have not been tested extensively and there may be a few bugs along the way.
 
 The following operating systems are less common and while they may still work, be prepared to **expect issues** along the way:
 
-* Windows 8 / Windows 8.1
+* Windows 7, 8 / Windows 8.1
 * Windows Server 2012 R2
-* Mac OS X 10.11 through 10.12
 * Ubuntu Linux 16.04 LTS (install Python 3.6 via a PPA)
 * Ubuntu Linux 15.10 and prior
-* Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php)
 
 Support for the following operating systems **have been removed**:
 
 * Windows Vista, Windows XP and earlier
-* Mac OS X 10.10 and earlier
+* Mac OS X 10.12 and earlier
 * Ubuntu Linux 13.10 and earlier
+* Ubuntu (and variants) on [ARM ODROID boards](http://www.hardkernel.com/main/main.php)
 
 **Q: What version of Python does funfuzz require?**
 
-**A:** Python 3.6+. Version 0.5.x will be the last version to support 2.7 on POSIX platforms, Windows already requires Python 3.6 (found in MozillaBuild).
+**A:** Python 3.6+

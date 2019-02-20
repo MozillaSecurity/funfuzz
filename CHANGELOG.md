@@ -1,3 +1,55 @@
+## 0.6.0 (2019-02-19)
+
+0.6.x supports Python 3.6+ only
+
+Features:
+
+* funbind: Experimental integration with binaryen landed (Linux-only) (#219)
+* funbind: binaryen version bumped to 68
+* jsfunfuzz: Initial support for mark bit and gray root functions, `newGlobal({newCompartment: true})`, `Object.values`, `Object.[get|set]PrototypeOf` and `enableShapeConsistencyChecks()`
+* compare_jit: Ignore `Object.getOwnPropertyNames`, `dumpScopeChain`, `addMarkObservers`, `clearMarkObservers` and `getMarks`
+* randorderfuzz: support streams tests
+* Use exponential backoff for wasm file execution
+* Add a lock using fasteners to prevent `wasm-opt` from tripping over itself
+* Use exponential backoff for FuzzManager submission (#145)
+* ARM64 code improvements (both simulator and native)
+* ICU support bumped up to version 63
+* Max gczeal value bumped up to 25
+* Bump minimum macOS to be 10.13.6
+* Shell builds are compiled with `--disable-cranelift` only if on [m-c rev 6fcf54117a3b](https://hg.mozilla.org/mozilla-central/rev/6fcf54117a3b) or later, till current m-c tip
+* Make workaround for compiling further back, on Linux systems with sed >= 4.3 and add tests
+* Use GCC for 32-bit builds when bisecting back prior to [m-c rev e1cac03485d9](https://hg.mozilla.org/mozilla-central/rev/e1cac03485d9)
+* Support `--more-compartments` in most places
+* `--enable-streams` has been deprecated in favour of `--no-streams`
+* (all code relating to Python 2.7 support have been removed)
+
+Bugfixes:
+
+* funbind: Disable on ARM64 Linux due to binaryen GH issue 1615
+* Fixed TypeError thrown when `file_contains_str` is run after move to Python 3.6+ (#220)
+* Do not specify function names in `__init__.py` since we are now on Python 3.6+ to fix RuntimeWarning (#208)
+* Remove weights in build_options for slow devices since we do not deal with those anymore
+* Remove `--ion-loop-unrolling=on/off` as per [bug 1520998](https://bugzilla.mozilla.org/show_bug.cgi?id=1520998)
+* Remove flags related to `--no-wasm` from compare_jit testing, replacing with new ones, e.g. `--wasm-compiler=[none|baseline|ion|baseline+ion]`
+* Removed some subprocess calls in favour of the more pythonic way, e.g. for gzipping code
+* Remove "-backup" file logic as its support was flaky
+* Tweak packaging mode to use find_packages from setuptools in setup.py
+* Windows Asan binary support fixes
+* Library version bumps
+* Various other bugfixes
+
+Testing-related:
+
+* code coverage tests added (#202)
+* funfuzz now uses `pytest` throughout, old `unittest`-related code has been removed
+* Switch to using `--stream` when running hg clone, on Travis
+* `shellcheck` and `bashate` now run on Travis for bash scripts
+* Fast tests run on Travis for macOS and Windows
+* AppVeyor integration has been removed from funfuzz
+* Support pylint 2.x on Python 3 (#218)
+* Add cleanup script to wipe `*.pyc`, `*.pyo` files and `__pycache__` dirs, run flake8, fast pytests and pylint
+* Various other Travis/testing bugfixes
+
 ## 0.5.0 (2018-11-07)
 
 0.5.x is the final version series with stable dual Python 2/3 support, and the branch will then be put on maintenance mode. Going forward, funfuzz will be on Python 3.6+
@@ -37,8 +89,8 @@ Bugfixes:
 
 Bugfixes:
 *  Fix #185 - `Commandline argument -t "js" in bot.py is not recognized. But it is mentioned in the readme.md.`
-*  Disable tests involving compile_shell on Python 2.7 mode unless Python 3.5+ is installed due to a mozilla-central requirement.
-  * This temporarily lowers code coverage numbers reported to Codecov via Travis, until Python 3.5+ support is finished.
+*  Disable tests involving compile_shell on Python 2.7 mode unless Python 3.5+ is installed due to a mozilla-central requirement
+  * This temporarily lowers code coverage numbers reported to Codecov via Travis, until Python 3.5+ support is finished
 * Integrated the isort Python checker into flake8 linting process
 * More automation / documentation / linting fixes
 
@@ -95,13 +147,13 @@ Notes:
 Features:
 * Basic pytest infrastructure added! - largely tests `compile_shell` for now
 * Add `codecov.io` support - Now with code coverage!
-* `evalInCooperativeThread` and `oomTest` are now ignored when running differential testing.
+* `evalInCooperativeThread` and `oomTest` are now ignored when running differential testing
 
 Bugfixes:
 * Ripped out the `version` function from being used in jsfunfuzz
 * Obsolete code removal, e.g. some flag combinations in shell_flags
 * Tweaked the algorithm for the number of CPU cores used for compilation
-* Miscellaneous fixes for Python stuff, linters, CI etc.
+* Miscellaneous fixes for Python stuff, linters, CI etc
 
 Notes:
 * Minimum Mac support is now 10.11.x (El Capitan)
