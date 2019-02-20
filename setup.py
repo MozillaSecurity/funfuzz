@@ -29,7 +29,7 @@ EXTRAS = {
 
 if __name__ == "__main__":
     setup(name="funfuzz",
-          version="0.6.0",
+          version="0.7.0a1",
           entry_points={
               "console_scripts": ["funfuzz = funfuzz.bot:main"],
           },
