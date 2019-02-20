@@ -88,15 +88,15 @@ var Random = {
       total += list[i][0];
     }
     var n = this.number(total);
-    for (let i = 0; i < list.length; i++) {
-      if (n < list[i][0]) {
+    for (let j = 0; j < list.length; j++) {
+      if (n < list[j][0]) {
         if (flat == true) {
-          return list[i][1];
+          return list[j][1];
         } else {
-          return this.pick([list[i][1]]);
+          return this.pick([list[j][1]]);
         }
       }
-      n = n - list[i][0];
+      n = n - list[j][0];
     }
     if (flat == true) {
       return list[0][1];
