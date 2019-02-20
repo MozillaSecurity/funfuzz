@@ -37,8 +37,8 @@ Bugfixes:
 
 Bugfixes:
 *  Fix #185 - `Commandline argument -t "js" in bot.py is not recognized. But it is mentioned in the readme.md.`
-*  Disable tests involving compile_shell on Python 2.7 mode unless Python 3.5+ is installed due to a mozilla-central requirement.
-  * This temporarily lowers code coverage numbers reported to Codecov via Travis, until Python 3.5+ support is finished.
+*  Disable tests involving compile_shell on Python 2.7 mode unless Python 3.5+ is installed due to a mozilla-central requirement
+  * This temporarily lowers code coverage numbers reported to Codecov via Travis, until Python 3.5+ support is finished
 * Integrated the isort Python checker into flake8 linting process
 * More automation / documentation / linting fixes
 
@@ -95,13 +95,13 @@ Notes:
 Features:
 * Basic pytest infrastructure added! - largely tests `compile_shell` for now
 * Add `codecov.io` support - Now with code coverage!
-* `evalInCooperativeThread` and `oomTest` are now ignored when running differential testing.
+* `evalInCooperativeThread` and `oomTest` are now ignored when running differential testing
 
 Bugfixes:
 * Ripped out the `version` function from being used in jsfunfuzz
 * Obsolete code removal, e.g. some flag combinations in shell_flags
 * Tweaked the algorithm for the number of CPU cores used for compilation
-* Miscellaneous fixes for Python stuff, linters, CI etc.
+* Miscellaneous fixes for Python stuff, linters, CI etc
 
 Notes:
 * Minimum Mac support is now 10.11.x (El Capitan)
