@@ -117,7 +117,7 @@ function asmAssignmentStatement (indent, env) { // eslint-disable-line require-j
 }
 
 function asmReturnStatement (indent, env) { // eslint-disable-line require-jsdoc
-  var ret = rnd(2) ? env.ret : Random.index(["double", "signed", "void"]);
+  var ret = rnd(2) ? env.ret : Random.index(["double", "signed", "void"]); // eslint-disable-line no-unused-vars
   if (env.ret == "double") { return indent + "return +" + doublishExpr(10, env) + ";\n"; } else if (env.ret == "signed") { return indent + "return (" + intishExpr(10, env) + ")|0;\n"; } else // (env.ret == "void")
   { return indent + "return;\n"; }
 }

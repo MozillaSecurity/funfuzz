@@ -13,7 +13,7 @@
 
 // Hack to make line numbers be consistent, to make spidermonkey
 // disassemble() comparison testing easier (e.g. for round-trip testing)
-function directEvalC (s) { var c; /* evil closureizer */ return eval(s); } // eslint-disable-line no-eval,require-jsdoc
+function directEvalC (s) { var c; /* evil closureizer */ return eval(s); } // eslint-disable-line no-eval,no-unused-vars,require-jsdoc
 function newFun (s) { return new Function(s); } // eslint-disable-line no-new-func,require-jsdoc
 
 function tryRunningDirectly (f, code, wtt) { // eslint-disable-line require-jsdoc
