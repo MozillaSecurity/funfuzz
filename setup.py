@@ -14,14 +14,14 @@ EXTRAS = {
         "codecov==2.0.15",
         "coverage==4.5.2",
         "distro>=1.3.0",
-        "flake8==3.7.5",
+        "flake8==3.7.6",
         "flake8-commas==2.0.0",
         "flake8-print==3.1.0",
         "flake8-isort==2.6.0",
         "flake8-quotes==1.0.0",
         "isort==4.3.4",
         "pylint==2.2.2",
-        "pytest==4.2.0",
+        "pytest==4.3.0",
         "pytest-cov==2.6.1",
         "pytest-flake8==1.0.4",
         "pytest-pylint==0.14.0",
@@ -30,7 +30,7 @@ EXTRAS = {
 
 if __name__ == "__main__":
     setup(name="funfuzz",
-          version="0.6.0a1",
+          version="0.6.0",
           entry_points={
               "console_scripts": ["funfuzz = funfuzz.bot:main"],
           },

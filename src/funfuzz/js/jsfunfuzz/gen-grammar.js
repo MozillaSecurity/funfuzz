@@ -1035,6 +1035,8 @@ function makeNewGlobalArg(d, b)
   // Make an options object to pass to the |newGlobal| shell builtin.
   var propStrs = [];
   if (rnd(2))
+    propStrs.push("newCompartment: " + makeBoolean(d - 1, b));
+  if (rnd(2))
     propStrs.push("sameCompartmentAs: " + makeExpr(d - 1, b));
   if (rnd(2))
     propStrs.push("sameZoneAs: " + makeExpr(d - 1, b));
