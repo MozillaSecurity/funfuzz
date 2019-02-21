@@ -1,6 +1,6 @@
 {
   "name": "jsfunfuzz",
-  "version": "0.6.0a1",
+  "version": "0.7.0a1",
   "description": "A fuzzer for testing the SpiderMonkey JavaScript engine",
   "repository": {
     "type": "git",
