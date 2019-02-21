@@ -49,7 +49,7 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
         h = null;
       }
 
-      if (typeof h === "function" && hn !== "constructor") {
+      if (typeof h === "function" && hn != "constructor") {
         allMethodNames.push(hn);
         builtinFunctions.push(fullName);
       }
@@ -64,9 +64,9 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
       var gn = gns[i];
       // Assume that most uppercase names are constructors.
       // Skip Worker in shell (removed in bug 771281).
-      if (gn.charCodeAt(0) > 0x40 && gn.charCodeAt(0) < 0x60 && gn !== "PerfMeasurement" && !(jsshell && gn === "Worker")) {
+      if (gn.charCodeAt(0) > 0x40 && gn.charCodeAt(0) < 0x60 && gn != "PerfMeasurement" && !(jsshell && gn == "Worker")) {
         var g = glob[gn];
-        if (typeof g === "function" && g.toString().indexOf("[native code]") !== -1) {
+        if (typeof g === "function" && g.toString().indexOf("[native code]") != -1) {
           constructors.push(gn);
           builtinProperties.push(gn);
           builtinFunctions.push(gn);

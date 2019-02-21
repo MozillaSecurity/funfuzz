@@ -72,7 +72,7 @@ var proxyHandlerProperties = {
 };
 
 function makeProxyHandlerFactory (d, b) { // eslint-disable-line require-jsdoc
-  if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   if (d < 1) { return "({/*TOODEEP*/})"; }
 
@@ -124,7 +124,7 @@ function proxyMunge (funText, p) { // eslint-disable-line require-jsdoc
 }
 
 function makeProxyHandler (d, b) { // eslint-disable-line require-jsdoc
-  if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   return makeProxyHandlerFactory(d, b) + "(" + makeExpr(d - 3, b) + ")";
 }

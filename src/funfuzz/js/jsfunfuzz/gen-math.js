@@ -70,10 +70,10 @@ var binaryMathFunctions = [
 ];
 
 function makeMathFunction (d, b, i) { // eslint-disable-line require-jsdoc
-  if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   var ivars = ["x", "y"];
-  if (rnd(10) === 0) {
+  if (rnd(10) == 0) {
     // Also use variables from the enclosing scope
     ivars = ivars.concat(b);
   }
@@ -81,7 +81,7 @@ function makeMathFunction (d, b, i) { // eslint-disable-line require-jsdoc
 }
 
 function makeMathExpr (d, b, i) { // eslint-disable-line require-jsdoc
-  if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
+  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
 
   // As depth decreases, make it more likely to bottom out
   if (d < rnd(5)) {
@@ -91,7 +91,7 @@ function makeMathExpr (d, b, i) { // eslint-disable-line require-jsdoc
     return Random.index(numericVals);
   }
 
-  if (rnd(500) === 0 && d > 0) { return makeExpr(d - 1, b); }
+  if (rnd(500) == 0 && d > 0) { return makeExpr(d - 1, b); }
 
   function r () { return makeMathExpr(d - 1, b, i); } // eslint-disable-line require-jsdoc
 
@@ -110,12 +110,12 @@ function makeMathExpr (d, b, i) { // eslint-disable-line require-jsdoc
     }
   }
 
-  if (i > 0 && rnd(10) === 0) {
+  if (i > 0 && rnd(10) == 0) {
     // Call a *lower-numbered* mathy function. (This avoids infinite recursion.)
     return mc("mathy" + rnd(i) + "(" + mc(r()) + ", " + mc(r()) + ")");
   }
 
-  if (rnd(20) === 0) {
+  if (rnd(20) == 0) {
     return mc("(" + mc(r()) + " ? " + mc(r()) + " : " + mc(r()) + ")");
   }
 

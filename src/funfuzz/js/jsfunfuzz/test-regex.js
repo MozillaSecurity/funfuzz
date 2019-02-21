@@ -20,7 +20,7 @@ function randomRegexFlags () { // eslint-disable-line require-jsdoc
 }
 
 function toRegexSource (rexpat) { // eslint-disable-line require-jsdoc
-  return (rnd(2) === 0 && rexpat.charAt(0) !== "*") ?
+  return (rnd(2) === 0 && rexpat.charAt(0) != "*") ?
     "/" + rexpat + "/" + randomRegexFlags() :
     "new RegExp(" + simpleSource(rexpat) + ", " + simpleSource(randomRegexFlags()) + ")";
 }

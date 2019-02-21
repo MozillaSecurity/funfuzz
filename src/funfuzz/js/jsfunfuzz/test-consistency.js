@@ -48,7 +48,7 @@ function nestingConsistencyTest (code) { // eslint-disable-line require-jsdoc
   // if (resultO != "" && resultO != "undefined" && resultO != "use strict")
   //   print("NestTest: " + resultO);
 
-  if (resultO !== resultD) {
+  if (resultO != resultD) {
     foundABug("NestTest mismatch",
       "resultO: " + resultO + "\n" +
       "resultD: " + resultD);

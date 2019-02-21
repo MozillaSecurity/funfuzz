@@ -40,7 +40,7 @@ function makeRegisterStompBody (d, b, pure) { // eslint-disable-line require-jsd
   }
 
   while (rnd(100)) {
-    if (bv.length === 0 || rnd(4)) {
+    if (bv.length == 0 || rnd(4)) {
       var newVar = "r" + lastRVar;
       ++lastRVar;
       s += "var " + newVar + " = " + expr() + "; ";

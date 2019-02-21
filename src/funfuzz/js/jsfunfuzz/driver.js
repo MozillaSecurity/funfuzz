@@ -66,7 +66,7 @@ function start (glob) { // eslint-disable-line require-jsdoc
       // More complicated, but results in a much shorter script, making SpiderMonkey happier.
       var MTA = uneval(Random.twister.export_mta());
       var MTI = Random.twister.export_mti();
-      if (MTA !== Random.lastDumpedMTA) {
+      if (MTA != Random.lastDumpedMTA) {
         dumpln(cookie + "Random.twister.import_mta(" + MTA + ");");
         Random.lastDumpedMTA = MTA;
       }
@@ -75,7 +75,7 @@ function start (glob) { // eslint-disable-line require-jsdoc
 
     var code = makeScript(depth);
 
-    if (count === 1 && engine === ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
+    if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
       code = "tryRunning = useSpidermonkeyShellSandbox(" + rnd(4) + ");";
       // print("Sane mode!")
     }

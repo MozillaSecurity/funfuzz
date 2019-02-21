@@ -179,10 +179,10 @@ var makeEvilCallback;
       ", saveIncrementalBytecode: " + makeBoolean(d, b) +
       ", sourceIsLazy: " + makeBoolean(d, b) +
       ", catchTermination: " + makeBoolean(d, b) +
-      ((rnd(5) === 0) ? (
-        ((rnd(2) === 0) ? (", element: " + m("o")) : "") +
-        ((rnd(2) === 0) ? (", elementAttributeName: " + m("s")) : "") +
-        ((rnd(2) === 0) ? (", sourceMapURL: " + m("s")) : "")
+      ((rnd(5) == 0) ? (
+        ((rnd(2) == 0) ? (", element: " + m("o")) : "") +
+        ((rnd(2) == 0) ? (", elementAttributeName: " + m("s")) : "") +
+        ((rnd(2) == 0) ? (", sourceMapURL: " + m("s")) : "")
       ) : ""
       ) +
     " })");
@@ -217,7 +217,7 @@ var makeEvilCallback;
   //   a1.push(x)
   function method (d, b, clazz, obj, meth, arglist) { // eslint-disable-line require-jsdoc
     // Sometimes ignore our arguments
-    if (rnd(10) === 0) { arglist = []; }
+    if (rnd(10) == 0) { arglist = []; }
 
     // Stuff in extra arguments
     while (rnd(2)) { arglist.push(val(d, b)); }

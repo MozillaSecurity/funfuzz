@@ -38,7 +38,7 @@ function regexNumberOfMatches () { // eslint-disable-line require-jsdoc
 }
 
 function regexPattern (depth, parentWasQuantifier) { // eslint-disable-line require-jsdoc
-  if (depth === 0 || (rnd(depth) === 0)) { return regexTerm(); }
+  if (depth == 0 || (rnd(depth) == 0)) { return regexTerm(); }
 
   var dr = depth - 1;
 
@@ -121,7 +121,7 @@ function regexGrouped (prefix, dr, postfix) { // eslint-disable-line require-jsd
   var newStrings = [];
   for (var i = 0; i < POTENTIAL_MATCHES; ++i) {
     newStrings[i] = rnd(5) ? strings[i] : "";
-    if (prefix === "(" && strings[i].length < 40 && rnd(3) === 0) {
+    if (prefix == "(" && strings[i].length < 40 && rnd(3) === 0) {
       backrefHack[i] = strings[i];
     }
   }
@@ -239,7 +239,7 @@ function regexCharacterClass () { // eslint-disable-line require-jsdoc
   var hi;
 
   for (var i = 0; i < ranges; ++i) {
-    if (rnd(100) === 0) {
+    if (rnd(100) == 0) {
       // Confuse things by tossing in an extra "-"
       re += "-";
       if (rnd(2)) {
@@ -247,7 +247,7 @@ function regexCharacterClass () { // eslint-disable-line require-jsdoc
       }
     }
 
-    if (rnd(3) === 1) {
+    if (rnd(3) == 1) {
       // Add a built-in class, like "\d"
       re += Random.index(regexBuiltInCharClasses);
       charBucket.push("a");
@@ -257,7 +257,7 @@ function regexCharacterClass () { // eslint-disable-line require-jsdoc
       // Add a range, like "a-z"
       var a = regexCharacter();
       var b = regexCharacter();
-      if ((a[1] <= b[1]) === !!rnd(10)) {
+      if ((a[1] <= b[1]) == !!rnd(10)) {
         [lo, hi] = [a, b];
       } else {
         [lo, hi] = [b, a];
