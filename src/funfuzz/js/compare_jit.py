@@ -120,6 +120,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         "--wasm-compiler=ion",
         "--wasm-compiler=cranelift",
         "--wasm-compiler=baseline+cranelift",
+        "--wasm-compiler=none",
     })
     if flags:
         combos.insert(0, flags)
