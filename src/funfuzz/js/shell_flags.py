@@ -200,7 +200,7 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         args.append("--fuzzing-safe")
 
     # Add other groups of flags randomly
-    if shell_supports_flag(shell_path, "--no-wasm"):
+    if shell_supports_flag(shell_path, "--wasm-compiler=none"):
         # m-c rev 321230:e9b561d60697, see bug 1313180
         args = add_random_wasm_flags(shell_path, args)
 
