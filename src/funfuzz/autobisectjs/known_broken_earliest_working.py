@@ -129,16 +129,10 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("e2ecf684f49e")  # m-c 383101 Fx58, 1st w/ successful Xcode 9 builds, see bug 1366564
     if cpu_count_flag:
         required.append("1b55231e6628")  # m-c 380023 Fx57, 1st w/--cpu-count=<NUM>, see bug 1206770
-    if "--no-wasm-ion" in flags:
-        required.append("158b333a0a89")  # m-c 375650 Fx57, 1st w/--no-wasm-ion, removed in m-c 455252, Fx66
-    if "--no-wasm-baseline" in flags:
-        required.append("9ea44ef0c07c")  # m-c 375639 Fx57, 1st w/--no-wasm-baseline, removed in m-c 455252, Fx66
     if platform.system() == "Windows" and platform.uname()[2] == "10":
         required.append("530f7bd28399")  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
     if options.disableProfiling:
         required.append("800a887c705e")  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
-    if "--no-wasm" in flags:
-        required.append("e9b561d60697")  # m-c 321230 Fx52, 1st w/--no-wasm, see bug 1313180
     if "--cache-ir-stubs=on" in flags or "--cache-ir-stubs=off" in flags:
         required.append("1c5b92144e1e")  # m-c 308931 Fx51, 1st w/--cache-ir-stubs=on, see bug 1292659
     if "--ion-pgo=on" in flags or "--ion-pgo=off" in flags:
