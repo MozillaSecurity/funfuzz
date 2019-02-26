@@ -115,14 +115,12 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
     # Remove any of the following flags from being used in compare_jit
     flags = list(set(flags) - {
         "--more-compartments",
-        "--no-wasm",
-        "--no-wasm-ion",
-        "--no-wasm-baseline",
         "--wasm-compiler=baseline+ion",
         "--wasm-compiler=baseline",
         "--wasm-compiler=ion",
         "--wasm-compiler=cranelift",
         "--wasm-compiler=baseline+cranelift",
+        "--wasm-compiler=none",
     })
     if flags:
         combos.insert(0, flags)

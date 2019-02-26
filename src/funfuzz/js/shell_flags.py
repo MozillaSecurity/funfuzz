@@ -175,12 +175,6 @@ def add_random_wasm_flags(shell_path, input_list=False):
     if shell_supports_flag(shell_path, "--test-wasm-await-tier2") and chance(.8):
         # m-c rev 387188:b1dc87a94262, see bug 1388785
         input_list.append("--test-wasm-await-tier2")
-    if shell_supports_flag(shell_path, "--no-wasm-ion") and chance(.2):
-        # m-c rev 375650:158b333a0a89, see bug 1277562
-        input_list.append("--no-wasm-ion")
-    if shell_supports_flag(shell_path, "--no-wasm-baseline") and chance(.2):
-        # m-c rev 375639:9ea44ef0c07c, see bug 1277562
-        input_list.append("--no-wasm-baseline")
 
     # m-c rev 222786:bcacb5692ad9 is the earliest known working revision, so stop testing prior existence of flag
 
@@ -206,7 +200,7 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         args.append("--fuzzing-safe")
 
     # Add other groups of flags randomly
-    if shell_supports_flag(shell_path, "--no-wasm"):
+    if shell_supports_flag(shell_path, "--wasm-compiler=none"):
         # m-c rev 321230:e9b561d60697, see bug 1313180
         args = add_random_wasm_flags(shell_path, args)
 
