@@ -135,6 +135,8 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("800a887c705e")  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
     if "--cache-ir-stubs=on" in flags or "--cache-ir-stubs=off" in flags:
         required.append("1c5b92144e1e")  # m-c 308931 Fx51, 1st w/--cache-ir-stubs=on, see bug 1292659
+    if platform.machine() == "aarch64":
+        required.append("2f727a828ea0")  # m-c 304669 Fx50, 1st w/ working aarch64 builds, see bug 1286207
     if "--ion-pgo=on" in flags or "--ion-pgo=off" in flags:
         required.append("b0a0ff5fa705")  # m-c 272274 Fx45, 1st w/--ion-pgo=on, see bug 1209515
     if options.buildWithAsan:

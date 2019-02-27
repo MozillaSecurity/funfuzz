@@ -19,7 +19,7 @@ EXTRAS = {
         "flake8-isort==2.6.0",
         "flake8-quotes==1.0.0",
         "isort==4.3.4",
-        "pylint==2.2.2",
+        "pylint==2.3.0",
         "pytest==4.3.0",
         "pytest-cov==2.6.1",
         "pytest-flake8==1.0.4",
