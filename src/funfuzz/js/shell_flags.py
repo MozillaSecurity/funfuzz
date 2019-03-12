@@ -328,7 +328,8 @@ def basic_flag_sets():
         ["--fuzzing-safe", "--baseline-eager"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--baseline-eager", "--no-ion"],  # May find > w/o --no-ion
         ["--fuzzing-safe", "--no-baseline", "--no-ion"],
-        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--wasm-compiler=none", "--no-native-regexp"],
+        # --wasm-compiler=none was removed for compare_jit
+        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--no-native-regexp"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--ion-check-range-analysis",
          "--ion-extra-checks", "--no-sse3"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--test-wasm-await-tier2",
