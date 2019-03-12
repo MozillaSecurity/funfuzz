@@ -31,7 +31,7 @@ function fillShellSandbox(sandbox)
     "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
     "verifyprebarriers", "gcPreserveCode",
     "minorgc", "abortgc",
-    "evalcx", "newGlobal", "evaluate",
+    "evalcx", "newGlobal", "evaluate", "evalInWorker",
     "dumpln", "fillShellSandbox",
     "testMathyFunction", "hashStr",
     "isAsmJSCompilationAvailable",
