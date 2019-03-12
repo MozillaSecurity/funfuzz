@@ -981,11 +981,11 @@ if (typeof evalcx === "function") {
 
 // SpiderMonkey shell has an "evalInWorker" function.
 // This tests evaluating scripts in a separate thread with its own runtime.
-if (typeof evalInWorker == "function") {
+if (typeof evalInWorker === "function") {
   exprMakers = exprMakers.concat([
-    function(d, b) { return makeGlobal(d, b); },
-    function(d, b) { return "evalInWorker(" + uneval(makeScriptForEval(d, b)) + ")"; },
-    function(d, b) { return "evalInWorker(" + uneval(makeScriptForEval(d, b)) + ")"; },
+    function (d, b) { return makeGlobal(d, b); },
+    function (d, b) { return "evalInWorker(" + uneval(makeScriptForEval(d, b)) + ")"; },
+    function (d, b) { return "evalInWorker(" + uneval(makeScriptForEval(d, b)) + ")"; }
   ]);
 }
 
