@@ -169,9 +169,10 @@ def add_random_wasm_flags(shell_path, input_list=False):
             wasm_compiler_option = "none"
         # m-c rev 455252:48dc14f79fb0, see bug 1509441
         input_list.append("--wasm-compiler=" + wasm_compiler_option)
-    if shell_supports_flag(shell_path, "--wasm-gc") and chance(.8):
-        # m-c rev 413255:302befe7689a, see bug 1445272
-        input_list.append("--wasm-gc")
+    # --wasm-gc is now unstable as of bug 1488205
+    # if shell_supports_flag(shell_path, "--wasm-gc") and chance(.8):
+    #     # m-c rev 413255:302befe7689a, see bug 1445272
+    #     input_list.append("--wasm-gc")
     if shell_supports_flag(shell_path, "--test-wasm-await-tier2") and chance(.8):
         # m-c rev 387188:b1dc87a94262, see bug 1388785
         input_list.append("--test-wasm-await-tier2")
