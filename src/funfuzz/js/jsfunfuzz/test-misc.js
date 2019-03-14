@@ -3,82 +3,76 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-function optionalTests(f, code, wtt)
-{
-  if (count % 100 == 1) {
+/* exported optionalTests */
+/* global count, disassemble, dumpln, engine, ENGINE_SPIDERMONKEY_TRUNK, foundABug, getBuildConfiguration */
+/* global nestingConsistencyTest, Reflect, tryEnsureSanity, verbose */
+
+function optionalTests (f, code, wtt) { // eslint-disable-line require-jsdoc
+  if (count % 100 === 1) {
     tryHalves(code);
   }
 
-  if (count % 100 == 2 && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+  if (count % 100 === 2 && engine === ENGINE_SPIDERMONKEY_TRUNK) {
     try {
       Reflect.parse(code);
-    } catch(e) {
+    } catch (e) {
     }
   }
 
-  if (count % 100 == 3 && f && typeof disassemble == "function") {
+  if (count % 100 === 3 && f && typeof disassemble === "function") {
     // It's hard to use the recursive disassembly in the comparator,
     // but let's at least make sure the disassembler itself doesn't crash.
     disassemble("-r", f);
   }
 
-  if (0 && f && wtt.allowExec && engine == ENGINE_SPIDERMONKEY_TRUNK) {
+  if (0 && f && wtt.allowExec && engine === ENGINE_SPIDERMONKEY_TRUNK) {
     testExpressionDecompiler(code);
     tryEnsureSanity();
   }
 
-  if (count % 100 == 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter
-    && engine == ENGINE_SPIDERMONKEY_TRUNK && getBuildConfiguration()['more-deterministic']) {
+  if (count % 100 === 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter
+    && engine === ENGINE_SPIDERMONKEY_TRUNK && getBuildConfiguration()["more-deterministic"]) {
     nestingConsistencyTest(code);
   }
 }
 
-
-function testExpressionDecompiler(code)
-{
+function testExpressionDecompiler (code) { // eslint-disable-line require-jsdoc
   var fullCode = "(function() { try { \n" + code + "\n; throw 1; } catch(exx) { this.nnn.nnn } })()";
 
   try {
-    eval(fullCode);
-  } catch(e) {
-    if (e.message != "this.nnn is undefined" && e.message.indexOf("redeclaration of") == -1) {
+    eval(fullCode); // eslint-disable-line no-eval
+  } catch (e) {
+    if (e.message !== "this.nnn is undefined" && e.message.indexOf("redeclaration of") === -1) {
       // Break up the following string intentionally, to prevent matching when contents of jsfunfuzz is printed.
       foundABug("Wrong error " + "message", e);
     }
   }
 }
 
-
-function tryHalves(code)
-{
+function tryHalves (code) { // eslint-disable-line require-jsdoc
   // See if there are any especially horrible bugs that appear when the parser has to start/stop in the middle of something. this is kinda evil.
 
   // Stray "}"s are likely in secondHalf, so use new Function rather than eval.  "}" can't escape from new Function :)
 
-  var f, firstHalf, secondHalf;
+  var f;
+  var firstHalf;
+  var secondHalf;
 
   try {
-
     firstHalf = code.substr(0, code.length / 2);
-    if (verbose)
-      dumpln("First half: " + firstHalf);
-    f = new Function(firstHalf);
+    if (verbose) { dumpln("First half: " + firstHalf); }
+    f = new Function(firstHalf); // eslint-disable-line no-new-func
     void ("" + f);
-  }
-  catch(e) {
-    if (verbose)
-      dumpln("First half compilation error: " + e);
+  } catch (e) {
+    if (verbose) { dumpln("First half compilation error: " + e); }
   }
 
   try {
     secondHalf = code.substr(code.length / 2, code.length);
-    if (verbose)
-      dumpln("Second half: " + secondHalf);
-    f = new Function(secondHalf);
+    if (verbose) { dumpln("Second half: " + secondHalf); }
+    f = new Function(secondHalf); // eslint-disable-line no-new-func
     void ("" + f);
-  }
-  catch(e) {
-    if (verbose)
-      dumpln("Second half compilation error: " + e);
+  } catch (e) {
+    if (verbose) { dumpln("Second half compilation error: " + e); }
   }
 }

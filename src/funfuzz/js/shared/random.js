@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* global MersenneTwister19937, Utils */
+
 var Random = {
   twister: null,
 
@@ -15,7 +17,7 @@ var Random = {
   },
   number: function (limit) {
     // Returns an integer in [0, limit). Uniform distribution.
-    if (limit == 0) {
+    if (limit === 0) {
       return limit;
     }
     if (limit == null || limit === undefined) {
@@ -25,7 +27,7 @@ var Random = {
   },
   float: function () {
     // Returns a float in [0, 1]. Uniform distribution.
-    return (Random.twister.int32() >>> 0) * (1.0/4294967295.0);
+    return (Random.twister.int32() >>> 0) * (1.0 / 4294967295.0);
   },
   range: function (start, limit) {
     // Returns an integer in [start, limit]. Uniform distribution.
@@ -35,17 +37,16 @@ var Random = {
     }
     return Random.number(limit - start + 1) + start;
   },
-  ludOneTo: function(limit) {
+  ludOneTo: function (limit) {
     // Returns a float in [1, limit]. The logarithm has uniform distribution.
     return Math.exp(Random.float() * Math.log(limit));
   },
   index: function (list, emptyr) {
-    if (!(list instanceof Array || (typeof list != "string" && "length" in list))) {
+    if (!(list instanceof Array || (typeof list !== "string" && "length" in list))) {
       Utils.traceback();
       throw new TypeError("Random.index() received a non array type: '" + list + "'");
     }
-    if (!list.length)
-      return emptyr;
+    if (!list.length) { return emptyr; }
     return list[this.number(list.length)];
   },
   key: function (obj) {
@@ -59,7 +60,7 @@ var Random = {
     return this.index([true, false]);
   },
   pick: function (obj) {
-    if (typeof obj == "function") {
+    if (typeof obj === "function") {
       return obj();
     }
     if (obj instanceof Array) {
@@ -75,7 +76,7 @@ var Random = {
       Utils.traceback();
       throw new TypeError("Random.chance() received a non number type: '" + limit + "'");
     }
-    return this.number(limit) == 1;
+    return this.number(limit) === 1;
   },
   choose: function (list, flat) {
     if (!(list instanceof Array)) {
@@ -87,17 +88,17 @@ var Random = {
       total += list[i][0];
     }
     var n = this.number(total);
-    for (var i = 0; i < list.length; i++) {
-      if (n < list[i][0]) {
-        if (flat == true) {
-          return list[i][1];
+    for (let j = 0; j < list.length; j++) {
+      if (n < list[j][0]) {
+        if (flat === true) {
+          return list[j][1];
         } else {
-          return this.pick([list[i][1]]);
+          return this.pick([list[j][1]]);
         }
       }
-      n = n - list[i][0];
+      n = n - list[j][0];
     }
-    if (flat == true) {
+    if (flat === true) {
       return list[0][1];
     }
     return this.pick([list[0][1]]);
@@ -130,7 +131,7 @@ var Random = {
     Random.shuffle(newArray);
     return newArray;
   },
-  subset: function(a) {
+  subset: function (a) {
     // TODO: shuffle, repeat, include bogus things [see also https://github.com/mozilla/rust/blob/d0ddc69298c41df04b0488d91d521eb531d79177/src/fuzzer/ivec_fuzz.rs]
     // Consider adding a weight argument, or swarming on inclusion/exclusion to make 'all' and 'none' more likely
     var subset = [];
@@ -140,8 +141,8 @@ var Random = {
       }
     }
     return subset;
-  },
+  }
 
 };
 
-function rnd(n) { return Random.number(n); }
+function rnd (n) { return Random.number(n); } // eslint-disable-line require-jsdoc

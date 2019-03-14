@@ -3,9 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-function start(glob)
-{
-  var fuzzSeed = Math.floor(Math.random() * Math.pow(2,28));
+/* exported failsToCompileInTry, start */
+/* global count:writable, dumpln, engine, ENGINE_SPIDERMONKEY_TRUNK, jsshell */
+/* global makeScript, mathInitFCM, print, printImportant, Random, rnd, tryItOut, uneval */
+
+function start (glob) { // eslint-disable-line require-jsdoc
+  var fuzzSeed = Math.floor(Math.random() * Math.pow(2, 28));
   dumpln("fuzzSeed: " + fuzzSeed);
   Random.init(fuzzSeed);
 
@@ -39,35 +42,31 @@ function start(glob)
         print("That took " + elapsed1 + "ms!");
       }
       lastTime = new Date();
-    } while(lastTime - startTime < MAX_TOTAL_TIME);
+    } while (lastTime - startTime < MAX_TOTAL_TIME);
   } else {
-    setTimeout(testStuffForAWhile, 200);
+    setTimeout(testStuffForAWhile, 200); // eslint-disable-line no-undef
   }
 
-  function testStuffForAWhile()
-  {
-    for (var j = 0; j < 100; ++j)
-      testOne();
+  function testStuffForAWhile () { // eslint-disable-line require-jsdoc
+    for (var j = 0; j < 100; ++j) { testOne(); }
 
-    if (count % 10000 < 100)
-      printImportant("Iterations: " + count);
+    if (count % 10000 < 100) { printImportant("Iterations: " + count); }
 
-    setTimeout(testStuffForAWhile, 30);
+    setTimeout(testStuffForAWhile, 30); // eslint-disable-line no-undef
   }
 
-  function testOne()
-  {
+  function testOne () { // eslint-disable-line require-jsdoc
     ++count;
 
     // Sometimes it makes sense to start with simpler functions:
-    //var depth = ((count / 1000) | 0) & 16;
+    // var depth = ((count / 1000) | 0) & 16;
     var depth = 14;
 
     if (dumpEachSeed) {
       // More complicated, but results in a much shorter script, making SpiderMonkey happier.
       var MTA = uneval(Random.twister.export_mta());
       var MTI = Random.twister.export_mti();
-      if (MTA != Random.lastDumpedMTA) {
+      if (MTA !== Random.lastDumpedMTA) {
         dumpln(cookie + "Random.twister.import_mta(" + MTA + ");");
         Random.lastDumpedMTA = MTA;
       }
@@ -76,31 +75,29 @@ function start(glob)
 
     var code = makeScript(depth);
 
-    if (count == 1 && engine == ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
+    if (count === 1 && engine === ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
       code = "tryRunning = useSpidermonkeyShellSandbox(" + rnd(4) + ");";
-      //print("Sane mode!")
+      // print("Sane mode!")
     }
 
-  //  if (rnd(10) === 1) {
-  //    var dp = "/*infloop-deParen*/" + Random.index(deParen(code));
-  //    if (dp)
-  //      code = dp;
-  //  }
+    //  if (rnd(10) === 1) {
+    //    var dp = "/*infloop-deParen*/" + Random.index(deParen(code));
+    //    if (dp)
+    //      code = dp;
+    //  }
     dumpln(cookie + "count=" + count + "; tryItOut(" + uneval(code) + ");");
 
     tryItOut(code);
   }
 }
 
-
-function failsToCompileInTry(code) {
+function failsToCompileInTry (code) { // eslint-disable-line require-jsdoc
   // Why would this happen? One way is "let x, x"
   try {
     var codeInTry = "try { " + code + " } catch(e) { }";
-    void new Function(codeInTry);
+    void new Function(codeInTry); // eslint-disable-line no-new-func
     return false;
-  } catch(e) {
+  } catch (e) {
     return true;
   }
 }
-

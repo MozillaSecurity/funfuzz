@@ -3,6 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* exported makeMathFunction, NUM_MATH_FUNCTIONS */
+/* global directivePrologue, makeExpr, numericVals, Random, rnd, TOTALLY_RANDOM, totallyRandom */
+
 const NUM_MATH_FUNCTIONS = 6;
 
 var binaryMathOps = [
@@ -14,11 +17,11 @@ var binaryMathOps = [
   " == ", " != ",
   " === ", " !== ",
   " & ", " | ", " ^ ", " && ", " || ",
-  " , ",
+  " , "
 ];
 
 var leftUnaryMathOps = [
-  " ! ", " + ", " - ", " ~ ",
+  " ! ", " + ", " - ", " ~ "
 ];
 
 // unaryMathFunctions and binaryMathFunctions updated on 2017-01-21 and added from:
@@ -53,7 +56,7 @@ var unaryMathFunctions = [
   "sqrt",
   "tan",
   "tanh",
-  "trunc",
+  "trunc"
 ];
 
 // n-ary functions will also be tested with varying numbers of parameters by makeFunction
@@ -63,24 +66,22 @@ var binaryMathFunctions = [
   "imul",
   "max", // n-ary
   "min", // n-ary
-  "pow",
+  "pow"
 ];
 
-function makeMathFunction(d, b, i)
-{
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+function makeMathFunction (d, b, i) { // eslint-disable-line require-jsdoc
+  if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
   var ivars = ["x", "y"];
-  if (rnd(10) == 0) {
+  if (rnd(10) === 0) {
     // Also use variables from the enclosing scope
     ivars = ivars.concat(b);
   }
   return "(function(x, y) { " + directivePrologue() + "return " + makeMathExpr(d, ivars, i) + "; })";
 }
 
-function makeMathExpr(d, b, i)
-{
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(d, b);
+function makeMathExpr (d, b, i) { // eslint-disable-line require-jsdoc
+  if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
   // As depth decreases, make it more likely to bottom out
   if (d < rnd(5)) {
@@ -90,37 +91,40 @@ function makeMathExpr(d, b, i)
     return Random.index(numericVals);
   }
 
-  if (rnd(500) == 0 && d > 0)
-    return makeExpr(d - 1, b);
+  if (rnd(500) === 0 && d > 0) { return makeExpr(d - 1, b); }
 
-  function r() { return makeMathExpr(d - 1, b, i); }
+  function r () { return makeMathExpr(d - 1, b, i); } // eslint-disable-line require-jsdoc
 
   // Frequently, coerce both the inputs and outputs to the same "numeric sub-type"
   // (asm.js formalizes this concept, but JITs may have their own variants)
   var commonCoercion = rnd(10);
-  function mc(expr) {
-    switch(rnd(3) ? commonCoercion : rnd(10)) {
-      case 0: return "(" + " + " + expr + ")";     // f64 (asm.js)
-      case 1: return "Math.fround(" + expr + ")";  // f32
-      case 2: return "(" + expr + " | 0)";         // i32 (asm.js)
-      case 3: return "(" + expr + " >>> 0)";       // u32
+  function mc (expr) { // eslint-disable-line require-jsdoc
+    switch (rnd(3) ? commonCoercion : rnd(10)) {
+      /* eslint-disable no-multi-spaces */
+      case 0:  return "(" + " + " + expr + ")";     // f64 (asm.js)
+      case 1:  return "Math.fround(" + expr + ")";  // f32
+      case 2:  return "(" + expr + " | 0)";         // i32 (asm.js)
+      case 3:  return "(" + expr + " >>> 0)";       // u32
       default: return expr;
+      /* eslint-enable no-multi-spaces */
     }
   }
 
-  if (i > 0 && rnd(10) == 0) {
+  if (i > 0 && rnd(10) === 0) {
     // Call a *lower-numbered* mathy function. (This avoids infinite recursion.)
     return mc("mathy" + rnd(i) + "(" + mc(r()) + ", " + mc(r()) + ")");
   }
 
-  if (rnd(20) == 0) {
+  if (rnd(20) === 0) {
     return mc("(" + mc(r()) + " ? " + mc(r()) + " : " + mc(r()) + ")");
   }
 
-  switch(rnd(4)) {
+  switch (rnd(4)) {
+    /* eslint-disable no-multi-spaces */
     case 0:  return mc("(" + mc(r()) + Random.index(binaryMathOps) + mc(r()) + ")");
     case 1:  return mc("(" + Random.index(leftUnaryMathOps) + mc(r()) + ")");
     case 2:  return mc("Math." + Random.index(unaryMathFunctions) + "(" + mc(r()) + ")");
     default: return mc("Math." + Random.index(binaryMathFunctions) + "(" + mc(r()) + ", " + mc(r()) + ")");
+    /* eslint-enable no-multi-spaces */
   }
 }

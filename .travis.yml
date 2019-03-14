@@ -137,6 +137,7 @@ before_install:
       rustup --version
       which rustc
       rustc --version
+      npm --version
     fi
 install:
   # Already in venv, no need for --user
@@ -183,6 +184,13 @@ script:
       # python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
     else
       python -m pytest -s --flake8 --pylint --pylint-jobs=2 -m "not slow" --cov --cov-report term-missing
+    fi
+  - |
+    if [ $TRAVIS_OS_NAME == "linux" ] ; then
+      pushd src/funfuzz/js/
+      npm install || travis_terminate 1
+      npm run lint || travis_terminate 1
+      popd
     fi
   - |
     if [ $TRAVIS_OS_NAME == "linux" ] ; then
