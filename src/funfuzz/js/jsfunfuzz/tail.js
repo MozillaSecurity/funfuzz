@@ -3,13 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* exported count, verbose */
+/* global jsshell, print, start */
+
 var count = 0;
 var verbose = false;
 
-
-/**************************************
+/* ********************************** *
  * To reproduce a crash or assertion: *
- **************************************/
+ * ********************************** */
 
 // 1. grep tryIt LOGFILE | grep -v "function tryIt" | pbcopy
 // 2. Paste the result between "ddbegin" and "ddend", replacing "start(this);"
@@ -18,8 +20,6 @@ var verbose = false;
 start(this);
 // SPLICE DDEND
 
-if (jsshell)
-  print("It's looking good!"); // Magic string that js_interesting looks for
-
+if (jsshell) { print("It's looking good!"); } // Magic string that js_interesting looks for
 
 // 3. Run it.

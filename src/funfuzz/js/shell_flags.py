@@ -112,6 +112,9 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     # if chance(.2):  # m-c rev 217242:9188c8b7962b, see bug 1093674
     #     input_list.append("--ion-sink=" + ("on" if chance(.1) else "off"))
     if chance(.2):  # m-c rev 204669:891d587c19c4, see bug 1063816
+        # Added due to fuzz-flags.txt addition: m-c rev TOBEUPDATED, see bug 1529072
+        input_list.append("--ion-warmup-threshold=0")
+    if chance(.2):  # m-c rev 204669:891d587c19c4, see bug 1063816
         # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
         input_list.append("--ion-warmup-threshold=100")
     if chance(.2):  # m-c rev 194672:b2a822934b97, see bug 992845
@@ -166,18 +169,13 @@ def add_random_wasm_flags(shell_path, input_list=False):
             wasm_compiler_option = "none"
         # m-c rev 455252:48dc14f79fb0, see bug 1509441
         input_list.append("--wasm-compiler=" + wasm_compiler_option)
-    if shell_supports_flag(shell_path, "--wasm-gc") and chance(.8):
-        # m-c rev 413255:302befe7689a, see bug 1445272
-        input_list.append("--wasm-gc")
+    # --wasm-gc is now unstable as of bug 1488205
+    # if shell_supports_flag(shell_path, "--wasm-gc") and chance(.8):
+    #     # m-c rev 413255:302befe7689a, see bug 1445272
+    #     input_list.append("--wasm-gc")
     if shell_supports_flag(shell_path, "--test-wasm-await-tier2") and chance(.8):
         # m-c rev 387188:b1dc87a94262, see bug 1388785
         input_list.append("--test-wasm-await-tier2")
-    if shell_supports_flag(shell_path, "--no-wasm-ion") and chance(.2):
-        # m-c rev 375650:158b333a0a89, see bug 1277562
-        input_list.append("--no-wasm-ion")
-    if shell_supports_flag(shell_path, "--no-wasm-baseline") and chance(.2):
-        # m-c rev 375639:9ea44ef0c07c, see bug 1277562
-        input_list.append("--no-wasm-baseline")
 
     # m-c rev 222786:bcacb5692ad9 is the earliest known working revision, so stop testing prior existence of flag
 
@@ -203,7 +201,7 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         args.append("--fuzzing-safe")
 
     # Add other groups of flags randomly
-    if shell_supports_flag(shell_path, "--no-wasm"):
+    if shell_supports_flag(shell_path, "--wasm-compiler=none"):
         # m-c rev 321230:e9b561d60697, see bug 1313180
         args = add_random_wasm_flags(shell_path, args)
 
@@ -331,7 +329,8 @@ def basic_flag_sets():
         ["--fuzzing-safe", "--baseline-eager"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--baseline-eager", "--no-ion"],  # May find > w/o --no-ion
         ["--fuzzing-safe", "--no-baseline", "--no-ion"],
-        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--wasm-compiler=none", "--no-native-regexp"],
+        # --wasm-compiler=none was removed for compare_jit
+        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--no-native-regexp"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--ion-check-range-analysis",
          "--ion-extra-checks", "--no-sse3"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--test-wasm-await-tier2",

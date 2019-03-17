@@ -3,32 +3,29 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-/*****************
- * USING REGEXPS *
- *****************/
+/* exported makeRegex, makeRegexUseBlock, makeRegexUseExpr */
+/* global makeExpr, makeFunction, POTENTIAL_MATCHES, Random, regexPattern, rnd, simpleSource */
 
-function randomRegexFlags() {
+/* ************* *
+ * USING REGEXPS *
+ * ************* */
+
+function randomRegexFlags () { // eslint-disable-line require-jsdoc
   var s = "";
-  if (rnd(2))
-    s += "g";
-  if (rnd(2))
-    s += "y";
-  if (rnd(2))
-    s += "i";
-  if (rnd(2))
-    s += "m";
+  if (rnd(2)) { s += "g"; }
+  if (rnd(2)) { s += "y"; }
+  if (rnd(2)) { s += "i"; }
+  if (rnd(2)) { s += "m"; }
   return s;
 }
 
-function toRegexSource(rexpat)
-{
-  return (rnd(2) === 0 && rexpat.charAt(0) != "*") ?
+function toRegexSource (rexpat) { // eslint-disable-line require-jsdoc
+  return (rnd(2) === 0 && rexpat.charAt(0) !== "*") ?
     "/" + rexpat + "/" + randomRegexFlags() :
     "new RegExp(" + simpleSource(rexpat) + ", " + simpleSource(randomRegexFlags()) + ")";
 }
 
-function makeRegexUseBlock(d, b, rexExpr, strExpr)
-{
+function makeRegexUseBlock (d, b, rexExpr, strExpr) { // eslint-disable-line require-jsdoc
   var rexpair = regexPattern(10, false);
   var rexpat = rexpair[0];
   var str = rexpair[1][rnd(POTENTIAL_MATCHES)];
@@ -53,11 +50,10 @@ function makeRegexUseBlock(d, b, rexExpr, strExpr)
             ]) +
           "); " +
           (rnd(3) ? "" : "print(r.lastIndex); ")
-          );
+  );
 }
 
-function makeRegexUseExpr(d, b)
-{
+function makeRegexUseExpr (d, b) { // eslint-disable-line require-jsdoc
   var rexpair = regexPattern(8, false);
   var rexpat = rexpair[0];
   var str = rexpair[1][rnd(POTENTIAL_MATCHES)];
@@ -68,20 +64,19 @@ function makeRegexUseExpr(d, b)
   return "/*RXUE*/" + rexExpr + ".exec(" + strExpr + ")";
 }
 
-function makeRegex(d, b)
-{
+function makeRegex (d, b) { // eslint-disable-line require-jsdoc
   var rexpair = regexPattern(8, false);
   var rexpat = rexpair[0];
   var rexExpr = toRegexSource(rexpat);
   return rexExpr;
 }
 
-function makeReplacement(d, b)
-{
-  switch(rnd(3)) {
+function makeReplacement (d, b) { // eslint-disable-line require-jsdoc
+  switch (rnd(3)) {
+    /* eslint-disable no-multi-spaces */
     case 0:  return Random.index(["''", "'x'", "'\\u0341'"]);
     case 1:  return makeExpr(d, b);
     default: return makeFunction(d, b);
+    /* eslint-enable no-multi-spaces */
   }
 }
-

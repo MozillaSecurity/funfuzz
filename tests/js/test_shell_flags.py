@@ -58,6 +58,7 @@ def test_add_random_ion_flags(monkeypatch):
     assert '--execute="setJitCompilerOption(\\"ion.forceinlineCaches\\",1)"' in all_flags
     assert "--ion-extra-checks" in all_flags
     # assert "--ion-sink=on" in all_flags
+    assert "--ion-warmup-threshold=0" in all_flags
     assert "--ion-warmup-threshold=100" in all_flags
     assert "--ion-scalar-replacement=on" in all_flags
     assert "--ion-check-range-analysis" in all_flags
@@ -83,7 +84,7 @@ def test_add_random_wasm_flags(monkeypatch):
 
     all_flags = js.shell_flags.add_random_wasm_flags(test_shell_compile(), [])
     assert "--wasm-compiler=baseline+ion" in all_flags
-    assert "--wasm-gc" in all_flags
+    # assert "--wasm-gc" in all_flags  # --wasm-gc is now unstable as of bug 1488205
     assert "--test-wasm-await-tier2" in all_flags
     assert "--no-asmjs" in all_flags
 
