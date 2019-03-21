@@ -59,7 +59,6 @@ def test_add_random_ion_flags(monkeypatch):
     assert "--ion-extra-checks" in all_flags
     # assert "--ion-sink=on" in all_flags
     assert "--ion-warmup-threshold=0" in all_flags
-    assert "--ion-warmup-threshold=100" in all_flags
     assert "--ion-scalar-replacement=on" in all_flags
     assert "--ion-check-range-analysis" in all_flags
     # assert "--ion-regalloc=stupid" in all_flags
