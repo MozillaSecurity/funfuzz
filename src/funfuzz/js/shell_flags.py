@@ -111,10 +111,10 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     # --ion-sink=on is still not ready to be fuzzed
     # if chance(.2):  # m-c rev 217242:9188c8b7962b, see bug 1093674
     #     input_list.append("--ion-sink=" + ("on" if chance(.1) else "off"))
-    if chance(.2):  # m-c rev 204669:891d587c19c4, see bug 1063816
-        # Added due to fuzz-flags.txt addition: m-c rev TOBEUPDATED, see bug 1529072
+    if chance(.7):  # m-c rev 204669:891d587c19c4, see bug 1063816
+        # Added due to fuzz-flags.txt addition: m-c rev 460895:e0f409bac9bd, see bug 1529072
         input_list.append("--ion-warmup-threshold=0")
-    if chance(.2):  # m-c rev 204669:891d587c19c4, see bug 1063816
+    elif chance(.5):  # m-c rev 204669:891d587c19c4, see bug 1063816
         # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
         input_list.append("--ion-warmup-threshold=100")
     if chance(.2):  # m-c rev 194672:b2a822934b97, see bug 992845
@@ -134,7 +134,7 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
         input_list.append("--ion-osr=" + ("on" if chance(.1) else "off"))
     if chance(.2):  # m-c rev 105338:01ebfabf29e2, see bug 687901
         input_list.append("--ion-inlining=" + ("on" if chance(.1) else "off"))
-    if chance(.7):  # m-c rev 105173:4ceb3e9961e4, see bug 683039
+    if chance(.2):  # m-c rev 105173:4ceb3e9961e4, see bug 683039
         input_list.append("--ion-eager")
     if chance(.2):  # m-c rev 104923:8db8eef79b8c, see bug 670816
         input_list.append("--ion-gvn=" + ("on" if chance(.1) else "off"))
@@ -209,10 +209,10 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         # m-c rev 154600:526ba3ace37a, see bug 935791
         args = add_random_arch_flags(shell_path, args)
 
-    if shell_supports_flag(shell_path, "--ion") and chance(.7):
+    if shell_supports_flag(shell_path, "--ion") and chance(.8):
         # m-c rev 104923:8db8eef79b8c, see bug 670816
         args = add_random_ion_flags(shell_path, args)
-    elif shell_supports_flag(shell_path, "--no-ion"):
+    elif shell_supports_flag(shell_path, "--no-ion") and chance(.2):
         # m-c rev 106120:300ac3d58291, see bug 724751
         args.append("--no-ion")
 
@@ -304,7 +304,7 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
             # m-c rev 127126:1c0489e5a302, see bug 818231
             args.append("--no-baseline")
         # elif is important, as we want to call --baseline-eager only if --no-baseline is not set.
-        elif chance(.5):
+        elif chance(.2):
             # m-c rev 127353:be125cabea26, see bug 843596
             args.append("--baseline-eager")
 
