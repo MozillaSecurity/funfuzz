@@ -415,6 +415,9 @@ var makeEvilCallback;
     { w: 1, v: function (d, b) { return "x = " + m() + ";"; } },
     { w: 5, v: makeStatement },
 
+    // Stick in empty for-loops
+    { w: 5, v: function (d, b) { return "for (let i = 0; i < 999; i++) {}"; } },
+
     { w: 5, v: initializeEverything }
   ]);
   makeBuilderStatement = function (d, b) {
