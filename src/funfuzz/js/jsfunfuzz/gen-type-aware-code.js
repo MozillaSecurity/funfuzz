@@ -37,11 +37,13 @@ var makeEvilCallback;
     if (!t) { t = "aosmevbtihgfp"; }
     t = t.charAt(rnd(t.length));
     var name = t + rnd(OBJECTS_PER_TYPE);
-    switch (rnd(16)) {
+    switch (rnd(10)) {
       /* eslint-disable no-multi-spaces */
-      case 0:  return m("o") + "." + name;
-      case 1:  return m("g") + "." + name;
-      case 2:  return "this." + name;
+      case 0:  return m("o");
+      case 1:  return m("o") + "." + name;
+      case 2:  return m("g");
+      case 3:  return m("g") + "." + name;
+      case 4:  return "this." + name;
       default: return name;
       /* eslint-enable no-multi-spaces */
     }
@@ -400,8 +402,9 @@ var makeEvilCallback;
     { w: 5, v: function (d, b) { return m() + ".valueOf = " + makeEvilCallback(d, b) + ";"; } },
     { w: 1, v: function (d, b) { return m() + " = " + m() + ";"; } },
     { w: 1, v: function (d, b) { return m() + " = " + m("g") + ".createIsHTMLDDA();"; } },
-    { w: 1, v: function (d, b) { return m("o") + " = " + m() + ".__proto__;"; } },
-    { w: 5, v: function (d, b) { return m() + ".__proto__ = " + m() + ";"; } },
+    { w: 10, v: function (d, b) { return m("o") + " = " + m() + ".__proto__;"; } },
+    { w: 20, v: function (d, b) { return m() + ".__proto__ = {};"; } },
+    { w: 20, v: function (d, b) { return m() + ".__proto__ = " + m() + ";"; } },
     { w: 10, v: function (d, b) { return "for (var p in " + m() + ") { " + makeBuilderStatements(d, b) + " }"; } },
     { w: 10, v: function (d, b) { return "for (var v of " + m() + ") { " + makeBuilderStatements(d, b) + " }"; } },
     { w: 10, v: function (d, b) { return m() + " + " + m() + ";"; } }, // valueOf
