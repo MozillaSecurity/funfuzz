@@ -325,6 +325,7 @@ def basic_flag_sets():
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"],
         ["--fuzzing-safe"],
         ["--fuzzing-safe", "--no-threads", "--ion-eager"],
+        ["--fuzzing-safe", "--no-threads"],  # Some IonMonkey issues happen without any Baseline/Ion flags
         ["--fuzzing-safe", "--ion-offthread-compile=off"],
         ["--fuzzing-safe", "--baseline-eager"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--baseline-eager", "--no-ion"],  # May find > w/o --no-ion
