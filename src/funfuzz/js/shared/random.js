@@ -145,4 +145,4 @@ var Random = {
 
 };
 
-function rnd (n) { return Random.number(n); } // eslint-disable-line require-jsdoc
+function rnd (n) { return Random.number(n); } /* eslint-disable-line require-jsdoc */

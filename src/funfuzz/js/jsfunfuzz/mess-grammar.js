@@ -11,7 +11,7 @@ var TOTALLY_RANDOM = 1000;
 
 var allMakers = getListOfMakers(this);
 
-function totallyRandom (d, b) { // eslint-disable-line require-jsdoc
+function totallyRandom (d, b) { /* eslint-disable-line require-jsdoc */
   d = d + (rnd(5) - 2); // can increase!!
 
   var maker = Random.index(allMakers);
@@ -24,7 +24,7 @@ function totallyRandom (d, b) { // eslint-disable-line require-jsdoc
   return val;
 }
 
-function getListOfMakers (glob) { // eslint-disable-line require-jsdoc
+function getListOfMakers (glob) { /* eslint-disable-line require-jsdoc */
   var r = [];
   for (var f in glob) {
     if (f.indexOf("make") === 0 && typeof glob[f] === "function" && f !== "makeFinalizeObserver" && f !== "makeFakePromise") {

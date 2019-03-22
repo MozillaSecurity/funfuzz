@@ -89,7 +89,7 @@ var recursiveFunctions = [
   }
 ];
 
-function singleRecursionDepth (d, b) { // eslint-disable-line require-jsdoc
+function singleRecursionDepth (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(2) === 0) {
     return "" + rnd(4);
   }
@@ -104,12 +104,12 @@ function singleRecursionDepth (d, b) { // eslint-disable-line require-jsdoc
     var a = recursiveFunctions[i];
     var text = a.text;
     if (a.testSub) text = a.testSub(text);
-    var f = eval(text.replace(/@/g, "")); // eslint-disable-line no-eval
+    var f = eval(text.replace(/@/g, "")); /* eslint-disable-line no-eval */
     if (!a.test(f)) { throw new Error("Failed test of: " + a.text); }
   }
 })();
 
-function makeImmediateRecursiveCall (d, b, cheat1, cheat2) { // eslint-disable-line require-jsdoc
+function makeImmediateRecursiveCall (d, b, cheat1, cheat2) { /* eslint-disable-line require-jsdoc */
   if (rnd(10) !== 0) { return "(4277)"; }
 
   var a = (cheat1 == null) ? Random.index(recursiveFunctions) : recursiveFunctions[cheat1];

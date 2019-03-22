@@ -27,7 +27,7 @@ if (xpcshell) { // Adapted from ternary operator - this longer form helps reduce
   tryRunning = tryRunningDirectly;
 }
 
-function fillShellSandbox (sandbox) { // eslint-disable-line require-jsdoc
+function fillShellSandbox (sandbox) { /* eslint-disable-line require-jsdoc */
   var safeFuns = [
     "print",
     "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
@@ -53,7 +53,7 @@ function fillShellSandbox (sandbox) { // eslint-disable-line require-jsdoc
   return sandbox;
 }
 
-function useSpidermonkeyShellSandbox (sandboxType) { // eslint-disable-line require-jsdoc
+function useSpidermonkeyShellSandbox (sandboxType) { /* eslint-disable-line require-jsdoc */
   var primarySandbox;
 
   switch (sandboxType) {
@@ -80,26 +80,26 @@ function useSpidermonkeyShellSandbox (sandboxType) { // eslint-disable-line requ
 // When in xpcshell,
 // * Run all testing in a sandbox so it doesn't accidentally wipe my hard drive.
 // * Test interaction between sandboxes with same or different principals.
-function newGeckoSandbox (n) { // eslint-disable-line require-jsdoc
+function newGeckoSandbox (n) { /* eslint-disable-line require-jsdoc */
   var t = (typeof n === "number") ? n : 1;
-  var s = Components.utils.Sandbox("http://x" + t + ".example.com/"); // eslint-disable-line no-undef
+  var s = Components.utils.Sandbox("http://x" + t + ".example.com/"); /* eslint-disable-line no-undef */
 
   // Allow the sandbox to do a few things
   s.newGeckoSandbox = newGeckoSandbox;
   s.evalInSandbox = function (str, sbx) {
-    return Components.utils.evalInSandbox(str, sbx); // eslint-disable-line no-undef
+    return Components.utils.evalInSandbox(str, sbx); /* eslint-disable-line no-undef */
   };
   s.print = function (str) { print(str); };
 
   return s;
 }
 
-function useGeckoSandbox () { // eslint-disable-line require-jsdoc
+function useGeckoSandbox () { /* eslint-disable-line require-jsdoc */
   var primarySandbox = newGeckoSandbox(0);
 
   return function (f, code, wtt) {
     try {
-      Components.utils.evalInSandbox(code, primarySandbox); // eslint-disable-line no-undef
+      Components.utils.evalInSandbox(code, primarySandbox); /* eslint-disable-line no-undef */
     } catch (e) {
       // It might not be safe to operate on |e|.
     }

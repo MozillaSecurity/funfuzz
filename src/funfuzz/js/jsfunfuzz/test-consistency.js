@@ -10,7 +10,7 @@
  * EXECUTION CONSISTENCY TESTS *
  * *************************** */
 
-function sandboxResult (code, zone) { // eslint-disable-line require-jsdoc
+function sandboxResult (code, zone) { /* eslint-disable-line require-jsdoc */
   // Use sandbox to isolate side-effects.
   var result;
   var resultStr = "";
@@ -31,10 +31,10 @@ function sandboxResult (code, zone) { // eslint-disable-line require-jsdoc
   return resultStr;
 }
 
-function nestingConsistencyTest (code) { // eslint-disable-line require-jsdoc
+function nestingConsistencyTest (code) { /* eslint-disable-line require-jsdoc */
   // Inspired by bug 676343
   // This only makes sense if |code| is an expression (or an expression followed by a semicolon). Oh well.
-  function nestExpr (e) { return "(function() { return " + code + "; })()"; } // eslint-disable-line require-jsdoc
+  function nestExpr (e) { return "(function() { return " + code + "; })()"; } /* eslint-disable-line require-jsdoc */
   var codeNestedOnce = nestExpr(code);
   var codeNestedDeep = code;
   var depth = (count % 7) + 14; // 16 might be special

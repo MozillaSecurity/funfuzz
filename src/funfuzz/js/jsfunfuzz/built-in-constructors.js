@@ -27,7 +27,7 @@ var builtinObjectNames = []; // "Array", "Array.prototype", ... (indexes into th
 var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
 
 (function exploreBuiltins (glob, debugMode) {
-  function exploreDeeper (a, an) { // eslint-disable-line require-jsdoc
+  function exploreDeeper (a, an) { /* eslint-disable-line require-jsdoc */
     if (!a) { return; }
     var hns = Object.getOwnPropertyNames(a);
     var propertyNames = [];
@@ -58,7 +58,7 @@ var builtinObjects = {}; // { "Array.prototype": ["sort", "length", ...], ... }
     builtinObjectNames.push(an);
   }
 
-  function exploreConstructors () { // eslint-disable-line require-jsdoc
+  function exploreConstructors () { /* eslint-disable-line require-jsdoc */
     var gns = Object.getOwnPropertyNames(glob);
     for (var i = 0; i < gns.length; ++i) {
       var gn = gns[i];

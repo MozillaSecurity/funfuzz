@@ -34,14 +34,14 @@
 //   * "unsigned is not a subtype of signed or doublish" [Math.abs]
 
 var compareAsm = (function () {
-  function isSameNumber (a, b) { // eslint-disable-line require-jsdoc
+  function isSameNumber (a, b) { /* eslint-disable-line require-jsdoc */
     if (!(typeof a === "number" && typeof b === "number")) { return false; }
 
     // Differentiate between 0 and -0
     if (a === 0 && b === 0) { return 1 / a === 1 / b; }
 
     // Don't differentiate between NaNs
-    return a === b || (a !== a && b !== b); // eslint-disable-line no-self-compare
+    return a === b || (a !== a && b !== b); /* eslint-disable-line no-self-compare */
   }
 
   var asmvals = [
@@ -59,7 +59,7 @@ var compareAsm = (function () {
   ];
   var asmvalsLen = asmvals.length;
 
-  function compareUnaryFunctions (f, g) { // eslint-disable-line require-jsdoc
+  function compareUnaryFunctions (f, g) { /* eslint-disable-line require-jsdoc */
     for (var i = 0; i < asmvalsLen; ++i) {
       var x = asmvals[i];
       var fr = f(x);
@@ -70,7 +70,7 @@ var compareAsm = (function () {
     }
   }
 
-  function compareBinaryFunctions (f, g) { // eslint-disable-line require-jsdoc
+  function compareBinaryFunctions (f, g) { /* eslint-disable-line require-jsdoc */
     for (var i = 0; i < asmvalsLen; ++i) {
       var x = asmvals[i];
       for (var j = 0; j < asmvalsLen; ++j) {
@@ -87,7 +87,7 @@ var compareAsm = (function () {
   return { compareUnaryFunctions: compareUnaryFunctions, compareBinaryFunctions: compareBinaryFunctions };
 })();
 
-function nanBitsMayBeVisible (s) { // eslint-disable-line require-jsdoc
+function nanBitsMayBeVisible (s) { /* eslint-disable-line require-jsdoc */
   // Does the code use more than one of {*int*, float32, or float64} views on the same array buffer?
   return (s.indexOf("Uint") !== -1 || s.indexOf("Int") !== -1) + (s.indexOf("Float32Array") !== -1) + (s.indexOf("Float64Array") !== -1) > 1;
 }
@@ -115,19 +115,19 @@ for (let f in binaryMathFunctions) {
 
 var pureMathNames = Object.keys(pureForeign);
 
-function generateAsmDifferential () { // eslint-disable-line require-jsdoc
+function generateAsmDifferential () { /* eslint-disable-line require-jsdoc */
   var foreignFunctions = rnd(10) ? [] : pureMathNames;
   return asmJSInterior(foreignFunctions, true);
 }
 
-function testAsmDifferential (stdlib, interior) { // eslint-disable-line require-jsdoc
+function testAsmDifferential (stdlib, interior) { /* eslint-disable-line require-jsdoc */
   if (nanBitsMayBeVisible(interior)) {
     dumpln("Skipping correctness test for asm module that could expose low bits of NaN");
     return;
   }
 
   var asmJs = "(function(stdlib, foreign, heap) { 'use asm'; " + interior + " })";
-  var asmModule = eval(asmJs); // eslint-disable-line no-eval
+  var asmModule = eval(asmJs); /* eslint-disable-line no-eval */
 
   if (isAsmJSModule(asmModule)) {
     var asmHeap = new ArrayBuffer(4096);
@@ -137,7 +137,7 @@ function testAsmDifferential (stdlib, interior) { // eslint-disable-line require
     var normalHeap = new ArrayBuffer(4096);
     (new Int32Array(normalHeap))[0] = 0x12345678;
     var normalJs = "(function(stdlib, foreign, heap) { " + interior + " })";
-    var normalModule = eval(normalJs); // eslint-disable-line no-eval
+    var normalModule = eval(normalJs); /* eslint-disable-line no-eval */
     var normalFun = normalModule(stdlib, pureForeign, normalHeap);
 
     compareAsm.compareBinaryFunctions(asmFun, normalFun);
@@ -145,7 +145,7 @@ function testAsmDifferential (stdlib, interior) { // eslint-disable-line require
 }
 
 // Call this instead of start() to run asm-differential tests
-function startAsmDifferential () { // eslint-disable-line require-jsdoc
+function startAsmDifferential () { /* eslint-disable-line require-jsdoc */
   var asmFuzzSeed = Math.floor(Math.random() * Math.pow(2, 28));
   dumpln("asmFuzzSeed: " + asmFuzzSeed);
   Random.init(asmFuzzSeed);
@@ -153,7 +153,7 @@ function startAsmDifferential () { // eslint-disable-line require-jsdoc
   while (true) {
     var stompStr = makeRegisterStompFunction(8, [], true);
     print(stompStr);
-    pureForeign.stomp = eval(stompStr); // eslint-disable-line no-eval
+    pureForeign.stomp = eval(stompStr); /* eslint-disable-line no-eval */
 
     for (var i = 0; i < 100; ++i) {
       var interior = generateAsmDifferential();

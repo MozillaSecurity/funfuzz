@@ -7,7 +7,7 @@
 /* global engine, ENGINE_JAVASCRIPTCORE, ENGINE_SPIDERMONKEY_TRUNK, gcIsQuiet, jsshell */
 
 /* eslint-disable complexity, no-multi-spaces */
-function whatToTestSpidermonkeyTrunk (code) { // eslint-disable-line require-jsdoc
+function whatToTestSpidermonkeyTrunk (code) { /* eslint-disable-line require-jsdoc */
   // regexps can't match across lines, so replace whitespace with spaces.
   var codeL = code.replace(/\s/g, " ");
 
@@ -76,7 +76,7 @@ function whatToTestSpidermonkeyTrunk (code) { // eslint-disable-line require-jsd
 }
 /* eslint-enable complexity, no-multi-spaces */
 
-function whatToTestJavaScriptCore (code) { // eslint-disable-line require-jsdoc
+function whatToTestJavaScriptCore (code) { /* eslint-disable-line require-jsdoc */
   return {
 
     allowParse: true,
@@ -88,7 +88,7 @@ function whatToTestJavaScriptCore (code) { // eslint-disable-line require-jsdoc
   };
 }
 
-function whatToTestGeneric (code) { // eslint-disable-line require-jsdoc
+function whatToTestGeneric (code) { /* eslint-disable-line require-jsdoc */
   return {
     allowParse: true,
     allowExec: unlikelyToHang(code),
@@ -101,7 +101,7 @@ function whatToTestGeneric (code) { // eslint-disable-line require-jsdoc
 var whatToTest;
 if (engine === ENGINE_SPIDERMONKEY_TRUNK) { whatToTest = whatToTestSpidermonkeyTrunk; } else if (engine === ENGINE_JAVASCRIPTCORE) { whatToTest = whatToTestJavaScriptCore; } else { whatToTest = whatToTestGeneric; }
 
-function unlikelyToHang (code) { // eslint-disable-line require-jsdoc
+function unlikelyToHang (code) { /* eslint-disable-line require-jsdoc */
   var codeL = code.replace(/\s/g, " ");
 
   // Things that are likely to hang in all JavaScript engines
