@@ -368,7 +368,7 @@ def get_random_valid_repo(tree):
             valid_repos.append(branch)
 
     # After checking if repos are valid, reduce chances that non-mozilla-central repos are chosen
-    if "mozilla-beta" in valid_repos and chance(0.5):
+    if "mozilla-beta" in valid_repos and chance(.8):
         valid_repos.remove("mozilla-beta")
 
     return tree / random.choice(valid_repos)
