@@ -1515,11 +1515,9 @@ function makeId (d, b) { /* eslint-disable-line require-jsdoc */
 
   return Random.index([
     "a", "b", "c", "d", "e", "w", "x", "y", "z",
-    "window", "eval", "\u3056", "NaN"
+    "eval", "\u3056", "NaN"
     // "valueOf", "toString", // e.g. valueOf getter :P // bug 381242, etc
   ]);
-
-  // window is a const (in the browser), so some attempts to redeclare it will cause errors
 
   // eval is interesting because it cannot be called indirectly. and maybe also because it has its own opcode in jsopcode.tbl.
   // but bad things happen if you have "eval setter". so let's not put eval in this list.
@@ -1688,8 +1686,7 @@ var termMakers = [
     ]);
   },
   makeNumber,
-  function (d, b) { return Random.index(["true", "false", "undefined", "null"]); },
-  function (d, b) { return Random.index(["this", "window"]); },
+  function (d, b) { return Random.index(["true", "false", "undefined", "null", "this"]); },
   function (d, b) { return Random.index([" \"\" ", " '' "]); },
   randomUnitStringLiteral, // unicode escaped
   function (d, b) { return Random.index([" /x/ ", " /x/g "]); },
