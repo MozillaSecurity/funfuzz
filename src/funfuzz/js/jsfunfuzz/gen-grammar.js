@@ -704,7 +704,8 @@ var specialProperties = [
   "toString", "valueOf",
   "call", "apply", // ({apply:...}).apply() hits a special case (speculation failure with funapply / funcall bytecode)
   "length",
-  "0", "1"
+  "0", "1",
+  "Symbol.species"
 ];
 
 // This makes it easier for fuzz-generated code to mess with the fuzzer. Will I regret it?
