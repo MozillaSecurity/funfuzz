@@ -114,6 +114,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
 
     # Remove any of the following flags from being used in compare_jit
     flags = list(set(flags) - {
+        "--arm-hwcap=vfp",
         "--more-compartments",
         "--wasm-compiler=baseline+ion",
         "--wasm-compiler=baseline",
