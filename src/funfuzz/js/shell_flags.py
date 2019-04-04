@@ -217,6 +217,10 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         args.append("--no-ion")
 
     # Other flags
+    if shell_supports_flag(shell_path, "--enable-experimental-fields") and chance(.9):
+        # m-c rev 463705:7a1ad6647c22, see bug 1529758
+        args.append("--enable-experimental-fields")
+
     if shell_supports_flag(shell_path, "--more-compartments") and chance(.9):
         # m-c rev 453627:450b8f0cbb4e, see bug 1518753
         args.append("--more-compartments")
