@@ -137,10 +137,10 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("1c5b92144e1e")  # m-c 308931 Fx51, 1st w/--cache-ir-stubs=on, see bug 1292659
     if platform.machine() == "aarch64":
         required.append("2f727a828ea0")  # m-c 304669 Fx50, 1st w/ working aarch64 builds, see bug 1286207
+    if options.buildWithAsan:
+        required.append("e1cac03485d9")  # m-c 301874 Fx50, 1st w/ working ASan builds in Ubuntu 18.04, see bug 1264534
     if "--ion-pgo=on" in flags or "--ion-pgo=off" in flags:
         required.append("b0a0ff5fa705")  # m-c 272274 Fx45, 1st w/--ion-pgo=on, see bug 1209515
-    if options.buildWithAsan:
-        required.append("d4e0e0e5d26d")  # m-c 268534 Fx44, 1st w/ reliable ASan builds w/ ICU, see bug 1214464
     if "--ion-sincos=on" in flags or "--ion-sincos=off" in flags:
         required.append("3dec2b935295")  # m-c 262544 Fx43, 1st w/--ion-sincos=on, see bug 984018
     if options.enableSimulatorArm64:
