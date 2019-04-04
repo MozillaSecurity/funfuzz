@@ -53,10 +53,11 @@ function fuzzTestingFunctionsCtor (browser, fGlobal, fObject) { /* eslint-disabl
   }
 
   function setGcparam () { /* eslint-disable-line require-jsdoc */
-    switch (rnd(3)) {
+    switch (rnd(4)) {
       /* eslint-disable no-multi-spaces */
       case 0:  return _set("sliceTimeBudget", rnd(100));
-      case 1:  return _set("minNurseryBytes", rnd(2) ? 0 : (1 + rnd(4294967294))); // See bug 1540670
+      case 1:  return _set("minNurseryBytes", rnd(2) ? 0 : (1 + rnd(30))); // See bug 1540670
+      case 2:  return _set("maxNurseryBytes", rnd(2) ? rnd(30) : (2 ** 32 - 1)); // See bug 1538594
       default: return _set("markStackLimit", rnd(2) ? (1 + rnd(30)) : 4294967295); // Artificially trigger delayed marking
       /* eslint-enable no-multi-spaces */
     }
