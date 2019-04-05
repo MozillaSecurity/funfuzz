@@ -105,7 +105,6 @@ def test_random_flag_set(monkeypatch):
 
     all_flags = js.shell_flags.random_flag_set(test_shell_compile())
     assert "--fuzzing-safe" in all_flags
-    assert "--enable-experimental-fields" in all_flags
     assert "--more-compartments" in all_flags
     assert "--no-streams" in all_flags
     assert "--nursery-strings=on" in all_flags
