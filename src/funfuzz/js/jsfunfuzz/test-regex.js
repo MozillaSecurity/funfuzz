@@ -10,7 +10,7 @@
  * USING REGEXPS *
  * ************* */
 
-function randomRegexFlags () { // eslint-disable-line require-jsdoc
+function randomRegexFlags () { /* eslint-disable-line require-jsdoc */
   var s = "";
   if (rnd(2)) { s += "g"; }
   if (rnd(2)) { s += "y"; }
@@ -19,13 +19,13 @@ function randomRegexFlags () { // eslint-disable-line require-jsdoc
   return s;
 }
 
-function toRegexSource (rexpat) { // eslint-disable-line require-jsdoc
+function toRegexSource (rexpat) { /* eslint-disable-line require-jsdoc */
   return (rnd(2) === 0 && rexpat.charAt(0) !== "*") ?
     "/" + rexpat + "/" + randomRegexFlags() :
     "new RegExp(" + simpleSource(rexpat) + ", " + simpleSource(randomRegexFlags()) + ")";
 }
 
-function makeRegexUseBlock (d, b, rexExpr, strExpr) { // eslint-disable-line require-jsdoc
+function makeRegexUseBlock (d, b, rexExpr, strExpr) { /* eslint-disable-line require-jsdoc */
   var rexpair = regexPattern(10, false);
   var rexpat = rexpair[0];
   var str = rexpair[1][rnd(POTENTIAL_MATCHES)];
@@ -53,7 +53,7 @@ function makeRegexUseBlock (d, b, rexExpr, strExpr) { // eslint-disable-line req
   );
 }
 
-function makeRegexUseExpr (d, b) { // eslint-disable-line require-jsdoc
+function makeRegexUseExpr (d, b) { /* eslint-disable-line require-jsdoc */
   var rexpair = regexPattern(8, false);
   var rexpat = rexpair[0];
   var str = rexpair[1][rnd(POTENTIAL_MATCHES)];
@@ -64,14 +64,14 @@ function makeRegexUseExpr (d, b) { // eslint-disable-line require-jsdoc
   return "/*RXUE*/" + rexExpr + ".exec(" + strExpr + ")";
 }
 
-function makeRegex (d, b) { // eslint-disable-line require-jsdoc
+function makeRegex (d, b) { /* eslint-disable-line require-jsdoc */
   var rexpair = regexPattern(8, false);
   var rexpat = rexpair[0];
   var rexExpr = toRegexSource(rexpat);
   return rexExpr;
 }
 
-function makeReplacement (d, b) { // eslint-disable-line require-jsdoc
+function makeReplacement (d, b) { /* eslint-disable-line require-jsdoc */
   switch (rnd(3)) {
     /* eslint-disable no-multi-spaces */
     case 0:  return Random.index(["''", "'x'", "'\\u0341'"]);

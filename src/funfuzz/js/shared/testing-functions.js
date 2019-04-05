@@ -10,15 +10,15 @@
 // * testing that they do not cause assertions/crashes
 // * testing that they do not alter visible results (compare_jit with and without the call)
 
-function fuzzTestingFunctionsCtor (browser, fGlobal, fObject) { // eslint-disable-line require-jsdoc
+function fuzzTestingFunctionsCtor (browser, fGlobal, fObject) { /* eslint-disable-line require-jsdoc */
   var prefix = browser ? "fuzzPriv." : "";
 
-  function numberOfInstructions () { return Math.floor(Random.ludOneTo(10000)); } // eslint-disable-line require-jsdoc
-  function numberOfAllocs () { return Math.floor(Random.ludOneTo(500)); } // eslint-disable-line require-jsdoc
-  function gcSliceSize () { return Math.floor(Random.ludOneTo(0x100000000)); } // eslint-disable-line require-jsdoc
-  function maybeCommaShrinking () { return rnd(5) ? "" : ", 'shrinking'"; } // eslint-disable-line require-jsdoc
+  function numberOfInstructions () { return Math.floor(Random.ludOneTo(10000)); } /* eslint-disable-line require-jsdoc */
+  function numberOfAllocs () { return Math.floor(Random.ludOneTo(500)); } /* eslint-disable-line require-jsdoc */
+  function gcSliceSize () { return Math.floor(Random.ludOneTo(0x100000000)); } /* eslint-disable-line require-jsdoc */
+  function maybeCommaShrinking () { return rnd(5) ? "" : ", 'shrinking'"; } /* eslint-disable-line require-jsdoc */
 
-  function enableGCZeal () { // eslint-disable-line require-jsdoc
+  function enableGCZeal () { /* eslint-disable-line require-jsdoc */
     // As of m-c 451466:79cf24341024 2018-12-19
     // https://hg.mozilla.org/mozilla-central/file/79cf24341024/js/src/gc/GC.cpp#l1000
     maxLevel = 25;
@@ -40,7 +40,7 @@ function fuzzTestingFunctionsCtor (browser, fGlobal, fObject) { // eslint-disabl
     return prefix + "gczeal" + "(" + finalLevel + ", " + period + ");";
   }
 
-  function callSetGCCallback () { // eslint-disable-line require-jsdoc
+  function callSetGCCallback () { /* eslint-disable-line require-jsdoc */
     // https://dxr.mozilla.org/mozilla-central/source/js/src/shell/js.cpp - SetGCCallback
     var phases = Random.index(["both", "begin", "end"]);
     var actionAndOptions = rnd(2) ? 'action: "majorGC", depth: ' + rnd(17) : 'action: "minorGC"';
@@ -48,19 +48,21 @@ function fuzzTestingFunctionsCtor (browser, fGlobal, fObject) { // eslint-disabl
     return prefix + "setGCCallback(" + arg + ");";
   }
 
-  function tryCatch (statement) { // eslint-disable-line require-jsdoc
+  function tryCatch (statement) { /* eslint-disable-line require-jsdoc */
     return "try { " + statement + " } catch(e) { }";
   }
 
-  function setGcparam () { // eslint-disable-line require-jsdoc
-    switch (rnd(2)) {
+  function setGcparam () { /* eslint-disable-line require-jsdoc */
+    switch (rnd(4)) {
       /* eslint-disable no-multi-spaces */
       case 0:  return _set("sliceTimeBudget", rnd(100));
+      case 1:  return _set("minNurseryBytes", rnd(2) ? 0 : (1 + rnd(30))); // See bug 1540670
+      case 2:  return _set("maxNurseryBytes", rnd(2) ? rnd(30) : (2 ** 32 - 1)); // See bug 1538594
       default: return _set("markStackLimit", rnd(2) ? (1 + rnd(30)) : 4294967295); // Artificially trigger delayed marking
       /* eslint-enable no-multi-spaces */
     }
 
-    function _set (name, value) { // eslint-disable-line require-jsdoc
+    function _set (name, value) { /* eslint-disable-line require-jsdoc */
       // try..catch because gcparam sets may throw, depending on GC state (see bug 973571)
       return tryCatch(prefix + "gcparam" + "('" + name + "', " + value + ");");
     }

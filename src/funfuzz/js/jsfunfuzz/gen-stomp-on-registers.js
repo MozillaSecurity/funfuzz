@@ -9,7 +9,7 @@
 // Using up all the registers can find bugs where a caller does not store its
 // registers properly, or a callee violates an ABI.
 
-function makeRegisterStompFunction (d, b, pure) { // eslint-disable-line require-jsdoc
+function makeRegisterStompFunction (d, b, pure) { /* eslint-disable-line require-jsdoc */
   var args = [];
   var nArgs = (rnd(10) ? rnd(20) : rnd(100)) + 1;
   for (var i = 0; i < nArgs; ++i) {
@@ -26,16 +26,16 @@ function makeRegisterStompFunction (d, b, pure) { // eslint-disable-line require
   );
 }
 
-function makeRegisterStompBody (d, b, pure) { // eslint-disable-line require-jsdoc
+function makeRegisterStompBody (d, b, pure) { /* eslint-disable-line require-jsdoc */
   var bv = b.slice(0);
   var lastRVar = 0;
   var s = "";
 
-  function value () { // eslint-disable-line require-jsdoc
+  function value () { /* eslint-disable-line require-jsdoc */
     return rnd(3) && bv.length ? Random.index(bv) : "" + rnd(10);
   }
 
-  function expr () { // eslint-disable-line require-jsdoc
+  function expr () { /* eslint-disable-line require-jsdoc */
     return value() + Random.index([" + ", " - ", " / ", " * ", " % ", " | ", " & ", " ^ "]) + value();
   }
 

@@ -7,7 +7,7 @@
 /* global count:writable, dumpln, engine, ENGINE_SPIDERMONKEY_TRUNK, jsshell */
 /* global makeScript, mathInitFCM, print, printImportant, Random, rnd, tryItOut, uneval */
 
-function start (glob) { // eslint-disable-line require-jsdoc
+function start (glob) { /* eslint-disable-line require-jsdoc */
   var fuzzSeed = Math.floor(Math.random() * Math.pow(2, 28));
   dumpln("fuzzSeed: " + fuzzSeed);
   Random.init(fuzzSeed);
@@ -44,18 +44,18 @@ function start (glob) { // eslint-disable-line require-jsdoc
       lastTime = new Date();
     } while (lastTime - startTime < MAX_TOTAL_TIME);
   } else {
-    setTimeout(testStuffForAWhile, 200); // eslint-disable-line no-undef
+    setTimeout(testStuffForAWhile, 200); /* eslint-disable-line no-undef */
   }
 
-  function testStuffForAWhile () { // eslint-disable-line require-jsdoc
+  function testStuffForAWhile () { /* eslint-disable-line require-jsdoc */
     for (var j = 0; j < 100; ++j) { testOne(); }
 
     if (count % 10000 < 100) { printImportant("Iterations: " + count); }
 
-    setTimeout(testStuffForAWhile, 30); // eslint-disable-line no-undef
+    setTimeout(testStuffForAWhile, 30); /* eslint-disable-line no-undef */
   }
 
-  function testOne () { // eslint-disable-line require-jsdoc
+  function testOne () { /* eslint-disable-line require-jsdoc */
     ++count;
 
     // Sometimes it makes sense to start with simpler functions:
@@ -91,11 +91,11 @@ function start (glob) { // eslint-disable-line require-jsdoc
   }
 }
 
-function failsToCompileInTry (code) { // eslint-disable-line require-jsdoc
+function failsToCompileInTry (code) { /* eslint-disable-line require-jsdoc */
   // Why would this happen? One way is "let x, x"
   try {
     var codeInTry = "try { " + code + " } catch(e) { }";
-    void new Function(codeInTry); // eslint-disable-line no-new-func
+    void new Function(codeInTry); /* eslint-disable-line no-new-func */
     return false;
   } catch (e) {
     return true;

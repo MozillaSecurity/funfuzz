@@ -17,8 +17,8 @@
 // * function tables
 // * multiple exports
 
-function asmJSInterior (foreignFunctions, sanePlease) { // eslint-disable-line require-jsdoc
-  function mess () { // eslint-disable-line require-jsdoc
+function asmJSInterior (foreignFunctions, sanePlease) { /* eslint-disable-line require-jsdoc */
+  function mess () { /* eslint-disable-line require-jsdoc */
     if (!sanePlease && rnd(600) === 0) { return makeStatement(8, ["x"]) + "\n"; }
     if (!sanePlease && rnd(600) === 0) { return totallyRandom(8, ["x"]); }
     return "";
@@ -35,7 +35,7 @@ function asmJSInterior (foreignFunctions, sanePlease) { // eslint-disable-line r
   return interior;
 }
 
-function importForeign (foreignFunctions) { // eslint-disable-line require-jsdoc
+function importForeign (foreignFunctions) { /* eslint-disable-line require-jsdoc */
   var s = "";
   for (let h of foreignFunctions) {
     s += "  var " + h + " = foreign." + h + ";\n";
@@ -45,7 +45,7 @@ function importForeign (foreignFunctions) { // eslint-disable-line require-jsdoc
 
 // ret in ["signed", "double", "void"]
 // args looks like ["i0", "d1", "d2"] -- the first letter indicates int vs double
-function asmJsFunction (globalEnv, name, ret, args) { // eslint-disable-line require-jsdoc
+function asmJsFunction (globalEnv, name, ret, args) { /* eslint-disable-line require-jsdoc */
   var s = "  function " + name + "(" + args.join(", ") + ")\n";
   s += "  {\n";
   s += parameterTypeAnnotations(args);
@@ -76,7 +76,7 @@ function asmJsFunction (globalEnv, name, ret, args) { // eslint-disable-line req
   return s;
 }
 
-function asmStatement (indent, env, d) { // eslint-disable-line require-jsdoc
+function asmStatement (indent, env, d) { /* eslint-disable-line require-jsdoc */
   if (!env.globalEnv.sanePlease && rnd(100) === 0) { return makeStatement(3, ["x"]); }
 
   if (rnd(5) === 0 && d > 0) {
@@ -95,11 +95,11 @@ function asmStatement (indent, env, d) { // eslint-disable-line require-jsdoc
   return asmAssignmentStatement(indent, env);
 }
 
-function asmVoidCallStatement (indent, env) { // eslint-disable-line require-jsdoc
+function asmVoidCallStatement (indent, env) { /* eslint-disable-line require-jsdoc */
   return indent + asmFfiCall(8, env) + ";\n";
 }
 
-function asmAssignmentStatement (indent, env) { // eslint-disable-line require-jsdoc
+function asmAssignmentStatement (indent, env) { /* eslint-disable-line require-jsdoc */
   if (rnd(5) === 0 || !env.locals.length) {
     if (rnd(2)) {
       return indent + intishMemberExpr(8, env) + " = " + intishExpr(10, env) + ";\n";
@@ -116,8 +116,8 @@ function asmAssignmentStatement (indent, env) { // eslint-disable-line require-j
   }
 }
 
-function asmReturnStatement (indent, env) { // eslint-disable-line require-jsdoc
-  var ret = rnd(2) ? env.ret : Random.index(["double", "signed", "void"]); // eslint-disable-line no-unused-vars
+function asmReturnStatement (indent, env) { /* eslint-disable-line require-jsdoc */
+  var ret = rnd(2) ? env.ret : Random.index(["double", "signed", "void"]); /* eslint-disable-line no-unused-vars */
   if (env.ret === "double") {
     return indent + "return +" + doublishExpr(10, env) + ";\n";
   } else if (env.ret === "signed") {
@@ -127,7 +127,7 @@ function asmReturnStatement (indent, env) { // eslint-disable-line require-jsdoc
   }
 }
 
-function asmSwitchStatement (indent, env, d) { // eslint-disable-line require-jsdoc
+function asmSwitchStatement (indent, env, d) { /* eslint-disable-line require-jsdoc */
   var s = indent + "switch (" + signedExpr(4, env) + ") {\n";
   while (rnd(3)) {
     s += indent + "  case " + (rnd(5) - 3) + ":\n";
@@ -142,7 +142,7 @@ function asmSwitchStatement (indent, env, d) { // eslint-disable-line require-js
   return s;
 }
 
-function parameterTypeAnnotations (args) { // eslint-disable-line require-jsdoc
+function parameterTypeAnnotations (args) { /* eslint-disable-line require-jsdoc */
   var s = "";
   for (var a = 0; a < args.length; ++a) {
     var arg = args[a];
@@ -251,13 +251,13 @@ var doublishMemberExpr = autoExpr(Random.weighted([
   { w: 1, v: function (d, e) { return ensureView(e, "Float64Array") + "[" + asmIndex(d, e, 3) + "]"; } }
 ]), true);
 
-function asmIndex (d, e, logSize) { // eslint-disable-line require-jsdoc
+function asmIndex (d, e, logSize) { /* eslint-disable-line require-jsdoc */
   if (rnd(2) || d < 2) { return Random.index(["0", "1", "2", "4096"]); }
 
   return intishExpr(d - 2, e) + " >> " + logSize;
 }
 
-function asmFfiCall (d, e) { // eslint-disable-line require-jsdoc
+function asmFfiCall (d, e) { /* eslint-disable-line require-jsdoc */
   var argList = "";
   while (rnd(6)) {
     if (argList) { argList += ", "; }
@@ -268,7 +268,7 @@ function asmFfiCall (d, e) { // eslint-disable-line require-jsdoc
   return "/*FFI*/" + Random.index(e.globalEnv.foreignFunctions) + "(" + argList + ")";
 }
 
-function ensureView (e, t) { // eslint-disable-line require-jsdoc
+function ensureView (e, t) { /* eslint-disable-line require-jsdoc */
   var varName = t + "View";
   if (!(varName in e.globalEnv.heapImported)) {
     e.globalEnv.heapImports += "  var " + varName + " = new stdlib." + t + "(heap);\n";
@@ -277,11 +277,11 @@ function ensureView (e, t) { // eslint-disable-line require-jsdoc
   return varName;
 }
 
-function ensureMathImport (e, f) { // eslint-disable-line require-jsdoc
+function ensureMathImport (e, f) { /* eslint-disable-line require-jsdoc */
   return ensureImport(e, f, "Math.");
 }
 
-function ensureImport (e, f, prefix) { // eslint-disable-line require-jsdoc
+function ensureImport (e, f, prefix) { /* eslint-disable-line require-jsdoc */
   if (!(f in e.globalEnv.stdlibImported)) {
     e.globalEnv.stdlibImports += "  var " + f + " = stdlib." + (prefix || "") + f + ";\n";
     e.globalEnv.stdlibImported[f] = true;
@@ -291,7 +291,7 @@ function ensureImport (e, f, prefix) { // eslint-disable-line require-jsdoc
 
 var anyAsmExpr = [intExpr, intishExpr, signedExpr, doublishExpr, doubleExpr, intishMemberExpr, doublishMemberExpr];
 
-function autoExpr (funs, avoidSubst) { // eslint-disable-line require-jsdoc
+function autoExpr (funs, avoidSubst) { /* eslint-disable-line require-jsdoc */
   return function (d, e) {
     var f = d < 1 ? funs[0] :
       rnd(50) === 0 && !e.globalEnv.sanePlease ? function (_d, _e) { return makeExpr(5, ["x"]); } :
@@ -301,7 +301,7 @@ function autoExpr (funs, avoidSubst) { // eslint-disable-line require-jsdoc
   };
 }
 
-function intVar (e) { // eslint-disable-line require-jsdoc
+function intVar (e) { /* eslint-disable-line require-jsdoc */
   var locals = e.locals;
   if (!locals.length) { return intLiteralRange(-0x8000000, 0xffffffff); }
   var local = Random.index(locals);
@@ -309,7 +309,7 @@ function intVar (e) { // eslint-disable-line require-jsdoc
   return intLiteralRange(-0x8000000, 0xffffffff);
 }
 
-function doubleVar (e) { // eslint-disable-line require-jsdoc
+function doubleVar (e) { /* eslint-disable-line require-jsdoc */
   var locals = e.locals;
   if (!locals.length) { return doubleLiteral(); }
   var local = Random.index(locals);
@@ -317,11 +317,11 @@ function doubleVar (e) { // eslint-disable-line require-jsdoc
   return doubleLiteral();
 }
 
-function doubleLiteral () { // eslint-disable-line require-jsdoc
+function doubleLiteral () { /* eslint-disable-line require-jsdoc */
   return Random.index(["-", ""]) + positiveDoubleLiteral();
 }
 
-function positiveDoubleLiteral () { // eslint-disable-line require-jsdoc
+function positiveDoubleLiteral () { /* eslint-disable-line require-jsdoc */
   if (rnd(3) === 0) {
     Random.index(["0.0", "1.0", "1.2345e60"]);
   }
@@ -344,7 +344,7 @@ function positiveDoubleLiteral () { // eslint-disable-line require-jsdoc
   return str;
 }
 
-function fuzzyRange (min, max) { // eslint-disable-line require-jsdoc
+function fuzzyRange (min, max) { /* eslint-disable-line require-jsdoc */
   if (rnd(10000) === 0) { return min - 1; }
   if (rnd(10000) === 0) { return max + 1; }
   if (rnd(10) === 0) { return min; }
@@ -355,7 +355,7 @@ function fuzzyRange (min, max) { // eslint-disable-line require-jsdoc
   return min + rnd(max - min + 1);
 }
 
-function intLiteralRange (min, max) { // eslint-disable-line require-jsdoc
+function intLiteralRange (min, max) { /* eslint-disable-line require-jsdoc */
   var val = fuzzyRange(min, max);
   var sign = val < 0 ? "-" : "";
   return sign + "0x" + Math.abs(val).toString(16);

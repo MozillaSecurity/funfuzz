@@ -57,7 +57,7 @@ var confusableVals = [
   "createIsHTMLDDA()"
 ];
 
-function hashStr (s) { // eslint-disable-line require-jsdoc
+function hashStr (s) { /* eslint-disable-line require-jsdoc */
   var hash = 0;
   var L = s.length;
   for (var i = 0; i < L; i++) {
@@ -67,7 +67,7 @@ function hashStr (s) { // eslint-disable-line require-jsdoc
   return hash;
 }
 
-function testMathyFunction (f, inputs) { // eslint-disable-line require-jsdoc
+function testMathyFunction (f, inputs) { /* eslint-disable-line require-jsdoc */
   var results = [];
   if (f) {
     for (var j = 0; j < inputs.length; ++j) {
@@ -85,7 +85,7 @@ function testMathyFunction (f, inputs) { // eslint-disable-line require-jsdoc
   print(hashStr(uneval(results)));
 }
 
-function mathInitFCM () { // eslint-disable-line require-jsdoc
+function mathInitFCM () { /* eslint-disable-line require-jsdoc */
   // FCM cookie, lines with this cookie are used for compare_jit
   var cookie = "/*F" + "CM*/";
 
@@ -94,7 +94,7 @@ function mathInitFCM () { // eslint-disable-line require-jsdoc
   print(cookie + testMathyFunction.toString().replace(/\r/g, "\n").replace(/\n/g, " "));
 }
 
-function makeMathyFunAndTest (d, b) { // eslint-disable-line require-jsdoc
+function makeMathyFunAndTest (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
   var i = rnd(NUM_MATH_FUNCTIONS);
@@ -124,7 +124,7 @@ function makeMathyFunAndTest (d, b) { // eslint-disable-line require-jsdoc
   return s;
 }
 
-function makeMathyFunRef (d, b) { // eslint-disable-line require-jsdoc
+function makeMathyFunRef (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
   return "mathy" + rnd(NUM_MATH_FUNCTIONS);

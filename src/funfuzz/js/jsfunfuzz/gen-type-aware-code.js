@@ -20,8 +20,8 @@ var makeEvilCallback;
   var ARRAY_SIZE = 20;
   var OBJECTS_PER_TYPE = 3;
   var smallPowersOfTwo = [1, 2, 4, 8]; // The largest typed array views are 64-bit aka 8-byte
-  function bufsize () { return rnd(ARRAY_SIZE) * Random.index(smallPowersOfTwo); } // eslint-disable-line require-jsdoc
-  function arrayIndex (d, b) { // eslint-disable-line require-jsdoc
+  function bufsize () { return rnd(ARRAY_SIZE) * Random.index(smallPowersOfTwo); } /* eslint-disable-line require-jsdoc */
+  function arrayIndex (d, b) { /* eslint-disable-line require-jsdoc */
     switch (rnd(8)) {
       /* eslint-disable no-multi-spaces */
       case 0:  return m("v");
@@ -33,27 +33,29 @@ var makeEvilCallback;
   }
 
   // Emit a variable name for type-abbreviation t.
-  function m (t) { // eslint-disable-line require-jsdoc
+  function m (t) { /* eslint-disable-line require-jsdoc */
     if (!t) { t = "aosmevbtihgfp"; }
     t = t.charAt(rnd(t.length));
     var name = t + rnd(OBJECTS_PER_TYPE);
     switch (rnd(16)) {
       /* eslint-disable no-multi-spaces */
-      case 0:  return m("o") + "." + name;
-      case 1:  return m("g") + "." + name;
-      case 2:  return "this." + name;
+      case 0:  return m("o");
+      case 1:  return m("o") + "." + name;
+      case 2:  return m("g");
+      case 3:  return m("g") + "." + name;
+      case 4:  return "this." + name;
       default: return name;
       /* eslint-enable no-multi-spaces */
     }
   }
 
-  function val (d, b) { // eslint-disable-line require-jsdoc
+  function val (d, b) { /* eslint-disable-line require-jsdoc */
     if (rnd(10)) { return m(); }
     return makeExpr(d, b);
   }
 
   // Emit an assignment (or a roughly-equivalent getter)
-  function assign (d, b, t, rhs) { // eslint-disable-line require-jsdoc
+  function assign (d, b, t, rhs) { /* eslint-disable-line require-jsdoc */
     switch (rnd(18)) {
       // Could have two forms of the getter: one that computes it each time on demand,
       // and one that computes a constant-function closure
@@ -71,7 +73,7 @@ var makeEvilCallback;
     }
   }
 
-  function makeCounterClosure (d, b) { // eslint-disable-line require-jsdoc
+  function makeCounterClosure (d, b) { /* eslint-disable-line require-jsdoc */
     // A closure with a counter. Do stuff depending on the counter.
     var v = uniqueVarName();
     var infrequently = infrequentCondition(v, 10);
@@ -89,13 +91,13 @@ var makeEvilCallback;
       "})()");
   }
 
-  function fdecl (d, b) { // eslint-disable-line require-jsdoc
+  function fdecl (d, b) { /* eslint-disable-line require-jsdoc */
     var argName = m();
     var bv = b.concat([argName]);
     return "function " + m("f") + "(" + argName + ") " + makeFunctionBody(d, bv);
   }
 
-  function makeBuilderStatements (d, b) { // eslint-disable-line require-jsdoc
+  function makeBuilderStatements (d, b) { /* eslint-disable-line require-jsdoc */
     var s = "";
     var extras = rnd(4);
     for (var i = 0; i < extras; ++i) {
@@ -126,7 +128,7 @@ var makeEvilCallback;
 
   var handlerTraps = ["getOwnPropertyDescriptor", "defineProperty", "getOwnPropertyNames", "delete", "fix", "has", "hasOwn", "get", "set", "iterate", "enumerate", "keys"];
 
-  function forwardingHandler (d, b) { // eslint-disable-line require-jsdoc
+  function forwardingHandler (d, b) { /* eslint-disable-line require-jsdoc */
     return (
       "({" +
         "getOwnPropertyDescriptor: function(name) { Z; var desc = Object.getOwnPropertyDescriptor(X); desc.configurable = true; return desc; }, " +
@@ -155,11 +157,11 @@ var makeEvilCallback;
       });
   }
 
-  function propertyDescriptorPrefix (d, b) { // eslint-disable-line require-jsdoc
+  function propertyDescriptorPrefix (d, b) { /* eslint-disable-line require-jsdoc */
     return "configurable: " + makeBoolean(d, b) + ", " + "enumerable: " + makeBoolean(d, b) + ", ";
   }
 
-  function strToEval (d, b) { // eslint-disable-line require-jsdoc
+  function strToEval (d, b) { /* eslint-disable-line require-jsdoc */
     switch (rnd(5)) {
       /* eslint-disable no-multi-spaces */
       case 0:  return simpleSource(fdecl(d, b));
@@ -169,7 +171,7 @@ var makeEvilCallback;
     }
   }
 
-  function evaluateFlags (d, b) { // eslint-disable-line require-jsdoc
+  function evaluateFlags (d, b) { /* eslint-disable-line require-jsdoc */
     // Options are in js.cpp: Evaluate() and ParseCompileOptions()
     return ("({ global: " + m("g") +
       ", fileName: " + Random.index(["'evaluate.js'", "null"]) +
@@ -189,7 +191,7 @@ var makeEvilCallback;
   }
 
   var initializedEverything = false;
-  function initializeEverything (d, b) { // eslint-disable-line require-jsdoc
+  function initializeEverything (d, b) { /* eslint-disable-line require-jsdoc */
     if (initializedEverything) { return ";"; }
     initializedEverything = true;
 
@@ -215,7 +217,7 @@ var makeEvilCallback;
   //   Array.prototype.push.apply(a1, [x])
   //   Array.prototype.push.call(a1, x)
   //   a1.push(x)
-  function method (d, b, clazz, obj, meth, arglist) { // eslint-disable-line require-jsdoc
+  function method (d, b, clazz, obj, meth, arglist) { /* eslint-disable-line require-jsdoc */
     // Sometimes ignore our arguments
     if (rnd(10) === 0) { arglist = []; }
 
@@ -232,7 +234,7 @@ var makeEvilCallback;
     }
   }
 
-  function severalargs (f) { // eslint-disable-line require-jsdoc
+  function severalargs (f) { /* eslint-disable-line require-jsdoc */
     var arglist = [];
     arglist.push(f());
     while (rnd(2)) {
@@ -400,8 +402,9 @@ var makeEvilCallback;
     { w: 5, v: function (d, b) { return m() + ".valueOf = " + makeEvilCallback(d, b) + ";"; } },
     { w: 1, v: function (d, b) { return m() + " = " + m() + ";"; } },
     { w: 1, v: function (d, b) { return m() + " = " + m("g") + ".createIsHTMLDDA();"; } },
-    { w: 1, v: function (d, b) { return m("o") + " = " + m() + ".__proto__;"; } },
-    { w: 5, v: function (d, b) { return m() + ".__proto__ = " + m() + ";"; } },
+    { w: 10, v: function (d, b) { return m("o") + " = " + m() + ".__proto__;"; } },
+    { w: 20, v: function (d, b) { return m() + ".__proto__ = {};"; } },
+    { w: 20, v: function (d, b) { return m() + ".__proto__ = " + m() + ";"; } },
     { w: 10, v: function (d, b) { return "for (var p in " + m() + ") { " + makeBuilderStatements(d, b) + " }"; } },
     { w: 10, v: function (d, b) { return "for (var v of " + m() + ") { " + makeBuilderStatements(d, b) + " }"; } },
     { w: 10, v: function (d, b) { return m() + " + " + m() + ";"; } }, // valueOf
@@ -415,6 +418,9 @@ var makeEvilCallback;
     { w: 1, v: function (d, b) { return "x = " + m() + ";"; } },
     { w: 5, v: makeStatement },
 
+    // Stick in empty for-loops
+    { w: 5, v: function (d, b) { return "for (let i = 0; i < 999; i++) {}"; } },
+
     { w: 5, v: initializeEverything }
   ]);
   makeBuilderStatement = function (d, b) {
@@ -422,7 +428,7 @@ var makeEvilCallback;
   };
 })();
 
-function infrequentCondition (v, n) { // eslint-disable-line require-jsdoc
+function infrequentCondition (v, n) { /* eslint-disable-line require-jsdoc */
   switch (rnd(20)) {
     case 0: return true;
     case 1: return false;

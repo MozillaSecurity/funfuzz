@@ -69,7 +69,7 @@ var binaryMathFunctions = [
   "pow"
 ];
 
-function makeMathFunction (d, b, i) { // eslint-disable-line require-jsdoc
+function makeMathFunction (d, b, i) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
   var ivars = ["x", "y"];
@@ -80,7 +80,7 @@ function makeMathFunction (d, b, i) { // eslint-disable-line require-jsdoc
   return "(function(x, y) { " + directivePrologue() + "return " + makeMathExpr(d, ivars, i) + "; })";
 }
 
-function makeMathExpr (d, b, i) { // eslint-disable-line require-jsdoc
+function makeMathExpr (d, b, i) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
   // As depth decreases, make it more likely to bottom out
@@ -93,12 +93,12 @@ function makeMathExpr (d, b, i) { // eslint-disable-line require-jsdoc
 
   if (rnd(500) === 0 && d > 0) { return makeExpr(d - 1, b); }
 
-  function r () { return makeMathExpr(d - 1, b, i); } // eslint-disable-line require-jsdoc
+  function r () { return makeMathExpr(d - 1, b, i); } /* eslint-disable-line require-jsdoc */
 
   // Frequently, coerce both the inputs and outputs to the same "numeric sub-type"
   // (asm.js formalizes this concept, but JITs may have their own variants)
   var commonCoercion = rnd(10);
-  function mc (expr) { // eslint-disable-line require-jsdoc
+  function mc (expr) { /* eslint-disable-line require-jsdoc */
     switch (rnd(3) ? commonCoercion : rnd(10)) {
       /* eslint-disable no-multi-spaces */
       case 0:  return "(" + " + " + expr + ")";     // f64 (asm.js)
