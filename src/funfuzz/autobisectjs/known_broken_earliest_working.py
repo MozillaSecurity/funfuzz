@@ -105,10 +105,12 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
 
     required = []
 
+    # These should be in descending order, or bisection will break at earlier changesets.
+    if "--enable-experimental-fields" in flags:
+        required.append("7a1ad6647c22")  # m-c 463705 Fx67, 1st w/--enable-experimental-fields, see bug 1529758
     if set(["--wasm-compiler=none", "--wasm-compiler=baseline+ion", "--wasm-compiler=baseline",
             "--wasm-compiler=ion"]).intersection(flags):
         required.append("48dc14f79fb0")  # m-c 455252 Fx66, 1st w/--wasm-compiler=none/<other options>, see bug 1509441
-    # These should be in descending order, or bisection will break at earlier changesets.
     if "--more-compartments" in flags:
         required.append("450b8f0cbb4e")  # m-c 453627 Fx66, 1st w/--more-compartments, see bug 1518753
     if "--no-streams" in flags:
