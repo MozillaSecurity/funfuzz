@@ -37,7 +37,7 @@ var makeEvilCallback;
     if (!t) { t = "aosmevbtihgfp"; }
     t = t.charAt(rnd(t.length));
     var name = t + rnd(OBJECTS_PER_TYPE);
-    switch (rnd(16)) {
+    switch (rnd(24)) {
       /* eslint-disable no-multi-spaces */
       case 0:  return m("o");
       case 1:  return m("o") + "." + name;
