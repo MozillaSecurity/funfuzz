@@ -292,8 +292,15 @@ def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccovera
             metadata = {}
             if autobisect_log:
                 metadata = {"autobisect_log": "".join(autobisect_log)}
-            create_collector.submit_collector(collector, res.crashInfo, str(reduced_log), quality, meta_data=metadata)
-            print(f"Submitted {reduced_log}")
+
+            # Create .zip file for uploading to FuzzManager as some testcases can be 8MB+, see https://git.io/fjqxI
+            assert reduced_log.is_file()
+            result_zip = log_prefix.parent / "reduced.zip"
+            with zipfile.ZipFile(result_zip, "w") as f:
+                f.write(reduced_log, reduced_log.name, compress_type=zipfile.ZIP_DEFLATED)
+
+            create_collector.submit_collector(collector, res.crashInfo, str(result_zip), quality, meta_data=metadata)
+            print(f"Submitted {result_zip}")
 
     return res, out_log
 
