@@ -78,6 +78,7 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
     if options.enableMoreDeterministic:
         skips.extend([
             hgrange("1d672188b8aa", "ea7dabcd215e"),  # Fx40, see bug 1149739
+            hgrange("427b854cdb1c", "4c4e45853808"),  # Fx68, see bug 1542980
         ])
 
     if options.enableSimulatorArm32:
