@@ -262,10 +262,15 @@ def set_ulimit():
     try:
         import resource  # pylint: disable=import-error
 
-        # log.debug("Limit address space to 2GB (or 1GB on ARM boards such as ODROID)")
+        # log.debug("Limit address space to 4GB")
+        # This has to be twice the 2GB figure in:
+        # https://hg.mozilla.org/mozilla-central/annotate/7beb238a0ea0/js/src/jit/ProcessExecutableMemory.h#l26
+        # i.e. https://hg.mozilla.org/mozilla-central/rev/7beb238a0ea0 (bug 1542292) changed from 1GB to 2GB, so our
+        # number here in this file has to be changed from 2GB to 4GB or else the harness (m-err.txt) will show this:
+        # JS_Init failed: js::jit::InitProcessExecutableMemory() failed
         # We cannot set a limit for RLIMIT_AS for ASan binaries
         giga_byte = 2**30
-        resource.setrlimit(resource.RLIMIT_AS, (2 * giga_byte, 2 * giga_byte))  # pylint: disable=no-member
+        resource.setrlimit(resource.RLIMIT_AS, (4 * giga_byte, 4 * giga_byte))  # pylint: disable=no-member
 
         # log.debug("Limit corefiles to 0.5 GB")
         half_giga_byte = int(giga_byte // 2)
