@@ -99,7 +99,7 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
     filetype = unsplit_file_type.split(":", 1)[1]
     if platform.system() == "Windows":  # pylint: disable=no-else-return
         assert "MS Windows" in filetype
-        return "32" if "Intel 80386 32-bit" in filetype else "64"
+        return "32" if ("Intel 80386 32-bit" in filetype or "PE32+ executable" in filetype) else "64"
     else:
         if "32-bit" in filetype or "i386" in filetype:
             assert "64-bit" not in filetype
