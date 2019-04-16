@@ -398,7 +398,11 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_cmds.append("--enable-simulator=arm64")
 
     elif platform.system() == "Windows":
-        cfg_env["LIBCLANG_PATH"] = f"{PROGRAMW6432_DIR}/LLVM/bin"
+        win_mozbuild_path = Path.home() / ".mozbuild" / "clang" / "bin"
+        assert win_mozbuild_path.is_dir(), 'Please first run "./mach bootstrap".'
+        assert (win_mozbuild_path / "clang.exe").is_file()
+        assert (win_mozbuild_path / "llvm-config.exe").is_file()
+        cfg_env["LIBCLANG_PATH"] = str(win_mozbuild_path)
         cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
         if shell.build_opts.buildWithClang:
             cfg_env["CC"] = f"clang-cl.exe {CLANG_PARAMS}"
