@@ -159,7 +159,7 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("25e99bc12482")  # m-c 249239 Fx41, 1st w/--enable-simulator=arm, see bug 1173992
     if "--ion-regalloc=testbed" in flags:
         required.append("47e92bae09fd")  # m-c 248962 Fx41, 1st w/--ion-regalloc=testbed, see bug 1170840
-    if "--execute=setJitCompilerOption(\"ion.forceinlineCaches\",1)" in flags:
+    if '--execute=setJitCompilerOption("ion.forceinlineCaches",1)' in flags:
         required.append("ea9608e33abe")  # m-c 247709 Fx41, 1st w/ion.forceinlineCaches, see bug 923717
     if "--no-unboxed-objects" in flags:
         required.append("322487136b28")  # m-c 244297 Fx41, 1st w/--no-unboxed-objects, see bug 1162199

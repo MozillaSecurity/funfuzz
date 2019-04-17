@@ -170,7 +170,7 @@ def icu_m4_undo(tree):
             if "version=`sed -n 's/^[[[:space:]]]*#[[:space:]]*define[[:space:]][[:space:]]*" in line:
                 f.write("    version=`sed -n 's/^[[:space:]]*#[[:space:]]*define[[:space:]][[:space:]]*"
                         "U_ICU_VERSION_MAJOR_NUM[[:space:]][[:space:]]*\\([0-9][0-9]*\\)[[:space:]]*$/\\1/p' "
-                        "\"$icudir/common/unicode/uvernum.h\"`\n")
+                        '"$icudir/common/unicode/uvernum.h"`\n')
             else:
                 f.write(line)
 
@@ -196,7 +196,7 @@ def icu_m4_replace(tree):
             if "version=`sed -n 's/^[[:space:]]*#[[:space:]]*define[[:space:]][[:space:]]*" in line:
                 f.write("    version=`sed -n 's/^[[[:space:]]]*#[[:space:]]*define[[:space:]][[:space:]]*"
                         "U_ICU_VERSION_MAJOR_NUM[[:space:]][[:space:]]*\\([0-9][0-9]*\\)[[:space:]]*$/\\1/p' "
-                        "\"$icudir/common/unicode/uvernum.h\"`\n")
+                        '"$icudir/common/unicode/uvernum.h"`\n')
             else:
                 f.write(line)
 
