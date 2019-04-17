@@ -325,6 +325,8 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     if args.enableSimulatorArm32 or args.enableSimulatorArm64:
         if platform.system() == "Windows" and args.enableSimulatorArm32:
             return False, "Nobody runs the ARM32 simulators on Windows."
+        if platform.system() == "Windows" and args.enableSimulatorArm64:
+            return False, "Nobody runs the ARM64 simulators on Windows."
         if platform.system() == "Linux" and platform.machine() == "aarch64" and args.enableSimulatorArm32:
             return False, "Nobody runs the ARM32 simulators on ARM64 Linux."
         if platform.system() == "Linux" and platform.machine() == "aarch64" and args.enableSimulatorArm64:
