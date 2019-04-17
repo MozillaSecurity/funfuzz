@@ -46,6 +46,11 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
         hgrange("f611bc50d11c", "39d0c50a2209"),  # Fx66, broken spidermonkey
     ]
 
+    if platform.system() == "Darwin":
+        skips.extend([
+            hgrange("3d0236f985f8", "32cef42080b1"),  # Fx68, see bug 1544418
+        ])
+
     if platform.system() == "Linux":
         skips.extend([
             # Clang failure - probably recent versions of GCC as well.
