@@ -17,7 +17,7 @@ EXTRAS = {
         "flake8==3.7.7",
         "flake8-commas==2.0.0",
         "flake8-isort==2.7.0",
-        "flake8-quotes==1.0.0",
+        "flake8-quotes==2.0.0",
         "isort==4.3.17",
         "pylint==2.3.1",
         "pytest==4.4.1",
