@@ -379,6 +379,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "getMarks = function() { };\n",
         "isAsmJSCompilationAvailable = function() { };\n",
         "Object.getOwnPropertyNames = function() { };\n",
+        "Object.getOwnPropertyDescriptors = function() { };\n",
         "offThreadCompileScript = function() { };\n",
         "oomTest = function() { };\n",
         "printProfilerEvents = function() { };\n",
