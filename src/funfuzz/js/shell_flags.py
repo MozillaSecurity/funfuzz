@@ -69,6 +69,7 @@ def add_random_arch_flags(shell_path, input_list=False):
 
 
 def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-complex,too-many-branches
+    # pylint: disable=too-many-statements
     """Returns a list with probably additional IonMonkey flags added.
 
     The non-default options have a higher chance of being set, e.g. chance(.9)
@@ -80,6 +81,30 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     Returns:
         list: List of flags to be tested, with probable IonMonkey flags added.
     """
+    if shell_supports_flag(shell_path, "--ion-optimization-levels=on") and chance(.2):
+        # m-c rev 467738:3134740d831c, see bug 1382650
+        input_list.append("--ion-optimization-levels=" + ("on" if chance(.1) else "off"))
+    if shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
+        # m-c rev 466417:a812f6daf98e, see bug 1382650
+        input_list.append("--ion-full-warmup-threshold=0")
+    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
+        # m-c rev 466417:a812f6daf98e, see bug 1382650
+        input_list.append("--ion-full-warmup-threshold=10")
+    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
+        # m-c rev 466417:a812f6daf98e, see bug 1382650
+        input_list.append("--ion-full-warmup-threshold=100")
+    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
+        # m-c rev 466417:a812f6daf98e, see bug 1382650
+        input_list.append("--ion-full-warmup-threshold=1000")
+    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
+        # m-c rev 466417:a812f6daf98e, see bug 1382650
+        input_list.append("--ion-full-warmup-threshold=1500")
+    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
+        # m-c rev 466417:a812f6daf98e, see bug 1382650
+        input_list.append("--ion-full-warmup-threshold=5000")
+    if shell_supports_flag(shell_path, "--no-bigint") and chance(.2):
+        # m-c rev 461970:e262ebb01282, see bug 1527900
+        input_list.append("--no-bigint")
     if shell_supports_flag(shell_path, "--cache-ir-stubs=on") and chance(.2):
         # m-c rev 308931:1c5b92144e1e, see bug 1292659
         input_list.append("--cache-ir-stubs=" + ("on" if chance(.1) else "off"))
