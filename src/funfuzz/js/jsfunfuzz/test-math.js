@@ -102,9 +102,9 @@ function makeMathyFunAndTest (d, b) { /* eslint-disable-line require-jsdoc */
 
   if (rnd(5)) {
     if (rnd(8)) {
-      s += "mathy" + i + " = " + makeMathFunction(6, b, i) + "; ";
+      s += `mathy${i} = ${makeMathFunction(6, b, i)}; `;
     } else {
-      s += "mathy" + i + " = " + makeAsmJSFunction(6, b) + "; ";
+      s += `mathy${i} = ${makeAsmJSFunction(6, b)}; `;
     }
   }
 
@@ -113,12 +113,12 @@ function makeMathyFunAndTest (d, b) { /* eslint-disable-line require-jsdoc */
     switch (rnd(8)) {
       /* eslint-disable no-multi-spaces */
       case 0:  inputsStr = makeMixedTypeArray(d - 1, b); break;
-      case 1:  inputsStr = "[" + Random.shuffled(confusableVals).join(", ") + "]"; break;
-      default: inputsStr = "[" + Random.shuffled(numericVals).join(", ") + "]"; break;
+      case 1:  inputsStr = `[${Random.shuffled(confusableVals).join(", ")}]`; break;
+      default: inputsStr = `[${Random.shuffled(numericVals).join(", ")}]`; break;
       /* eslint-enable no-multi-spaces */
     }
 
-    s += "testMathyFunction(mathy" + i + ", " + inputsStr + "); ";
+    s += `testMathyFunction(mathy${i}, ${inputsStr}); `;
   }
 
   return s;
@@ -127,5 +127,5 @@ function makeMathyFunAndTest (d, b) { /* eslint-disable-line require-jsdoc */
 function makeMathyFunRef (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
-  return "mathy" + rnd(NUM_MATH_FUNCTIONS);
+  return `mathy${rnd(NUM_MATH_FUNCTIONS)}`;
 }

@@ -77,7 +77,7 @@ function makeMathFunction (d, b, i) { /* eslint-disable-line require-jsdoc */
     // Also use variables from the enclosing scope
     ivars = ivars.concat(b);
   }
-  return "(function(x, y) { " + directivePrologue() + "return " + makeMathExpr(d, ivars, i) + "; })";
+  return `(function(x, y) { ${directivePrologue()}return ${makeMathExpr(d, ivars, i)}; })`;
 }
 
 function makeMathExpr (d, b, i) { /* eslint-disable-line require-jsdoc */
@@ -101,10 +101,10 @@ function makeMathExpr (d, b, i) { /* eslint-disable-line require-jsdoc */
   function mc (expr) { /* eslint-disable-line require-jsdoc */
     switch (rnd(3) ? commonCoercion : rnd(10)) {
       /* eslint-disable no-multi-spaces */
-      case 0:  return "(" + " + " + expr + ")";     // f64 (asm.js)
-      case 1:  return "Math.fround(" + expr + ")";  // f32
-      case 2:  return "(" + expr + " | 0)";         // i32 (asm.js)
-      case 3:  return "(" + expr + " >>> 0)";       // u32
+      case 0:  return `( + ${expr})`;          // f64 (asm.js)
+      case 1:  return `Math.fround(${expr})`;  // f32
+      case 2:  return `(${expr} | 0)`;         // i32 (asm.js)
+      case 3:  return `(${expr} >>> 0)`;       // u32
       default: return expr;
       /* eslint-enable no-multi-spaces */
     }
@@ -112,19 +112,19 @@ function makeMathExpr (d, b, i) { /* eslint-disable-line require-jsdoc */
 
   if (i > 0 && rnd(10) === 0) {
     // Call a *lower-numbered* mathy function. (This avoids infinite recursion.)
-    return mc("mathy" + rnd(i) + "(" + mc(r()) + ", " + mc(r()) + ")");
+    return mc(`mathy${rnd(i)}(${mc(r())}, ${mc(r())})`);
   }
 
   if (rnd(20) === 0) {
-    return mc("(" + mc(r()) + " ? " + mc(r()) + " : " + mc(r()) + ")");
+    return mc(`(${mc(r())} ? ${mc(r())} : ${mc(r())})`);
   }
 
   switch (rnd(4)) {
     /* eslint-disable no-multi-spaces */
-    case 0:  return mc("(" + mc(r()) + Random.index(binaryMathOps) + mc(r()) + ")");
-    case 1:  return mc("(" + Random.index(leftUnaryMathOps) + mc(r()) + ")");
-    case 2:  return mc("Math." + Random.index(unaryMathFunctions) + "(" + mc(r()) + ")");
-    default: return mc("Math." + Random.index(binaryMathFunctions) + "(" + mc(r()) + ", " + mc(r()) + ")");
+    case 0:  return mc(`(${mc(r())}${Random.index(binaryMathOps)}${mc(r())})`);
+    case 1:  return mc(`(${Random.index(leftUnaryMathOps)}${mc(r())})`);
+    case 2:  return mc(`Math.${Random.index(unaryMathFunctions)}(${mc(r())})`);
+    default: return mc(`Math.${Random.index(binaryMathFunctions)}(${mc(r())}, ${mc(r())})`);
     /* eslint-enable no-multi-spaces */
   }
 }

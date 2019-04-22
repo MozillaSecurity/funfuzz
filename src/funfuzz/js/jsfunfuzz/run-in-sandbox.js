@@ -42,11 +42,11 @@ function fillShellSandbox (sandbox) { /* eslint-disable-line require-jsdoc */
   for (var i = 0; i < safeFuns.length; ++i) {
     var fn = safeFuns[i];
     if (sandbox[fn]) {
-      // print("Target already has " + fn);
+      // print(`Target already has ${fn}`);
     } else if (this[fn]) { // FIXME: strict mode compliance requires passing glob around
       sandbox[fn] = this[fn].bind(this);
     } else {
-      // print("Source is missing " + fn);
+      // print(`Source is missing ${fn}`);
     }
   }
 
@@ -72,7 +72,7 @@ function useSpidermonkeyShellSandbox (sandboxType) { /* eslint-disable-line requ
     try {
       evalcx(code, primarySandbox);
     } catch (e) {
-      dumpln("Running in sandbox threw " + errorToString(e));
+      dumpln(`Running in sandbox threw ${errorToString(e)}`);
     }
   };
 }
@@ -82,7 +82,7 @@ function useSpidermonkeyShellSandbox (sandboxType) { /* eslint-disable-line requ
 // * Test interaction between sandboxes with same or different principals.
 function newGeckoSandbox (n) { /* eslint-disable-line require-jsdoc */
   var t = (typeof n === "number") ? n : 1;
-  var s = Components.utils.Sandbox("http://x" + t + ".example.com/"); /* eslint-disable-line no-undef */
+  var s = Components.utils.Sandbox(`http://x${t}.example.com/`); /* eslint-disable-line no-undef */
 
   // Allow the sandbox to do a few things
   s.newGeckoSandbox = newGeckoSandbox;

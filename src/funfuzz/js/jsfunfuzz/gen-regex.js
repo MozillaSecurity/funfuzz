@@ -56,9 +56,9 @@ var regexMakers =
     function (dr) { return regexQuantified(dr, "?", 0, 1); },
     function (dr) { return regexQuantified(dr, "+?", 1, 1); },
     function (dr) { return regexQuantified(dr, "*?", 0, 1); },
-    function (dr) { var x = regexNumberOfMatches(); return regexQuantified(dr, "{" + x + "}", x, x); },
-    function (dr) { var x = regexNumberOfMatches(); return regexQuantified(dr, "{" + x + ",}", x, x + rnd(10)); },
-    function (dr) { var min = regexNumberOfMatches(); var max = min + regexNumberOfMatches(); return regexQuantified(dr, "{" + min + "," + max + "}", min, max); }
+    function (dr) { var x = regexNumberOfMatches(); return regexQuantified(dr, `{${x}}`, x, x); },
+    function (dr) { var x = regexNumberOfMatches(); return regexQuantified(dr, `{${x},}`, x, x + rnd(10)); },
+    function (dr) { var min = regexNumberOfMatches(); var max = min + regexNumberOfMatches(); return regexQuantified(dr, `{${min},${max}}`, min, max); }
   ],
   [
     // Combinations: concatenation, disjunction
@@ -113,7 +113,7 @@ function regexDisjunction (dr) { /* eslint-disable-line require-jsdoc */
     var chance = rnd(100);
     if (chance < 10) { newStrings[i] = ""; } else if (chance < 20) { newStrings[i] = Random.index(strings1) + Random.index(strings2); } else if (chance < 60) { newStrings[i] = strings1[i]; } else { newStrings[i] = strings2[i]; }
   }
-  return [re1 + "|" + re2, newStrings];
+  return [`${re1}|${re2}`, newStrings];
 }
 
 function regexGrouped (prefix, dr, postfix) { /* eslint-disable-line require-jsdoc */
@@ -148,7 +148,7 @@ function regexCharCode () { /* eslint-disable-line require-jsdoc */
 var regexCharacterMakers = Random.weighted([
   // Possibly incorrect
   { w: 20, v: function () { var cc = regexCharCode(); return [String.fromCharCode(cc), cc]; } }, // literal that doesn't need to be escaped (OR wrong)
-  { w: 4, v: function () { var cc = regexCharCode(); return ["\\" + String.fromCharCode(cc), cc]; } }, // escaped special character OR unnecessary escape (OR wrong)
+  { w: 4, v: function () { var cc = regexCharCode(); return [`\\${String.fromCharCode(cc)}`, cc]; } }, // escaped special character OR unnecessary escape (OR wrong)
   { w: 1, v: function () { return ["\\0", 0]; } }, // null [ignoring the "do not follow this with another digit" rule which would turn it into an octal escape]
   { w: 1, v: function () { return ["\\B", 66]; } }, // literal B -- ONLY within a character class. (Elsewhere, it's a "zero-width non-word boundary".)
   { w: 1, v: function () { return ["\\b", 8]; } }, // backspace -- ONLY within a character class. (Elsewhere, it's a "zero-width word boundary".)
@@ -159,11 +159,11 @@ var regexCharacterMakers = Random.weighted([
   { w: 1, v: function () { return ["\\v", 11]; } }, // vertical tab
   { w: 1, v: function () { return ["\\f", 12]; } }, // form feed
   { w: 1, v: function () { return ["\\r", 13]; } }, // carriage return
-  { w: 5, v: function () { var controlCharacterCode = rnd(26) + 1; return ["\\c" + String.fromCharCode(64 + controlCharacterCode), controlCharacterCode]; } },
-  // { w: 5, v: function() { var cc = regexCharCode(); return ["\\0" + cc.toString(8), cc] } }, // octal escape
-  { w: 5, v: function () { var twoHex = Random.index(hexDigits) + Random.index(hexDigits); return ["\\x" + twoHex, parseInt(twoHex, 16)]; } },
-  { w: 5, v: function () { var twoHex = Random.index(hexDigits) + Random.index(hexDigits); return ["\\u00" + twoHex, parseInt(twoHex, 16)]; } },
-  { w: 5, v: function () { var fourHex = Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits); return ["\\u" + fourHex, parseInt(fourHex, 16)]; } }
+  { w: 5, v: function () { var controlCharacterCode = rnd(26) + 1; return [`\\c${String.fromCharCode(64 + controlCharacterCode)}`, controlCharacterCode]; } },
+  // { w: 5, v: function() { var cc = regexCharCode(); return [`\\0${cc.toString(8)}`, cc] } }, // octal escape
+  { w: 5, v: function () { var twoHex = Random.index(hexDigits) + Random.index(hexDigits); return [`\\x${twoHex}`, parseInt(twoHex, 16)]; } },
+  { w: 5, v: function () { var twoHex = Random.index(hexDigits) + Random.index(hexDigits); return [`\\u00${twoHex}`, parseInt(twoHex, 16)]; } },
+  { w: 5, v: function () { var fourHex = Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits) + Random.index(hexDigits); return [`\\u${fourHex}`, parseInt(fourHex, 16)]; } }
 ]);
 
 function regexCharacter () { /* eslint-disable-line require-jsdoc */
@@ -263,7 +263,7 @@ function regexCharacterClass () { /* eslint-disable-line require-jsdoc */
         [lo, hi] = [b, a];
       }
 
-      re += lo[0] + "-" + hi[0];
+      re += `${lo[0]}-${hi[0]}`;
       charBucket.push(String.fromCharCode(lo[1] + rnd(3) - 1));
       charBucket.push(String.fromCharCode(hi[1] + rnd(3) - 1));
       charBucket.push(String.fromCharCode(lo[1] + rnd(Math.max(hi[1] - lo[1], 1)))); // something in the middle
