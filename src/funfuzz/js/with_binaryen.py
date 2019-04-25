@@ -21,7 +21,7 @@ import requests
 
 from ..util import sm_compile_helpers
 
-BINARYEN_VERSION = 82
+BINARYEN_VERSION = 72
 BINARYEN_URL = (f"https://github.com/WebAssembly/binaryen/releases/download/version_{BINARYEN_VERSION}/"
                 f"binaryen-version_{BINARYEN_VERSION}-{platform.uname()[4]}-linux.tar.gz")
 
