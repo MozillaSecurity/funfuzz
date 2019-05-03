@@ -334,16 +334,16 @@ function makeUseRegressionTest (d, b) { /* eslint-disable-line require-jsdoc */
       continue;
     }
 
-    test_type = "regression"
+    let testType = "regression";
 
     switch (rnd(2)) {
       case 0:
       // simply inline the script -- this is the only one that will work in newGlobal()
-        s += `/* ${test_type}-test-inline */ ${inlineTest(file)}`;
+        s += `/* ${testType}-test-inline */ ${inlineTest(file)}`;
         break;
       default:
       // run it using load()
-        s += `/* ${test_type}-test-load */ load(${simpleSource(file)});`;
+        s += `/* ${testType}-test-load */ load(${simpleSource(file)});`;
         break;
       // NB: these scripts will also be run through eval(), evalcx(), evaluate(), evalInWorker()
       //     thanks to other parts of the fuzzer using makeScriptForEval or makeStatement
@@ -1109,7 +1109,7 @@ function makeShapeyConstructorLoop (d, b) { /* eslint-disable-line require-jsdoc
     `/*tLoopC*/for (let ${v} of ${a}) { ` +
      "try{" +
       `let ${v2} = ${Random.index(["new ", ""])}shapeyConstructor(${v}); print('EETT'); ` +
-      // `print(uneval(${v2}));` +
+       // `print(uneval(${v2}));` +
        makeStatement(d - 2, bvv) +
      `}catch(e){print('TTEE ' + e); }` +
   " }";
