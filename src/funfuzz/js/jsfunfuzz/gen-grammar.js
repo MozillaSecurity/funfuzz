@@ -334,14 +334,16 @@ function makeUseRegressionTest (d, b) { /* eslint-disable-line require-jsdoc */
       continue;
     }
 
+    test_type = "regression"
+
     switch (rnd(2)) {
       case 0:
       // simply inline the script -- this is the only one that will work in newGlobal()
-        s += `/* regression-test-inline */ ${inlineTest(file)}`;
+        s += `/* ${test_type}-test-inline */ ${inlineTest(file)}`;
         break;
       default:
       // run it using load()
-        s += `/* regression-test-load */ load(${simpleSource(file)});`;
+        s += `/* ${test_type}-test-load */ load(${simpleSource(file)});`;
         break;
       // NB: these scripts will also be run through eval(), evalcx(), evaluate(), evalInWorker()
       //     thanks to other parts of the fuzzer using makeScriptForEval or makeStatement
