@@ -920,7 +920,7 @@ var exprMakers =
 
   // More special Spidermonkey shell functions
   // (Note: functions without returned objects or visible side effects go in testing-functions.js, in order to allow presence/absence differential testing.)
-  function (d, b) { return "dumpObject(" + makeExpr(d, b) + ")"; },
+  // function (d, b) { return "dumpObject(" + makeExpr(d, b) + ")"; },  // Seems to spew a lot of stdout output
   function (d, b) { return "(void shapeOf(" + makeExpr(d, b) + "))"; },
   function (d, b) { return "intern(" + makeExpr(d, b) + ")"; },
   function (d, b) { return "allocationMarker()"; },
