@@ -1831,7 +1831,7 @@ function makeShapeyValue (d, b) { /* eslint-disable-line require-jsdoc */
     // Fun stuff
     [ "function(){}" ],
     [ "{}", "[]", "[1]", "['z']", "[undefined]", "this", "eval", "arguments", "arguments.caller", "arguments.callee" ],
-    [ "objectEmulatingUndefined()" ],
+    [ "createIsHTMLDDA()" ],
 
     // Actual variables (slightly dangerous)
     [ b.length ? Random.index(b) : "x" ]
