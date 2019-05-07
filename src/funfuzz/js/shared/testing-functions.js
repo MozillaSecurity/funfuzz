@@ -53,11 +53,21 @@ function fuzzTestingFunctionsCtor (browser, fGlobal, fObject) { /* eslint-disabl
   }
 
   function setGcparam () { /* eslint-disable-line require-jsdoc */
-    switch (rnd(4)) {
+    // Some switches from the following, added on 2019-05-07:
+    // https://hg.mozilla.org/mozilla-central/file/3c70f36ad62c9c714db319/js/src/builtin/TestingFunctions.cpp#l478
+    switch (rnd(12)) {
       /* eslint-disable no-multi-spaces */
       case 0:  return _set("sliceTimeBudget", rnd(100));
       case 1:  return _set("minNurseryBytes", rnd(2) ? 0 : (1 + rnd(30))); // See bug 1540670
       case 2:  return _set("maxNurseryBytes", rnd(2) ? rnd(30) : (2 ** 32 - 1)); // See bug 1538594
+      case 3:  return _set("mode", rnd(4));
+      case 4:  return _set("dynamicHeapGrowth", rnd(2));
+      case 5:  return _set("dynamicMarkSlice", rnd(2));
+      case 6:  return _set("compactingEnabled", rnd(2));
+      case 7:  return _set("minLastDitchGCPeriod", rnd(30));
+      case 8:  return _set("maxEmptyChunkCount", rnd(40));
+      case 9:  return _set("nurseryFreeThresholdForIdleCollectionPercent", (rnd(100) + 1));
+      case 10: return _set("pretenureThreshold", (rnd(100) + 1));
       default: return _set("markStackLimit", rnd(2) ? (1 + rnd(30)) : 4294967295); // Artificially trigger delayed marking
       /* eslint-enable no-multi-spaces */
     }
