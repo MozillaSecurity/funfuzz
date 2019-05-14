@@ -15,7 +15,6 @@ import subprocess
 
 from lithium.interestingness.utils import env_with_path
 
-from ..util import hg_helpers
 from ..util.logging_helpers import get_logger
 
 LOG_INSPECT_SHELL = get_logger(__name__)
