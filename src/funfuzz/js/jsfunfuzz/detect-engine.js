@@ -75,8 +75,8 @@ function simpleSource (st) { /* eslint-disable-line require-jsdoc */
   function hexify (c) { /* eslint-disable-line require-jsdoc */
     var code = c.charCodeAt(0);
     var hex = code.toString(16);
-    while (hex.length < 4) { hex = "0" + hex; }
-    return "\\u" + hex;
+    while (hex.length < 4) { hex = `0${hex}`; }
+    return `\\u${hex}`;
   }
 
   if (typeof st === "string") {
@@ -87,7 +87,7 @@ function simpleSource (st) { /* eslint-disable-line require-jsdoc */
         .replace(/\n/g, "\\n")
         .replace(/[^ -~]/g, hexify) + // not space (32) through tilde (126)
       "\"");
-  } else { return "" + st; } // hope this is right ;)  should work for numbers.
+  } else { return `${st}`; } // hope this is right ;)  should work for numbers.
 }
 
 var haveRealUneval = (typeof uneval === "function");

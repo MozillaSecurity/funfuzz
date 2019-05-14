@@ -327,6 +327,8 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     if args.enableSimulatorArm32 or args.enableSimulatorArm64:
         if platform.system() == "Windows" and args.enableSimulatorArm32:
             return False, "Nobody runs the ARM32 simulators on Windows."
+        if platform.system() == "Windows" and args.enableSimulatorArm64:
+            return False, "Nobody runs the ARM64 simulators on Windows."
         if platform.system() == "Linux" and platform.machine() == "aarch64" and args.enableSimulatorArm32:
             return False, "Nobody runs the ARM32 simulators on ARM64 Linux."
         if platform.system() == "Linux" and platform.machine() == "aarch64" and args.enableSimulatorArm64:
@@ -370,7 +372,7 @@ def get_random_valid_repo(tree):
             valid_repos.append(branch)
 
     # After checking if repos are valid, reduce chances that non-mozilla-central repos are chosen
-    if "mozilla-beta" in valid_repos and chance(.8):
+    if "mozilla-beta" in valid_repos and chance(.999):  # Reduce m-b likelihood until May 14, 2019
         valid_repos.remove("mozilla-beta")
 
     return tree / random.choice(valid_repos)

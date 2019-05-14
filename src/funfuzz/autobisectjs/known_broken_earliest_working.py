@@ -35,21 +35,19 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
     skips = [
-        hgrange("7c25be97325d", "d426154dd31d"),  # Fx38, broken spidermonkey
-        hgrange("da286f0f7a49", "62fecc6ab96e"),  # Fx39, broken spidermonkey
-        hgrange("8a416fedec44", "7f9252925e26"),  # Fx41, broken spidermonkey
-        hgrange("3bcc3881b95d", "c609df6d3895"),  # Fx44, broken spidermonkey
-        hgrange("d3a026933bce", "5fa834fe9b96"),  # Fx52, broken spidermonkey
         hgrange("4c72627cfc6c", "926f80f2c5cc"),  # Fx60, broken spidermonkey
         hgrange("1fb7ddfad86d", "5202cfbf8d60"),  # Fx63, broken spidermonkey
         hgrange("aae4f349fa58", "c5fbbf959e23"),  # Fx64, broken spidermonkey
         hgrange("f611bc50d11c", "39d0c50a2209"),  # Fx66, broken spidermonkey
     ]
 
+    if platform.system() == "Darwin":
+        skips.extend([
+            hgrange("3d0236f985f8", "32cef42080b1"),  # Fx68, see bug 1544418
+        ])
+
     if platform.system() == "Linux":
         skips.extend([
-            # Clang failure - probably recent versions of GCC as well.
-            hgrange("5232dd059c11", "ed98e1b9168d"),  # Fx41, see bug 1140482
             # Failure specific to GCC 5 (and probably earlier) - supposedly works on GCC 6
             hgrange("e94dceac8090", "516c01f62d84"),  # Fx56-57, see bug 1386011
         ])
@@ -63,28 +61,19 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
                 hgrange("aa1da5ed8a07", "5a03382283ae"),  # Fx54-55, see bug 1339190
             ])
 
-    if platform.system() == "Windows":
-        skips.extend([
-            hgrange("be8b0845f283", "db3ed1fdbbea"),  # Fx50, see bug 1289679
-        ])
-
     if not options.enableDbg:
         skips.extend([
-            hgrange("a048c55e1906", "ddaa87cfd7fa"),  # Fx46, broken opt builds w/ --enable-gczeal
             hgrange("c5561749c1c6", "f4c15a88c937"),  # Fx58-59, broken opt builds w/ --enable-gczeal
             hgrange("247e265373eb", "e4aa68e2a85b"),  # Fx66, broken opt builds w/ --enable-gczeal
         ])
 
     if options.enableMoreDeterministic:
         skips.extend([
-            hgrange("1d672188b8aa", "ea7dabcd215e"),  # Fx40, see bug 1149739
+            hgrange("427b854cdb1c", "4c4e45853808"),  # Fx68, see bug 1542980
         ])
 
     if options.enableSimulatorArm32:
         skips.extend([
-            hgrange("3a580b48d1ad", "20c9570b0734"),  # Fx43, broken 32-bit ARM-simulator builds
-            hgrange("f35d1107fe2e", "bdf975ad2fcd"),  # Fx45, broken 32-bit ARM-simulator builds
-            hgrange("6c37be9cee51", "4548ba932bde"),  # Fx50, broken 32-bit ARM-simulator builds
             hgrange("284002382c21", "05669ce25b03"),  # Fx57-61, broken 32-bit ARM-simulator builds
         ])
 
@@ -105,10 +94,12 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
 
     required = []
 
+    # These should be in descending order, or bisection will break at earlier changesets.
+    if "--enable-experimental-fields" in flags:
+        required.append("7a1ad6647c22")  # m-c 463705 Fx67, 1st w/--enable-experimental-fields, see bug 1529758
     if set(["--wasm-compiler=none", "--wasm-compiler=baseline+ion", "--wasm-compiler=baseline",
             "--wasm-compiler=ion"]).intersection(flags):
         required.append("48dc14f79fb0")  # m-c 455252 Fx66, 1st w/--wasm-compiler=none/<other options>, see bug 1509441
-    # These should be in descending order, or bisection will break at earlier changesets.
     if "--more-compartments" in flags:
         required.append("450b8f0cbb4e")  # m-c 453627 Fx66, 1st w/--more-compartments, see bug 1518753
     if "--no-streams" in flags:
@@ -131,37 +122,7 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("1b55231e6628")  # m-c 380023 Fx57, 1st w/--cpu-count=<NUM>, see bug 1206770
     if platform.system() == "Windows" and platform.uname()[2] == "10":
         required.append("530f7bd28399")  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
-    if options.disableProfiling:
-        required.append("800a887c705e")  # m-c 324836 Fx53, 1st w/ --disable-profiling, see bug 1321065
-    if "--cache-ir-stubs=on" in flags or "--cache-ir-stubs=off" in flags:
-        required.append("1c5b92144e1e")  # m-c 308931 Fx51, 1st w/--cache-ir-stubs=on, see bug 1292659
-    if platform.machine() == "aarch64":
-        required.append("2f727a828ea0")  # m-c 304669 Fx50, 1st w/ working aarch64 builds, see bug 1286207
-    if options.buildWithAsan:
-        required.append("e1cac03485d9")  # m-c 301874 Fx50, 1st w/ working ASan builds in Ubuntu 18.04, see bug 1264534
-    if "--ion-pgo=on" in flags or "--ion-pgo=off" in flags:
-        required.append("b0a0ff5fa705")  # m-c 272274 Fx45, 1st w/--ion-pgo=on, see bug 1209515
-    if "--ion-sincos=on" in flags or "--ion-sincos=off" in flags:
-        required.append("3dec2b935295")  # m-c 262544 Fx43, 1st w/--ion-sincos=on, see bug 984018
-    if options.enableSimulatorArm64:
-        required.append("e668e5f2fb8a")  # m-c 262171 Fx43, 1st w/ stable --enable-simulator=arm64, see bug 1203287
-    if "--ion-instruction-reordering=on" in flags or "--ion-instruction-reordering=off" in flags:
-        required.append("59d2f2e62420")  # m-c 259672 Fx43, 1st w/--ion-instruction-reordering=on, see bug 1195545
-    if options.enableSimulatorArm32:
-        required.append("25e99bc12482")  # m-c 249239 Fx41, 1st w/--enable-simulator=arm, see bug 1173992
-    if "--ion-regalloc=testbed" in flags:
-        required.append("47e92bae09fd")  # m-c 248962 Fx41, 1st w/--ion-regalloc=testbed, see bug 1170840
-    if "--execute=setJitCompilerOption(\"ion.forceinlineCaches\",1)" in flags:
-        required.append("ea9608e33abe")  # m-c 247709 Fx41, 1st w/ion.forceinlineCaches, see bug 923717
-    if "--no-unboxed-objects" in flags:
-        required.append("322487136b28")  # m-c 244297 Fx41, 1st w/--no-unboxed-objects, see bug 1162199
-    if "--ion-extra-checks" in flags:
-        required.append("cdf93416b39a")  # m-c 234228 Fx39, 1st w/--ion-extra-checks, see bug 1139152
-    if "--no-cgc" in flags:
-        required.append("b63d7e80709a")  # m-c 227705 Fx38, 1st w/--no-cgc, see bug 1126769 and see bug 1129233
-    if "--enable-avx" in flags or "--no-avx" in flags:
-        required.append("5e6e959f0043")  # m-c 223959 Fx38, 1st w/--enable-avx, see bug 1118235
-    required.append("bcacb5692ad9")  # m-c 222786 Fx37, 1st w/ successful GCC 5.2.x builds on Ubuntu 15.10 onwards
+    required.append("bb868860dfc3")  # m-c 330353 Fx53, 1st w/ revised template literals, see bug 1317375
 
     return f"first(({common_descendants(required)}) - ({skip_revs}))"
 

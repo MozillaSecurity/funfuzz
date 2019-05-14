@@ -22,7 +22,7 @@ import requests
 from ..util import sm_compile_helpers
 from ..util.logging_helpers import get_logger
 
-BINARYEN_VERSION = 72
+BINARYEN_VERSION = 81
 BINARYEN_URL = (f"https://github.com/WebAssembly/binaryen/releases/download/version_{BINARYEN_VERSION}/"
                 f"binaryen-version_{BINARYEN_VERSION}-{platform.uname()[4]}-linux.tar.gz")
 LOG_WITH_BINARYEN = get_logger(__name__)

@@ -41,6 +41,8 @@ def add_random_arch_flags(shell_path, input_list=False):
     Returns:
         list: List of flags to be tested, with probable architecture-related flags added.
     """
+    # m-c rev 330353:bb868860dfc3 is the earliest known working revision, so stop testing prior existence of flag
+
     if inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and chance(.7):
         # m-c rev 165993:c450eb3abde4, see bug 965247
         input_list.append("--arm-sim-icache-checks")
@@ -53,14 +55,12 @@ def add_random_arch_flags(shell_path, input_list=False):
         # m-c rev 190582:5399dc155c3b, see bug 1028008
         input_list.append("--arm-hwcap=vfp")
 
-    if shell_supports_flag(shell_path, "--enable-avx") and chance(.2):
+    if chance(.2):
         # m-c rev 223959:5e6e959f0043, see bug 1118235
         input_list.append("--enable-avx")
-    elif shell_supports_flag(shell_path, "--no-avx") and chance(.2):
+    elif chance(.2):
         # m-c rev 223959:5e6e959f0043, see bug 1118235
         input_list.append("--no-avx")
-
-    # m-c rev 222786:bcacb5692ad9 is the earliest known working revision, so stop testing prior existence of flag
 
     if chance(.2):  # m-c rev 154600:526ba3ace37a, see bug 935791
         input_list.append("--no-sse" + ("3" if chance(.5) else "4"))
@@ -69,6 +69,7 @@ def add_random_arch_flags(shell_path, input_list=False):
 
 
 def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-complex,too-many-branches
+    # pylint: disable=too-many-statements
     """Returns a list with probably additional IonMonkey flags added.
 
     The non-default options have a higher chance of being set, e.g. chance(.9)
@@ -80,33 +81,58 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     Returns:
         list: List of flags to be tested, with probable IonMonkey flags added.
     """
-    if shell_supports_flag(shell_path, "--cache-ir-stubs=on") and chance(.2):
+    if shell_supports_flag(shell_path, "--ion-optimization-levels=on") and chance(.2):
+        # m-c rev 467738:3134740d831c, see bug 1382650
+        input_list.append("--ion-optimization-levels=" + ("on" if chance(.1) else "off"))
+    if shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
+        # m-c rev 466417:a812f6daf98e, see bug 1382650
+        input_list.append("--ion-full-warmup-threshold=0")
+    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
+        # m-c rev 466417:a812f6daf98e, see bug 1382650
+        input_list.append("--ion-full-warmup-threshold=10")
+    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
+        # m-c rev 466417:a812f6daf98e, see bug 1382650
+        input_list.append("--ion-full-warmup-threshold=100")
+    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
+        # m-c rev 466417:a812f6daf98e, see bug 1382650
+        input_list.append("--ion-full-warmup-threshold=1000")
+    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
+        # m-c rev 466417:a812f6daf98e, see bug 1382650
+        input_list.append("--ion-full-warmup-threshold=1500")
+    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
+        # m-c rev 466417:a812f6daf98e, see bug 1382650
+        input_list.append("--ion-full-warmup-threshold=5000")
+    if shell_supports_flag(shell_path, "--no-bigint") and chance(.2):
+        # m-c rev 461970:e262ebb01282, see bug 1527900
+        input_list.append("--no-bigint")
+
+    # m-c rev 330353:bb868860dfc3 is the earliest known working revision, so stop testing prior existence of flag
+
+    if chance(.2):
         # m-c rev 308931:1c5b92144e1e, see bug 1292659
         input_list.append("--cache-ir-stubs=" + ("on" if chance(.1) else "off"))
-    if shell_supports_flag(shell_path, "--ion-pgo=on") and chance(.2):
+    if chance(.2):
         # m-c rev 272274:b0a0ff5fa705, see bug 1209515
         input_list.append("--ion-pgo=" + ("on" if chance(.1) else "off"))
-    if shell_supports_flag(shell_path, "--ion-sincos=on") and chance(.2):
+    if chance(.2):
         # m-c rev 262544:3dec2b935295, see bug 984018
         input_list.append("--ion-sincos=" + ("on" if chance(.5) else "off"))
-    if shell_supports_flag(shell_path, "--ion-instruction-reordering=on") and chance(.2):
+    if chance(.2):
         # m-c rev 259672:59d2f2e62420, see bug 1195545
         input_list.append("--ion-instruction-reordering=" + ("on" if chance(.9) else "off"))
-    if shell_supports_flag(shell_path, "--ion-regalloc=testbed") and chance(.2):
+    if chance(.2):
         # m-c rev 248962:47e92bae09fd, see bug 1170840
         input_list.append("--ion-regalloc=testbed")
 
     forceinline_cmd = '--execute=\"setJitCompilerOption(\\\"ion.forceinlineCaches\\\",1)\"'
     # The only way I could make nested double quotes work with subprocess. See https://stackoverflow.com/a/35913597
     forceinline_shell_cmd = re.findall(r'(?:[^\s,"]|"(?:\\.|[^"])*")+', forceinline_cmd)[0]
-    if shell_supports_flag(shell_path, forceinline_shell_cmd) and chance(.2):
+    if chance(.2):
         # m-c rev 247709:ea9608e33abe, see bug 923717
         input_list.append(forceinline_shell_cmd)
-    if shell_supports_flag(shell_path, "--ion-extra-checks") and chance(.2):
+    if chance(.2):
         # m-c rev 234228:cdf93416b39a, see bug 1139152
         input_list.append("--ion-extra-checks")
-
-    # m-c rev 222786:bcacb5692ad9 is the earliest known working revision, so stop testing prior existence of flag
 
     # --ion-sink=on is still not ready to be fuzzed
     # if chance(.2):  # m-c rev 217242:9188c8b7962b, see bug 1093674
@@ -177,7 +203,7 @@ def add_random_wasm_flags(shell_path, input_list=False):
         # m-c rev 387188:b1dc87a94262, see bug 1388785
         input_list.append("--test-wasm-await-tier2")
 
-    # m-c rev 222786:bcacb5692ad9 is the earliest known working revision, so stop testing prior existence of flag
+    # m-c rev 330353:bb868860dfc3 is the earliest known working revision, so stop testing prior existence of flag
 
     if chance(.7):  # m-c rev 124920:b3d85b68449d, see bug 840282
         input_list.append("--no-asmjs")

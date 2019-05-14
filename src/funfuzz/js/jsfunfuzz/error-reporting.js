@@ -12,7 +12,7 @@ function confused (s) { /* eslint-disable-line require-jsdoc */
     // Currently disabled until its use can be figured out
     // print("jsfunfuzz broke" + " its own scripting environment: " + s);
     // Replaced with the following:
-    print("jsfunfuzz got confused: " + s);
+    print(`jsfunfuzz got confused: ${s}`);
     quit();
   }
 }
@@ -20,7 +20,9 @@ function confused (s) { /* eslint-disable-line require-jsdoc */
 function foundABug (summary, details) { /* eslint-disable-line require-jsdoc */
   // Magic pair of strings that js_interesting looks for
   // Break up the following string so internal js functions do not print it deliberately
-  printImportant("Found" + " a bug: " + summary);
+  let foundMsg = `Found`;
+  foundMsg += ` a bug: ${summary}`;
+  printImportant(foundMsg);
   if (details) {
     printImportant(details);
   }
@@ -32,7 +34,7 @@ function foundABug (summary, details) { /* eslint-disable-line require-jsdoc */
 
 function errorToString (e) { /* eslint-disable-line require-jsdoc */
   try {
-    return ("" + e);
+    return (`${e}`);
   } catch (e2) {
     return "Can't toString the error!!";
   }

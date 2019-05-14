@@ -21,8 +21,8 @@ function randomRegexFlags () { /* eslint-disable-line require-jsdoc */
 
 function toRegexSource (rexpat) { /* eslint-disable-line require-jsdoc */
   return (rnd(2) === 0 && rexpat.charAt(0) !== "*") ?
-    "/" + rexpat + "/" + randomRegexFlags() :
-    "new RegExp(" + simpleSource(rexpat) + ", " + simpleSource(randomRegexFlags()) + ")";
+    `/${rexpat}/${randomRegexFlags()}` :
+    `new RegExp(${simpleSource(rexpat)}, ${simpleSource(randomRegexFlags())})`;
 }
 
 function makeRegexUseBlock (d, b, rexExpr, strExpr) { /* eslint-disable-line require-jsdoc */
@@ -35,21 +35,21 @@ function makeRegexUseBlock (d, b, rexExpr, strExpr) { /* eslint-disable-line req
 
   var bv = b.concat(["s", "r"]);
 
-  return ("/*RXUB*/var r = " + rexExpr + "; " +
-          "var s = " + strExpr + "; " +
-          "print(" +
-            Random.index([
-              "r.exec(s)",
-              "uneval(r.exec(s))",
-              "r.test(s)",
-              "s.match(r)",
-              "uneval(s.match(r))",
-              "s.search(r)",
-              "s.replace(r, " + makeReplacement(d, bv) + (rnd(3) ? "" : ", " + simpleSource(randomRegexFlags())) + ")",
-              "s.split(r)"
-            ]) +
-          "); " +
-          (rnd(3) ? "" : "print(r.lastIndex); ")
+  return (`/*RXUB*/var r = ${rexExpr}; ` +
+      `var s = ${strExpr}; ` +
+      "print(" +
+      Random.index([
+        "r.exec(s)",
+        "uneval(r.exec(s))",
+        "r.test(s)",
+        "s.match(r)",
+        "uneval(s.match(r))",
+        "s.search(r)",
+        `s.replace(r, ${makeReplacement(d, bv)}${rnd(3) ? "" : `, ${simpleSource(randomRegexFlags())}`})`,
+        "s.split(r)"
+      ]) +
+      "); " +
+      (rnd(3) ? "" : "print(r.lastIndex); ")
   );
 }
 
@@ -61,7 +61,7 @@ function makeRegexUseExpr (d, b) { /* eslint-disable-line require-jsdoc */
   var rexExpr = rnd(10) === 0 ? makeExpr(d - 1, b) : toRegexSource(rexpat);
   var strExpr = rnd(10) === 0 ? makeExpr(d - 1, b) : simpleSource(str);
 
-  return "/*RXUE*/" + rexExpr + ".exec(" + strExpr + ")";
+  return `/*RXUE*/${rexExpr}.exec(${strExpr})`;
 }
 
 function makeRegex (d, b) { /* eslint-disable-line require-jsdoc */

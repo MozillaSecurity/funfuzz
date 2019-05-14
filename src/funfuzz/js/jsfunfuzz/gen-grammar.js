@@ -69,58 +69,58 @@ function forLoopHead (d, b, v, reps) { /* eslint-disable-line require-jsdoc */
 
   switch (rnd(2)) {
     case 0: // Generates constructs like `for (var x = 3; x > 0; x--) { ... }`
-      sInit = Random.index(varBinderFor) + v + " = " + reps;
-      sCond = v + " > 0";
+      sInit = `${Random.index(varBinderFor) + v} = ${reps}`;
+      sCond = `${v} > 0`;
       if (rnd(2)) {
-        sNext = "--" + v;
+        sNext = `--${v}`;
       } else {
-        sNext = v + "--";
+        sNext = `${v}--`;
       }
       break;
     default: // Generates constructs like `for (var x = 0; x < 3; x++) { ... }`
-      sInit = Random.index(varBinderFor) + v + " = 0";
-      sCond = v + " < " + reps;
+      sInit = `${Random.index(varBinderFor) + v} = 0`;
+      sCond = `${v} < ${reps}`;
       if (rnd(2)) {
-        sNext = "++" + v;
+        sNext = `++${v}`;
       } else {
-        sNext = v + "++";
+        sNext = `${v}++`;
       }
   }
 
-  while (rnd(10) === 0) { sInit += ", " + makeLetHeadItem(d - 2, b); }
-  while (rnd(10) === 0) { sInit += ", " + makeExpr(d - 2, b); } // NB: only makes sense if our varBinder is ""
+  while (rnd(10) === 0) { sInit += `, ${makeLetHeadItem(d - 2, b)}`; }
+  while (rnd(10) === 0) { sInit += `, ${makeExpr(d - 2, b)}`; } // NB: only makes sense if our varBinder is ""
   while (rnd(1000) === 0) {
   // never causes the loop to be run, but stuff like register allocation may be happening in the background
     sInit = Random.index(varBinderFor) + v;
   }
   while (rnd(10000) === 0) { sInit = ""; } // mostly throws ReferenceError, so make this rare
 
-  while (rnd(20) === 0) { sCond = sCond + " && (" + makeExpr(d - 2, b) + ")"; }
-  while (rnd(20) === 0) { sCond = "(" + makeExpr(d - 2, b) + ") && " + sCond; }
+  while (rnd(20) === 0) { sCond = `${sCond} && (${makeExpr(d - 2, b)})`; }
+  while (rnd(20) === 0) { sCond = `(${makeExpr(d - 2, b)}) && ${sCond}`; }
 
-  while (rnd(20) === 0) { sNext = sNext + ", " + makeExpr(d - 2, b); }
-  while (rnd(20) === 0) { sNext = makeExpr(d - 2, b) + ", " + sNext; }
+  while (rnd(20) === 0) { sNext = `${sNext}, ${makeExpr(d - 2, b)}`; }
+  while (rnd(20) === 0) { sNext = `${makeExpr(d - 2, b)}, ${sNext}`; }
 
-  return "for (" + sInit + "; " + sCond + "; " + sNext + ")";
+  return `for (${sInit}; ${sCond}; ${sNext})`;
 }
 
 function makeOpaqueIdiomaticLoop (d, b) { /* eslint-disable-line require-jsdoc */
   var reps = loopCount();
   var vHidden = uniqueVarName();
-  return "/*oLoop*/" + forLoopHead(d, b, vHidden, reps) + " { " +
+  return `/*oLoop*/${forLoopHead(d, b, vHidden, reps)} { ` +
       makeStatement(d - 2, b) +
-      " } ";
+      ` } `;
 }
 
 function makeTransparentIdiomaticLoop (d, b) { /* eslint-disable-line require-jsdoc */
   var reps = loopCount();
   var vHidden = uniqueVarName();
   var vVisible = makeNewId(d, b);
-  return "/*vLoop*/" + forLoopHead(d, b, vHidden, reps) +
-    " { " +
-      Random.index(varBinder) + vVisible + " = " + vHidden + "; " +
+  return `/*vLoop*/${forLoopHead(d, b, vHidden, reps)}` +
+    ` { ` +
+      `${Random.index(varBinder) + vVisible} = ${vHidden}; ` +
       makeStatement(d - 2, b.concat([vVisible])) +
-    " } ";
+    ` } `;
 }
 
 function makeBranchUnstableLoop (d, b) { /* eslint-disable-line require-jsdoc */
@@ -128,17 +128,17 @@ function makeBranchUnstableLoop (d, b) { /* eslint-disable-line require-jsdoc */
   var v = uniqueVarName();
   var mod = loopModulo();
   var target = rnd(mod);
-  return "/*bLoop*/" + forLoopHead(d, b, v, reps) + " { " +
-    "if (" + v + " % " + mod + " == " + target + ") { " + makeStatement(d - 2, b) + " } " +
-    "else { " + makeStatement(d - 2, b) + " } " +
-    " } ";
+  return `/*bLoop*/${forLoopHead(d, b, v, reps)} { ` +
+    `if (${v} % ${mod} == ${target}) { ${makeStatement(d - 2, b)} } ` +
+    `else { ${makeStatement(d - 2, b)} } ` +
+    ` } `;
 }
 
 function makeTypeUnstableLoop (d, b) { /* eslint-disable-line require-jsdoc */
   var a = makeMixedTypeArray(d, b);
   var v = makeNewId(d, b);
   var bv = b.concat([v]);
-  return "/*tLoop*/for (let " + v + " of " + a + ") { " + makeStatement(d - 2, bv) + " }";
+  return `/*tLoop*/for (let ${v} of ${a}) { ${makeStatement(d - 2, bv)} }`;
 }
 
 function makeFunOnCallChain (d, b) { /* eslint-disable-line require-jsdoc */
@@ -179,10 +179,10 @@ var statementMakers = Random.weighted([
   // C-style "for" loops
   // Two kinds of "for" loops: one with an expression as the first part, one with a var or let binding 'statement' as the first part.
   // I'm not sure if arbitrary statements are allowed there; I think not.
-  { w: 1, v: function (d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, v: function (d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                                                    "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
-  { w: 1, v: function (d, b) { var v = makeNewId(d, b); return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v, " = ", makeExpr(d, b),                             "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
-  { w: 1, v: function (d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeDestructuringLValue(d, b), " = ", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function (d, b) {                          return `/*infloop*/${cat([maybeLabel(), "for", "(", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)])}`; } },
+  { w: 1, v: function (d, b) { var v = makeNewId(d, b); return `/*infloop*/${cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                                                    "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))])}`; } },
+  { w: 1, v: function (d, b) { var v = makeNewId(d, b); return `/*infloop*/${cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v, " = ", makeExpr(d, b),                             "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b.concat([v]))])}`; } },
+  { w: 1, v: function (d, b) {                          return `/*infloop*/${cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeDestructuringLValue(d, b), " = ", makeExpr(d, b), "; ", makeExpr(d, b), "; ", makeExpr(d, b), ") ", makeStatementOrBlock(d, b)])}`; } },
   /* eslint-enable no-multi-spaces */
 
   // Various types of "for" loops, specially set up to test tracing, carefully avoiding infinite loops
@@ -195,25 +195,25 @@ var statementMakers = Random.weighted([
   // "for..in" loops
   // arbitrary-LHS marked as infloop because
   // -- for (key in obj)
-  { w: 1, v: function (d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeForInLHS(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, v: function (d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                  " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, v: function (d, b) {                          return `/*infloop*/${cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeForInLHS(d, b), " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)])}`; } },
+  { w: 1, v: function (d, b) { var v = makeNewId(d, b); return               cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                  " in ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
   // -- for (key in generator())
-  { w: 1, v: function (d, b) {                          return "/*infloop*/" + cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeForInLHS(d, b), " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b)]); } },
-  { w: 1, v: function (d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                  " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, v: function (d, b) {                          return `/*infloop*/${cat([maybeLabel(), "for", "(", Random.index(varBinderFor), makeForInLHS(d, b), " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b)])}`; } },
+  { w: 1, v: function (d, b) { var v = makeNewId(d, b); return               cat([maybeLabel(), "for", "(", Random.index(varBinderFor), v,                  " in ", "(", "(", makeFunction(d, b), ")", "(", makeExpr(d, b), ")", ")", ")", makeStatementOrBlock(d, b.concat([v]))]); } },
   // -- for (element of arraylike)
-  { w: 1, v: function (d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", "(", Random.index(varBinderFor), makeLValue(d, b), " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, v: function (d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", "(", Random.index(varBinderFor), v,                " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, v: function (d, b) {                          return `/*infloop*/${cat([maybeLabel(), " for ", "(", Random.index(varBinderFor), makeLValue(d, b), " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)])}`; } },
+  { w: 1, v: function (d, b) { var v = makeNewId(d, b); return               cat([maybeLabel(), " for ", "(", Random.index(varBinderFor), v,                " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
   /* eslint-enable no-multi-spaces */
 
   /* eslint-disable no-multi-spaces */
   // -- for-await-of
-  { w: 1, v: function (d, b) {                          return "/*infloop*/" + cat([maybeLabel(), " for ", "await", "(", Random.index(varBinderFor), makeLValue(d, b), " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)]); } },
-  { w: 1, v: function (d, b) { var v = makeNewId(d, b); return                 cat([maybeLabel(), " for ", "await", "(", Random.index(varBinderFor), v,                " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
+  { w: 1, v: function (d, b) {                          return `/*infloop*/${cat([maybeLabel(), " for ", "await", "(", Random.index(varBinderFor), makeLValue(d, b), " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b)])}`; } },
+  { w: 1, v: function (d, b) { var v = makeNewId(d, b); return               cat([maybeLabel(), " for ", "await", "(", Random.index(varBinderFor), v,                " of ", makeExpr(d - 2, b), ") ", makeStatementOrBlock(d, b.concat([v]))]); } },
   /* eslint-enable no-multi-spaces */
 
   // Modify something during a loop -- perhaps the thing being looped over
   // Since we use "let" to bind the for-variables, and only do wacky stuff once, I *think* this is unlikely to hang.
-  //  function(d, b) { return "let forCount = 0; for (let " + makeId(d, b) + " in " + makeExpr(d, b) + ") { if (forCount++ == " + rnd(3) + ") { " + makeStatement(d - 1, b) + " } }"; },
+  //  function(d, b) { return `let forCount = 0; for (let ${makeId(d, b)} in ${makeExpr(d, b)}) { if (forCount++ == ${rnd(3)}) { ${makeStatement(d - 1, b)} } }`; },
 
   /* eslint-disable no-multi-spaces */
   // Hoisty "for..in" loops.  I don't know why this construct exists, but it does, and it hoists the initial-value expression above the loop.
@@ -227,9 +227,9 @@ var statementMakers = Random.weighted([
 
   // do..while
   { w: 1, v: function (d, b) { return cat([maybeLabel(), "while((", makeExpr(d, b), ") && 0)" /* don't split this, it's needed to avoid marking as infloop */, makeStatementOrBlock(d, b)]); } },
-  { w: 1, v: function (d, b) { return "/*infloop*/" + cat([maybeLabel(), "while", "(", makeExpr(d, b), ")", makeStatementOrBlock(d, b)]); } },
+  { w: 1, v: function (d, b) { return `/*infloop*/${cat([maybeLabel(), "while", "(", makeExpr(d, b), ")", makeStatementOrBlock(d, b)])}`; } },
   { w: 1, v: function (d, b) { return cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while((", makeExpr(d, b), ") && 0)" /* don't split this, it's needed to avoid marking as infloop */, ";"]); } },
-  { w: 1, v: function (d, b) { return "/*infloop*/" + cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while", "(", makeExpr(d, b), ");"]); } },
+  { w: 1, v: function (d, b) { return `/*infloop*/${cat([maybeLabel(), "do ", makeStatementOrBlock(d, b), " while", "(", makeExpr(d, b), ");"])}`; } },
 
   // Switch statement
   { w: 3, v: function (d, b) { return cat([maybeLabel(), "switch", "(", makeExpr(d, b), ")", " { ", makeSwitchBody(d, b), " }"]); } },
@@ -271,19 +271,19 @@ var statementMakers = Random.weighted([
   // Long script -- can confuse Spidermonkey's short vs long jmp or something like that.
   // Spidermonkey's regexp engine is so slow for long strings that we have to bypass whatToTest :(
   // { w: 1, v: function(d, b) { return strTimes("try{}catch(e){}", rnd(10000)); } },
-  { w: 1, v: function (d, b) { if (rnd(200) === 0) return "/*DUPTRY" + rnd(10000) + "*/" + makeStatement(d - 1, b); return ";"; } },
+  { w: 1, v: function (d, b) { if (rnd(200) === 0) return `/*DUPTRY${rnd(10000)}*/${makeStatement(d - 1, b)}`; return ";"; } },
 
   { w: 1, v: function (d, b) { return makeShapeyConstructorLoop(d, b); } },
 
   // Replace a variable with a long linked list pointing to it.  (Forces SpiderMonkey's GC marker into a stackless mode.)
-  { w: 1, v: function (d, b) { var x = makeId(d, b); return x + " = linkedList(" + x + ", " + (rnd(100) * rnd(100)) + ");"; } },
+  { w: 1, v: function (d, b) { var x = makeId(d, b); return `${x} = linkedList(${x}, ${rnd(100) * rnd(100)});`; } },
 
   // Oddly placed "use strict" or "use asm"
   { w: 1, v: function (d, b) { return directivePrologue() + makeStatement(d - 1, b); } },
 
   // Spidermonkey GC and JIT controls
   { w: 3, v: function (d, b) { return makeTestingFunctionCall(d, b); } },
-  { w: 3, v: function (d, b) { return makeTestingFunctionCall(d - 1, b) + " " + makeStatement(d - 1, b); } },
+  { w: 3, v: function (d, b) { return `${makeTestingFunctionCall(d - 1, b)} ${makeStatement(d - 1, b)}`; } },
 
   // Blocks of statements related to typed arrays
   { w: 8, v: makeTypedArrayStatements },
@@ -298,14 +298,14 @@ var statementMakers = Random.weighted([
   { w: 20, v: makeUseRegressionTest }
 
   // Discover properties to add to the allPropertyNames list
-  // { w: 3, v: function(d, b) { return "for (var p in " + makeId(d, b) + ") { addPropertyName(p); }"; } },
-  // { w: 3, v: function(d, b) { return "var opn = Object.getOwnPropertyNames(" + makeId(d, b) + "); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }"; } },
+  // { w: 3, v: function(d, b) { return `for (var p in ${makeId(d, b)}) { addPropertyName(p); }`; } },
+  // { w: 3, v: function(d, b) { return `var opn = Object.getOwnPropertyNames(${makeId(d, b)}); for (var j = 0; j < opn.length; ++j) { addPropertyName(opn[j]); }`; } },
 ]);
 
 if (typeof oomTest === "function" && engine !== ENGINE_JAVASCRIPTCORE) {
   statementMakers = statementMakers.concat([
-    function (d, b) { return "oomTest(" + makeFunction(d - 1, b) + ")"; },
-    function (d, b) { return "oomTest(" + makeFunction(d - 1, b) + ", { keepFailing: true })"; }
+    function (d, b) { return `oomTest(${makeFunction(d - 1, b)})`; },
+    function (d, b) { return `oomTest(${makeFunction(d - 1, b)}, { keepFailing: true })`; }
   ]);
 }
 
@@ -334,14 +334,16 @@ function makeUseRegressionTest (d, b) { /* eslint-disable-line require-jsdoc */
       continue;
     }
 
+    let testType = "regression";
+
     switch (rnd(2)) {
       case 0:
       // simply inline the script -- this is the only one that will work in newGlobal()
-        s += "/* regression-test-inline */ " + inlineTest(file);
+        s += `/* ${testType}-test-inline */ ${inlineTest(file)}`;
         break;
       default:
       // run it using load()
-        s += "/* regression-test-load */ " + "load(" + simpleSource(file) + ");";
+        s += `/* ${testType}-test-load */ load(${simpleSource(file)});`;
         break;
       // NB: these scripts will also be run through eval(), evalcx(), evaluate(), evalInWorker()
       //     thanks to other parts of the fuzzer using makeScriptForEval or makeStatement
@@ -365,7 +367,7 @@ function regressionTestIsEvil (contents) { /* eslint-disable-line require-jsdoc 
 function inlineTest (filename) { /* eslint-disable-line require-jsdoc */
   // Inline a regression test, adding NODIFF (to disable differential testing) if it calls a testing function that might throw.
 
-  const s = "/* " + filename + " */ " + read(filename) + "\n";
+  const s = `/* ${filename} */ ${read(filename)}\n`;
 
   const noDiffTestingFunctions = [
     // These can throw
@@ -383,7 +385,7 @@ function inlineTest (filename) { /* eslint-disable-line require-jsdoc */
 
   for (var f of noDiffTestingFunctions) {
     if (s.indexOf(f) !== -1) {
-      return "/*NODIFF*/ " + s;
+      return `/*NODIFF*/ ${s}`;
     }
   }
 
@@ -397,7 +399,7 @@ function regressionTestDependencies (maintest) { /* eslint-disable-line require-
     // Include the chain of 'shell.js' files in their containing directories (starting from regressionTestsRoot)
     for (var i = regressionTestsRoot.length; i < maintest.length; ++i) {
       if (maintest.charAt(i) === "/" || maintest.charAt(i) === "\\") {
-        var shelljs = maintest.substr(0, i + 1) + "shell.js";
+        var shelljs = `${maintest.substr(0, i + 1)}shell.js`;
         if (regressionTestList.indexOf(shelljs) !== -1) {
           files.push(shelljs);
         }
@@ -406,13 +408,13 @@ function regressionTestDependencies (maintest) { /* eslint-disable-line require-
 
     // Include prologue.js for jit-tests
     if (maintest.indexOf("jit-test") !== -1) {
-      files.push(libdir + "prologue.js");
+      files.push(`${libdir}prologue.js`);
     }
 
     // Include web-platform-test-shims.js and testharness.js for streams tests
     if (maintest.indexOf("web-platform") !== -1) {
-      files.push(js_src_tests_dir + "web-platform-test-shims.js"); /* eslint-disable-line camelcase */
-      files.push(w_pltfrm_res_dir + "testharness.js"); /* eslint-disable-line camelcase */
+      files.push(`${js_src_tests_dir}web-platform-test-shims.js`); /* eslint-disable-line camelcase */
+      files.push(`${w_pltfrm_res_dir}testharness.js`); /* eslint-disable-line camelcase */
     }
   }
 
@@ -437,7 +439,7 @@ function makeNamedFunctionAndUse (d, b) { /* eslint-disable-line require-jsdoc *
     useStatement = cat([funcName, "(", makeActualArgList(d, b), ")", ";"]);
   } else {
     // Any statement, allowed to use the name of the function
-    useStatement = "/*iii*/" + makeStatement(d - 1, b.concat([funcName]));
+    useStatement = `/*iii*/${makeStatement(d - 1, b.concat([funcName]))}`;
   }
   if (rnd(2)) {
     return declStatement + useStatement;
@@ -447,7 +449,7 @@ function makeNamedFunctionAndUse (d, b) { /* eslint-disable-line require-jsdoc *
 }
 
 function makePrintStatement (d, b) { /* eslint-disable-line require-jsdoc */
-  if (rnd(2) && b.length) { return "print(" + Random.index(b) + ");"; } else { return "print(" + makeExpr(d, b) + ");"; }
+  if (rnd(2) && b.length) { return `print(${Random.index(b)});`; } else { return `print(${makeExpr(d, b)});`; }
 }
 
 function maybeLabel () { /* eslint-disable-line require-jsdoc */
@@ -478,7 +480,7 @@ function makeSwitchBody (d, b) { /* eslint-disable-line require-jsdoc */
       } else {
         // cases with numbers (integers?) have special optimizations,
         // so be sure to test those well in addition to testing complicated expressions.
-        output += "case " + (rnd(2) ? rnd(10) : makeExpr(d, b)) + ": ";
+        output += `case ${rnd(2) ? rnd(10) : makeExpr(d, b)}: `;
       }
 
       haveSomething = true;
@@ -587,37 +589,37 @@ var exceptionyStatementMakers = [
   function (d, b) { return cat(["await ", makeExpr(d, b), ";"]); },
   function (d, b) { return cat(["throw ", makeId(d, b), ";"]); },
   function (d, b) { return "this.zzz.zzz;"; }, // throws; also tests js_DecompileValueGenerator in various locations
-  function (d, b) { return b[b.length - 1] + "." + Random.index(exceptionProperties) + ";"; },
-  function (d, b) { return makeId(d, b) + "." + Random.index(exceptionProperties) + ";"; },
+  function (d, b) { return `${b[b.length - 1]}.${Random.index(exceptionProperties)};`; },
+  function (d, b) { return `${makeId(d, b)}.${Random.index(exceptionProperties)};`; },
   function (d, b) { return cat([makeId(d, b), " = ", makeId(d, b), ";"]); },
   function (d, b) { return cat([makeLValue(d, b), " = ", makeId(d, b), ";"]); },
 
   // Iteration is also useful to test because it asserts that there is no pending exception.
-  function (d, b) { var v = makeNewId(d, b); return "for(let " + v + " in []);"; },
-  function (d, b) { var v = makeNewId(d, b); return "for(let " + v + " in " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
-  function (d, b) { var v = makeNewId(d, b); return "for(let " + v + " of " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
-  function (d, b) { var v = makeNewId(d, b); return "for await(let " + v + " of " + makeIterable(d, b) + ") " + makeExceptionyStatement(d, b.concat([v])); },
+  function (d, b) { var v = makeNewId(d, b); return `for(let ${v} in []);`; },
+  function (d, b) { var v = makeNewId(d, b); return `for(let ${v} in ${makeIterable(d, b)}) ${makeExceptionyStatement(d, b.concat([v]))}`; },
+  function (d, b) { var v = makeNewId(d, b); return `for(let ${v} of ${makeIterable(d, b)}) ${makeExceptionyStatement(d, b.concat([v]))}`; },
+  function (d, b) { var v = makeNewId(d, b); return `for await(let ${v} of ${makeIterable(d, b)}) ${makeExceptionyStatement(d, b.concat([v]))}`; },
 
   /* eslint-disable no-multi-spaces */
   // Brendan says these are scary places to throw: with, let block, lambda called immediately in let expr.
   // And I think he was right.
-  function (d, b) { return "with({}) "   + makeExceptionyStatement(d, b);         },
-  function (d, b) { return "with({}) { " + makeExceptionyStatement(d, b) + " } "; },
-  function (d, b) { var v = makeNewId(d, b); return "let(" + v + ") { " + makeExceptionyStatement(d, b.concat([v])) + "}"; },
-  function (d, b) { var v = makeNewId(d, b); return "let(" + v + ") ((function(){" + makeExceptionyStatement(d, b.concat([v])) + "})());"; },
-  function (d, b) { return "let(" + makeLetHead(d, b) + ") { " + makeExceptionyStatement(d, b) + "}"; },
-  function (d, b) { return "let(" + makeLetHead(d, b) + ") ((function(){" + makeExceptionyStatement(d, b) + "})());"; }
+  function (d, b) { return `with({}) ${makeExceptionyStatement(d, b)}`;         },
+  function (d, b) { return `with({}) { ${makeExceptionyStatement(d, b)} } `; },
+  function (d, b) { var v = makeNewId(d, b); return `let(${v}) { ${makeExceptionyStatement(d, b.concat([v]))}}`; },
+  function (d, b) { var v = makeNewId(d, b); return `let(${v}) ((function(){${makeExceptionyStatement(d, b.concat([v]))}})());`; },
+  function (d, b) { return `let(${makeLetHead(d, b)}) { ${makeExceptionyStatement(d, b)}}`; },
+  function (d, b) { return `let(${makeLetHead(d, b)}) ((function(){${makeExceptionyStatement(d, b)}})());`; }
   /* eslint-enable no-multi-spaces */
 
   // Commented out due to causing too much noise on stderr and causing a nonzero exit code :/
 /*
   // Generator close hooks: called during GC in this case!!!
-  function(d, b) { return "(function () { try { yield " + makeExpr(d, b) + " } finally { " + makeStatement(d, b) + " } })().next()"; },
+  function(d, b) { return `(function () { try { yield ${makeExpr(d, b)} } finally { ${makeStatement(d, b)} } })().next()`; },
 
-  function(d, b) { return "(function () { try { yield " + makeExpr(d, b) + " } finally { " + makeStatement(d, b) + " } })()"; },
-  function(d, b) { return "(function () { try { yield " + makeExpr(d, b) + " } finally { " + makeStatement(d, b) + " } })"; },
+  function(d, b) { return `(function () { try { yield ${makeExpr(d, b)} } finally { ${makeStatement(d, b)} } })()`; },
+  function(d, b) { return `(function () { try { yield ${makeExpr(d, b)} } finally { ${makeStatement(d, b)} } })`; },
   function(d, b) {
-    return "function gen() { try { yield 1; } finally { " + makeStatement(d, b) + " } } var i = gen(); i.next(); i = null;";
+    return `function gen() { try { yield 1; } finally { ${makeStatement(d, b)} } } var i = gen(); i.next(); i = null;`;
   }
 
 */
@@ -675,7 +677,7 @@ function makeExpr (d, b) { /* eslint-disable-line require-jsdoc */
 
   var expr = (Random.index(exprMakers))(d, b);
 
-  if (rnd(4) === 1) { return "(" + expr + ")"; } else { return expr; }
+  if (rnd(4) === 1) { return `(${expr})`; } else { return expr; }
 }
 
 var binaryOps = [
@@ -712,13 +714,13 @@ var specialProperties = [
 /*
 function addPropertyName(p)
 {
-  p = "" + p;
+  p = `${p}`;
   if (
-      p != "floor" &&
-      p != "random" &&
-      p != "parent" && // unsafe spidermonkey shell function, see bug 619064
+      p !== "floor" &&
+      p !== "random" &&
+      p !== "parent" && // unsafe spidermonkey shell function, see bug 619064
       true) {
-    print("Adding: " + p);
+    print(`Adding: ${p}`);
     allPropertyNames.push(p);
   }
 }
@@ -792,7 +794,7 @@ var exprMakers =
 
   // Functions: called immediately/not
   function (d, b) { return makeFunction(d, b); },
-  function (d, b) { return makeFunction(d, b) + ".prototype"; },
+  function (d, b) { return `${makeFunction(d, b)}.prototype`; },
   function (d, b) { return cat(["(", makeFunction(d, b), ")", "(", makeActualArgList(d, b), ")"]); },
 
   // Try to call things that may or may not be functions.
@@ -868,7 +870,7 @@ var exprMakers =
   function (d, b) { return cat(["(", "{", makeObjLiteralPart(d, b), ", ", makeObjLiteralPart(d, b), " }", ")"]); },
 
   // Test js_ReportIsNotFunction heavily.
-  function (d, b) { return "(p={}, (p.z = " + makeExpr(d, b) + ")())"; },
+  function (d, b) { return `(p={}, (p.z = ${makeExpr(d, b)})())`; },
 
   // Test js_ReportIsNotFunction heavily.
   // Test decompilation for ".keyword" a bit.
@@ -878,37 +880,37 @@ var exprMakers =
 
   // Test eval in various contexts. (but avoid clobbering eval)
   // Test the special "obj.eval" and "eval(..., obj)" forms.
-  function (d, b) { return makeExpr(d, b) + ".eval(" + uneval(makeScriptForEval(d, b)) + ")"; },
-  function (d, b) { return "eval(" + uneval(makeScriptForEval(d, b)) + ")"; },
-  function (d, b) { return "eval(" + uneval(makeScriptForEval(d, b)) + ", " + makeExpr(d, b) + ")"; },
+  function (d, b) { return `${makeExpr(d, b)}.eval(${uneval(makeScriptForEval(d, b))})`; },
+  function (d, b) { return `eval(${uneval(makeScriptForEval(d, b))})`; },
+  function (d, b) { return `eval(${uneval(makeScriptForEval(d, b))}, ${makeExpr(d, b)})`; },
 
   // Uneval needs more testing than it will get accidentally.  No cat() because I don't want uneval clobbered (assigned to) accidentally.
-  function (d, b) { return "(uneval(" + makeExpr(d, b) + "))"; },
+  function (d, b) { return `(uneval(${makeExpr(d, b)}))`; },
 
   /* eslint-disable no-multi-spaces */
   // Constructors.  No cat() because I don't want to screw with the constructors themselves, just call them.
-  function (d, b) { return "new " + Random.index(constructors) + "(" + makeActualArgList(d, b) + ")"; },
-  function (d, b) { return          Random.index(constructors) + "(" + makeActualArgList(d, b) + ")"; },
+  function (d, b) { return `new ${Random.index(constructors)}(${makeActualArgList(d, b)})`; },
+  function (d, b) { return     `${Random.index(constructors)}(${makeActualArgList(d, b)})`; },
   /* eslint-enable no-multi-spaces */
 
   /* eslint-disable no-multi-spaces */
   // Unary Math functions
-  function (d, b) { return "Math." + Random.index(unaryMathFunctions) + "(" + makeExpr(d, b)   + ")"; },
-  function (d, b) { return "Math." + Random.index(unaryMathFunctions) + "(" + makeNumber(d, b) + ")"; },
+  function (d, b) { return `Math.${Random.index(unaryMathFunctions)}(${makeExpr(d, b)})`; },
+  function (d, b) { return `Math.${Random.index(unaryMathFunctions)}(${makeNumber(d, b)})`; },
   /* eslint-enable no-multi-spaces */
 
   /* eslint-disable no-multi-spaces */
   // Binary Math functions
-  function (d, b) { return "Math." + Random.index(binaryMathFunctions) + "(" + makeExpr(d, b)   + ", " + makeExpr(d, b)   + ")"; },
-  function (d, b) { return "Math." + Random.index(binaryMathFunctions) + "(" + makeExpr(d, b)   + ", " + makeNumber(d, b) + ")"; },
-  function (d, b) { return "Math." + Random.index(binaryMathFunctions) + "(" + makeNumber(d, b) + ", " + makeExpr(d, b)   + ")"; },
-  function (d, b) { return "Math." + Random.index(binaryMathFunctions) + "(" + makeNumber(d, b) + ", " + makeNumber(d, b) + ")"; },
+  function (d, b) { return `Math.${Random.index(binaryMathFunctions)}(${makeExpr(d, b)}, ${makeExpr(d, b)})`; },
+  function (d, b) { return `Math.${Random.index(binaryMathFunctions)}(${makeExpr(d, b)}, ${makeNumber(d, b)})`; },
+  function (d, b) { return `Math.${Random.index(binaryMathFunctions)}(${makeNumber(d, b)}, ${makeExpr(d, b)})`; },
+  function (d, b) { return `Math.${Random.index(binaryMathFunctions)}(${makeNumber(d, b)}, ${makeNumber(d, b)})`; },
   /* eslint-enable no-multi-spaces */
 
   // Harmony proxy creation: object, function without constructTrap, function with constructTrap
-  function (d, b) { return makeId(d, b) + " = " + "Proxy.create(" + makeProxyHandler(d, b) + ", " + makeExpr(d, b) + ")"; },
-  function (d, b) { return makeId(d, b) + " = " + "Proxy.createFunction(" + makeProxyHandler(d, b) + ", " + makeFunction(d, b) + ")"; },
-  function (d, b) { return makeId(d, b) + " = " + "Proxy.createFunction(" + makeProxyHandler(d, b) + ", " + makeFunction(d, b) + ", " + makeFunction(d, b) + ")"; },
+  function (d, b) { return `${makeId(d, b)} = Proxy.create(${makeProxyHandler(d, b)}, ${makeExpr(d, b)})`; },
+  function (d, b) { return `${makeId(d, b)} = Proxy.createFunction(${makeProxyHandler(d, b)}, ${makeFunction(d, b)})`; },
+  function (d, b) { return `${makeId(d, b)} = Proxy.createFunction(${makeProxyHandler(d, b)}, ${makeFunction(d, b)}, ${makeFunction(d, b)})`; },
 
   function (d, b) { return cat(["delete", " ", makeId(d, b), ".", makeId(d, b)]); },
 
@@ -920,9 +922,9 @@ var exprMakers =
 
   // More special Spidermonkey shell functions
   // (Note: functions without returned objects or visible side effects go in testing-functions.js, in order to allow presence/absence differential testing.)
-  //  function(d, b) { return "dumpObject(" + makeExpr(d, b) + ")" } }, // crashes easily, bug 836603
-  function (d, b) { return "(void shapeOf(" + makeExpr(d, b) + "))"; },
-  function (d, b) { return "intern(" + makeExpr(d, b) + ")"; },
+  // function (d, b) { return `dumpObject(${makeExpr(d, b)})`; },
+  function (d, b) { return `(void shapeOf(${makeExpr(d, b)}))`; },
+  function (d, b) { return `intern(${makeExpr(d, b)})`; },
   function (d, b) { return "allocationMarker()"; },
   function (d, b) { return "timeout(1800)"; }, // see https://bugzilla.mozilla.org/show_bug.cgi?id=840284#c12 -- replace when bug 831046 is fixed
   function (d, b) { return "(makeFinalizeObserver('tenured'))"; },
@@ -948,7 +950,7 @@ function makeTestingFunctionCall (d, b) { /* eslint-disable-line require-jsdoc *
 
   // Set the 'last expression evaluated' to undefined, in case we're in an eval
   // context, and the function throws in one run but not in another.
-  var callBlock = "{ void 0; " + callStatement + " }";
+  var callBlock = `{ void 0; ${callStatement} }`;
 
   if (jsshell && rnd(5) === 0) {
     // Differential testing hack!
@@ -963,8 +965,8 @@ function makeTestingFunctionCall (d, b) { /* eslint-disable-line require-jsdoc *
     // * The extra braces prevent a stray "else" from being associated with this "if".
     // * The 'void 0' at the end ensures the last expression-statement is consistent
     //     (needed because |eval| returns that as its result)
-    var cond = (rnd(2) ? "!" : "") + "isAsmJSCompilationAvailable()";
-    return "{ if (" + cond + ") " + callBlock + " void 0; }";
+    var cond = `${rnd(2) ? "!" : ""}isAsmJSCompilationAvailable()`;
+    return `{ if (${cond}) ${callBlock} void 0; }`;
   }
 
   return callBlock;
@@ -975,8 +977,8 @@ function makeTestingFunctionCall (d, b) { /* eslint-disable-line require-jsdoc *
 if (typeof evalcx === "function") {
   exprMakers = exprMakers.concat([
     function (d, b) { return makeGlobal(d, b); },
-    function (d, b) { return "evalcx(" + uneval(makeScriptForEval(d, b)) + ", " + makeExpr(d, b) + ")"; },
-    function (d, b) { return "evalcx(" + uneval(makeScriptForEval(d, b)) + ", " + makeGlobal(d, b) + ")"; }
+    function (d, b) { return `evalcx(${uneval(makeScriptForEval(d, b))}, ${makeExpr(d, b)})`; },
+    function (d, b) { return `evalcx(${uneval(makeScriptForEval(d, b))}, ${makeGlobal(d, b)})`; }
   ]);
 }
 
@@ -985,16 +987,16 @@ if (typeof evalcx === "function") {
 if (typeof evalInWorker === "function") {
   exprMakers = exprMakers.concat([
     function (d, b) { return makeGlobal(d, b); },
-    function (d, b) { return "evalInWorker(" + uneval(makeScriptForEval(d, b)) + ")"; },
-    function (d, b) { return "evalInWorker(" + uneval(makeScriptForEval(d, b)) + ")"; }
+    function (d, b) { return `evalInWorker(${uneval(makeScriptForEval(d, b))})`; },
+    function (d, b) { return `evalInWorker(${uneval(makeScriptForEval(d, b))})`; }
   ]);
 }
 
 // xpcshell (but not SpiderMonkey shell) has some XPC wrappers available.
 if (typeof XPCNativeWrapper === "function") {
   exprMakers = exprMakers.extend([
-    function (d, b) { return "new XPCNativeWrapper(" + makeExpr(d, b) + ")"; },
-    function (d, b) { return "new XPCSafeJSObjectWrapper(" + makeExpr(d, b) + ")"; }
+    function (d, b) { return `new XPCNativeWrapper(${makeExpr(d, b)})`; },
+    function (d, b) { return `new XPCSafeJSObjectWrapper(${makeExpr(d, b)})`; }
   ]);
 }
 
@@ -1003,13 +1005,13 @@ function makeNewGlobalArg (d, b) { /* eslint-disable-line require-jsdoc */
 
   // Make an options object to pass to the |newGlobal| shell builtin.
   var propStrs = [];
-  if (rnd(2)) { propStrs.push("newCompartment: " + makeBoolean(d - 1, b)); }
-  if (rnd(2)) { propStrs.push("sameCompartmentAs: " + makeExpr(d - 1, b)); }
-  if (rnd(2)) { propStrs.push("sameZoneAs: " + makeExpr(d - 1, b)); }
-  if (rnd(2)) { propStrs.push("cloneSingletons: " + makeBoolean(d - 1, b)); }
-  if (rnd(2)) { propStrs.push("disableLazyParsing: " + makeBoolean(d - 1, b)); }
-  if (rnd(2)) { propStrs.push("invisibleToDebugger: " + makeBoolean(d - 1, b)); }
-  return "{ " + propStrs.join(", ") + " }";
+  if (rnd(2)) { propStrs.push(`newCompartment: ${makeBoolean(d - 1, b)}`); }
+  if (rnd(2)) { propStrs.push(`sameCompartmentAs: ${makeExpr(d - 1, b)}`); }
+  if (rnd(2)) { propStrs.push(`sameZoneAs: ${makeExpr(d - 1, b)}`); }
+  if (rnd(2)) { propStrs.push(`cloneSingletons: ${makeBoolean(d - 1, b)}`); }
+  if (rnd(2)) { propStrs.push(`disableLazyParsing: ${makeBoolean(d - 1, b)}`); }
+  if (rnd(2)) { propStrs.push(`invisibleToDebugger: ${makeBoolean(d - 1, b)}`); }
+  return `{ ${propStrs.join(", ")} }`;
 }
 
 function makeGlobal (d, b) { /* eslint-disable-line require-jsdoc */
@@ -1022,23 +1024,23 @@ function makeGlobal (d, b) { /* eslint-disable-line require-jsdoc */
     /* eslint-disable no-multi-spaces */
     case 0:  gs = "evalcx('')"; break;
     case 1:  gs = "evalcx('lazy')"; break;
-    default: gs = "newGlobal(" + makeNewGlobalArg(d - 1, b) + ")"; break;
+    default: gs = `newGlobal(${makeNewGlobalArg(d - 1, b)})`; break;
     /* eslint-enable no-multi-spaces */
   }
 
-  if (rnd(2)) { gs = "fillShellSandbox(" + gs + ")"; }
+  if (rnd(2)) { gs = `fillShellSandbox(${gs})`; }
 
   return gs;
 }
 
 if (xpcshell) {
   exprMakers = exprMakers.concat([
-    function (d, b) { var n = rnd(4); return "newGeckoSandbox(" + n + ")"; },
-    function (d, b) { var n = rnd(4); return "s" + n + " = newGeckoSandbox(" + n + ")"; },
+    function (d, b) { var n = rnd(4); return `newGeckoSandbox(${n})`; },
+    function (d, b) { var n = rnd(4); return `s${n} = newGeckoSandbox(${n})`; },
     // FIXME: Doesn't this need to be Components.utils.evalInSandbox?
-    function (d, b) { var n = rnd(4); return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", newGeckoSandbox(" + n + "))"; },
-    function (d, b) { var n = rnd(4); return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", s" + n + ")"; },
-    function (d, b) { return "evalInSandbox(" + uneval(makeStatement(d, b)) + ", " + makeExpr(d, b) + ")"; },
+    function (d, b) { var n = rnd(4); return `evalInSandbox(${uneval(makeStatement(d, b))}, newGeckoSandbox(${n}))`; },
+    function (d, b) { var n = rnd(4); return `evalInSandbox(${uneval(makeStatement(d, b))}, s${n})`; },
+    function (d, b) { return `evalInSandbox(${uneval(makeStatement(d, b))}, ${makeExpr(d, b)})`; },
     function (d, b) { return "(Components.classes ? quit() : gc()); }"; }
   ]);
 }
@@ -1047,7 +1049,7 @@ function makeShapeyConstructor (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
   var argName = uniqueVarName();
   var t = rnd(4) ? "this" : argName;
-  var funText = "function shapeyConstructor(" + argName + "){" + directivePrologue();
+  var funText = `function shapeyConstructor(${argName}){${directivePrologue()}`;
   var bp = b.concat([argName]);
 
   var nPropNames = rnd(6) + 1;
@@ -1059,32 +1061,32 @@ function makeShapeyConstructor (d, b) { /* eslint-disable-line require-jsdoc */
   var nStatements = rnd(11);
   for (var j = 0; j < nStatements; ++j) {
     var propName = Random.index(propNames);
-    var tprop = t + "[" + propName + "]";
+    var tprop = `${t}[${propName}]`;
     if (rnd(5) === 0) {
-      funText += "if (" + (rnd(2) ? argName : makeExpr(d, bp)) + ") ";
+      funText += `if (${rnd(2) ? argName : makeExpr(d, bp)}) `;
     }
     switch (rnd(8)) {
       /* eslint-disable no-multi-spaces */
-      case 0:  funText += "delete " + tprop + ";"; break;
-      case 1:  funText += "Object.defineProperty(" + t + ", " + (rnd(2) ? propName : makePropertyName(d, b)) + ", " + makePropertyDescriptor(d, bp) + ");"; break;
-      case 2:  funText += "{ " + makeStatement(d, bp) + " } "; break;
-      case 3:  funText += tprop + " = " + makeExpr(d, bp)        + ";"; break;
-      case 4:  funText += tprop + " = " + makeFunction(d, bp)    + ";"; break;
-      case 5:  funText += "for (var ytq" + uniqueVarName() + " in " + t + ") { }"; break;
-      case 6:  funText += "Object." + Random.index(["preventExtensions", "seal", "freeze"]) + "(" + t + ");"; break;
-      default: funText += tprop + " = " + makeShapeyValue(d, bp) + ";"; break;
+      case 0:  funText += `delete ${tprop};`; break;
+      case 1:  funText += `Object.defineProperty(${t}, ${rnd(2) ? propName : makePropertyName(d, b)}, ${makePropertyDescriptor(d, bp)});`; break;
+      case 2:  funText += `{ ${makeStatement(d, bp)} } `; break;
+      case 3:  funText += `${tprop} = ${makeExpr(d, bp)};`; break;
+      case 4:  funText += `${tprop} = ${makeFunction(d, bp)};`; break;
+      case 5:  funText += `for (var ytq${uniqueVarName()} in ${t}) { }`; break;
+      case 6:  funText += `Object.${Random.index(["preventExtensions", "seal", "freeze"])}(${t});`; break;
+      default: funText += `${tprop} = ${makeShapeyValue(d, bp)};`; break;
       /* eslint-enable no-multi-spaces */
     }
   }
-  funText += "return " + t + "; }";
+  funText += `return ${t}; }`;
   return funText;
 }
 
 var propertyNameMakers = Random.weighted([
   { w: 1, v: function (d, b) { return makeExpr(d - 1, b); } },
   { w: 1, v: function (d, b) { return maybeNeg() + rnd(20); } },
-  { w: 1, v: function (d, b) { return '"' + maybeNeg() + rnd(20) + '"'; } },
-  { w: 1, v: function (d, b) { return "new String(" + '"' + maybeNeg() + rnd(20) + '"' + ")"; } },
+  { w: 1, v: function (d, b) { return `"${maybeNeg()}${rnd(20)}"`; } },
+  { w: 1, v: function (d, b) { return `new String("${maybeNeg()}${rnd(20)}")`; } },
   { w: 5, v: function (d, b) { return simpleSource(Random.index(specialProperties)); } },
   { w: 1, v: function (d, b) { return simpleSource(makeId(d - 1, b)); } },
   { w: 5, v: function (d, b) { return simpleSource(Random.index(allMethodNames)); } }
@@ -1104,12 +1106,12 @@ function makeShapeyConstructorLoop (d, b) { /* eslint-disable-line require-jsdoc
   var v2 = uniqueVarName(d, b);
   var bvv = b.concat([v, v2]);
   return makeShapeyConstructor(d - 1, b) +
-    "/*tLoopC*/for (let " + v + " of " + a + ") { " +
+    `/*tLoopC*/for (let ${v} of ${a}) { ` +
      "try{" +
-       "let " + v2 + " = " + Random.index(["new ", ""]) + "shapeyConstructor(" + v + "); print('EETT'); " +
-       // "print(uneval(" + v2 + "));" +
+      `let ${v2} = ${Random.index(["new ", ""])}shapeyConstructor(${v}); print('EETT'); ` +
+       // `print(uneval(${v2}));` +
        makeStatement(d - 2, bvv) +
-     "}catch(e){print('TTEE ' + e); }" +
+     `}catch(e){print('TTEE ' + e); }` +
   " }";
 }
 
@@ -1121,19 +1123,19 @@ function makePropertyDescriptor (d, b) { /* eslint-disable-line require-jsdoc */
   switch (rnd(3)) {
     case 0:
     // Data descriptor. Can have 'value' and 'writable'.
-      if (rnd(2)) s += "value: " + makeExpr(d, b) + ", ";
-      if (rnd(2)) s += "writable: " + makeBoolean(d, b) + ", ";
+      if (rnd(2)) s += `value: ${makeExpr(d, b)}, `;
+      if (rnd(2)) s += `writable: ${makeBoolean(d, b)}, `;
       break;
     case 1:
     // Accessor descriptor. Can have 'get' and 'set'.
-      if (rnd(2)) s += "get: " + makeFunction(d, b) + ", ";
-      if (rnd(2)) s += "set: " + makeFunction(d, b) + ", ";
+      if (rnd(2)) s += `get: ${makeFunction(d, b)}, `;
+      if (rnd(2)) s += `set: ${makeFunction(d, b)}, `;
       break;
     default:
   }
 
-  if (rnd(2)) s += "configurable: " + makeBoolean(d, b) + ", ";
-  if (rnd(2)) s += "enumerable: " + makeBoolean(d, b) + ", ";
+  if (rnd(2)) s += `configurable: ${makeBoolean(d, b)}, `;
+  if (rnd(2)) s += `enumerable: ${makeBoolean(d, b)}, `;
 
   // remove trailing comma
   if (s.length > 2) { s = s.substr(0, s.length - 2); }
@@ -1149,7 +1151,7 @@ function makeBoolean (d, b) { /* eslint-disable-line require-jsdoc */
     case 0:   return "true";
     case 1:   return "false";
     case 2:   return makeExpr(d - 2, b);
-    default:  var m = loopModulo(); return "(" + Random.index(b) + " % " + m + Random.index([" == ", " != "]) + rnd(m) + ")";
+    default:  var m = loopModulo(); return `(${Random.index(b)} % ${m}${Random.index([" == ", " != "])}${rnd(m)})`;
     /* eslint-enable no-multi-spaces */
   }
 }
@@ -1164,7 +1166,7 @@ function makeObjLiteralPart (d, b) { /* eslint-disable-line require-jsdoc */
     case 2: return cat([" get ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
     case 3: return cat([" set ", makeObjLiteralName(d, b), maybeName(d, b), "(", makeFormalArgList(d - 1, b), ")", makeFunctionBody(d, b)]);
 
-    case 4: return "/*toXFun*/" + cat([Random.index(["toString", "valueOf"]), ": ", makeToXFunction(d - 1, b)]);
+    case 4: return `/*toXFun*/${cat([Random.index(["toString", "valueOf"]), ": ", makeToXFunction(d - 1, b)])}`;
 
     default: return cat([makeObjLiteralName(d, b), ": ", makeExpr(d, b)]);
   }
@@ -1175,7 +1177,7 @@ function makeToXFunction (d, b) { /* eslint-disable-line require-jsdoc */
 
   switch (rnd(4)) {
     /* eslint-disable no-multi-spaces */
-    case 0:  return "function() { return " + makeExpr(d, b) + "; }";
+    case 0:  return `function() { return ${makeExpr(d, b)}; }`;
     case 1:  return "function() { return this; }";
     case 2:  return makeEvilCallback(d, b);
     default: return makeFunction(d, b);
@@ -1210,7 +1212,7 @@ function makeFunction (d, b) { /* eslint-disable-line require-jsdoc */
 }
 
 function maybeName (d, b) { /* eslint-disable-line require-jsdoc */
-  if (rnd(2) === 0) { return " " + makeId(d, b) + " "; } else { return ""; }
+  if (rnd(2) === 0) { return ` ${makeId(d, b)} `; } else { return ""; }
 }
 
 function directivePrologue () { /* eslint-disable-line require-jsdoc */
@@ -1229,7 +1231,7 @@ function makeFunctionBody (d, b) { /* eslint-disable-line require-jsdoc */
     case 1:  return cat([" { ", directivePrologue(), "return ", makeExpr(d, b), " } "]);
     case 2:  return cat([" { ", directivePrologue(), "yield ",  makeExpr(d, b), " } "]);
     case 3:  return cat([" { ", directivePrologue(), "await ",  makeExpr(d, b), " } "]);
-    case 4:  return '"use asm"; ' + asmJSInterior([]);
+    case 4:  return `"use asm"; ${asmJSInterior([])}`;
     default: return makeExpr(d, b); // make an "expression closure"
     /* eslint-enable no-multi-spaces */
   }
@@ -1263,44 +1265,44 @@ var functionMakers = [
   /* eslint-enable no-multi-spaces */
 
   // The identity function
-  function (d, b) { return functionPrefix() + "(q) { " + directivePrologue() + "return q; }"; },
+  function (d, b) { return `${functionPrefix()}(q) { ${directivePrologue()}return q; }`; },
   function (d, b) { return "q => q"; },
 
   // A function that does something
-  function (d, b) { return functionPrefix() + "(y) { " + directivePrologue() + makeStatement(d, b.concat(["y"])) + " }"; },
+  function (d, b) { return `${functionPrefix()}(y) { ${directivePrologue()}${makeStatement(d, b.concat(["y"]))} }`; },
 
   // A function that computes something
-  function (d, b) { return functionPrefix() + "(y) { " + directivePrologue() + "return " + makeExpr(d, b.concat(["y"])) + " }"; },
+  function (d, b) { return `${functionPrefix()}(y) { ${directivePrologue()}return ${makeExpr(d, b.concat(["y"]))} }`; },
 
   // A generator that does something
-  function (d, b) { return "function(y) { " + directivePrologue() + "yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }"; },
-  function (d, b) { return "function*(y) { " + directivePrologue() + "yield y; " + makeStatement(d, b.concat(["y"])) + "; yield y; }"; },
+  function (d, b) { return `function(y) { ${directivePrologue()}yield y; ${makeStatement(d, b.concat(["y"]))}; yield y; }`; },
+  function (d, b) { return `function*(y) { ${directivePrologue()}yield y; ${makeStatement(d, b.concat(["y"]))}; yield y; }`; },
 
   // An async function that does something
-  function (d, b) { return "async function (y) { " + directivePrologue() + "await y; " + makeStatement(d, b.concat(["y"])) + "; await y; }"; },
+  function (d, b) { return `async function (y) { ${directivePrologue()}await y; ${makeStatement(d, b.concat(["y"]))}; await y; }`; },
 
   // An async generator that does something
-  function (d, b) { return "async function* (y) { " + directivePrologue() + "await y; " + makeStatement(d, b.concat(["y"])) + "; await y; }"; },
-  function (d, b) { return "async function* (y) { " + directivePrologue() + "yield y; await y; " + makeStatement(d, b.concat(["y"])) + "; yield y; await y; }"; },
+  function (d, b) { return `async function* (y) { ${directivePrologue()}await y; ${makeStatement(d, b.concat(["y"]))}; await y; }`; },
+  function (d, b) { return `async function* (y) { ${directivePrologue()}yield y; await y; ${makeStatement(d, b.concat(["y"]))}; yield y; await y; }`; },
 
   // A simple wrapping pattern
-  function (d, b) { return "/*wrap1*/(" + functionPrefix() + "(){ " + directivePrologue() + makeStatement(d, b) + "return " + makeFunction(d, b) + "})()"; },
+  function (d, b) { return `/*wrap1*/(${functionPrefix()}(){ ${directivePrologue()}${makeStatement(d, b)}return ${makeFunction(d, b)}})()`; },
 
   // Wrapping with upvar: escaping, may or may not be modified
-  function (d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return "/*wrap2*/(" + functionPrefix() + "(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; var " + v2 + " = " + makeFunction(d, b.concat([v1])) + "; return " + v2 + ";})()"; },
+  function (d, b) { var v1 = uniqueVarName(); var v2 = uniqueVarName(); return `/*wrap2*/(${functionPrefix()}(){ ${directivePrologue()}var ${v1} = ${makeExpr(d, b)}; var ${v2} = ${makeFunction(d, b.concat([v1]))}; return ${v2};})()`; },
 
   /* eslint-disable no-multi-spaces */
   // Wrapping with upvar: non-escaping
-  function (d, b) { var v1 = uniqueVarName();                           return "/*wrap3*/(" + functionPrefix() + "(){ " + directivePrologue() + "var " + v1 + " = " + makeExpr(d, b) + "; (" + makeFunction(d, b.concat([v1])) + ")(); })"; },
+  function (d, b) { var v1 = uniqueVarName();                           return `/*wrap3*/(${functionPrefix()}(){ ${directivePrologue()}var ${v1} = ${makeExpr(d, b)}; (${makeFunction(d, b.concat([v1]))})(); })`; },
   /* eslint-enable no-multi-spaces */
 
   // Apply, call
-  function (d, b) { return "(" + makeFunction(d - 1, b) + ").apply"; },
-  function (d, b) { return "(" + makeFunction(d - 1, b) + ").call"; },
+  function (d, b) { return `(${makeFunction(d - 1, b)}).apply`; },
+  function (d, b) { return `(${makeFunction(d - 1, b)}).call`; },
 
   // Bind
-  function (d, b) { return "(" + makeFunction(d - 1, b) + ").bind"; },
-  function (d, b) { return "(" + makeFunction(d - 1, b) + ").bind(" + makeActualArgList(d, b) + ")"; },
+  function (d, b) { return `(${makeFunction(d - 1, b)}).bind`; },
+  function (d, b) { return `(${makeFunction(d - 1, b)}).bind(${makeActualArgList(d, b)})`; },
 
   // Methods with known names
   function (d, b) { return cat([makeExpr(d, b), ".", Random.index(allMethodNames)]); },
@@ -1309,7 +1311,7 @@ var functionMakers = [
   function (d, b) { return "eval"; }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
   function (d, b) { return "(let (e=eval) e)"; },
   function (d, b) { return "new Function"; }, // this won't be interpreted the same way for each caller of makeFunction, but that's ok
-  function (d, b) { return "(new Function(" + uneval(makeStatement(d, b)) + "))"; },
+  function (d, b) { return `(new Function(${uneval(makeStatement(d, b))}))`; },
   function (d, b) { return "Function"; }, // without "new"
   function (d, b) { return "decodeURI"; },
   function (d, b) { return "decodeURIComponent"; },
@@ -1359,18 +1361,18 @@ function makeTypedArrayStatements (d, b) { /* eslint-disable-line require-jsdoc 
   var numExtraStatements = rnd(d) + 1;
   var buffer = uniqueVarName();
   var bufferSize = (1 + rnd(2)) * (1 + rnd(2)) * (1 + rnd(2)) * rnd(5);
-  var statements = "var " + buffer + " = new " + arrayBufferType() + "(" + bufferSize + "); ";
+  var statements = `var ${buffer} = new ${arrayBufferType()}(${bufferSize}); `;
   var bv = b.concat([buffer]);
   for (var j = 0; j < numViews; ++j) {
-    var view = buffer + "_" + j;
+    var view = `${buffer}_${j}`;
     var type = Random.index(typedArrayConstructors);
-    statements += "var " + view + " = new " + type + "(" + buffer + "); ";
+    statements += `var ${view} = new ${type}(${buffer}); `;
     bv.push(view);
-    var viewZero = view + "[0]";
+    var viewZero = `${view}[0]`;
     bv.push(viewZero);
-    if (rnd(3) === 0) { statements += "print(" + viewZero + "); "; }
-    if (rnd(3)) { statements += viewZero + " = " + makeNumber(d - 2, b) + "; "; }
-    bv.push(view + "[" + rnd(11) + "]");
+    if (rnd(3) === 0) { statements += `print(${viewZero}); `; }
+    if (rnd(3)) { statements += `${viewZero} = ${makeNumber(d - 2, b)}; `; }
+    bv.push(`${view}[${rnd(11)}]`);
   }
   for (var k = 0; k < numExtraStatements; ++k) {
     statements += makeStatement(d - numExtraStatements, bv);
@@ -1386,10 +1388,10 @@ function makeNumber (d, b) { /* eslint-disable-line require-jsdoc */
   switch (rnd(60)) {
     /* eslint-disable no-multi-spaces */
     case 0:  return makeExpr(d - 2, b);
-    case 1:  return signStr + "0";
-    case 2:  return signStr + (rnd(1000) / 1000);
-    case 3:  return signStr + (rnd(0xffffffff) / 2);
-    case 4:  return signStr + rnd(0xffffffff);
+    case 1:  return `${signStr}0`;
+    case 2:  return `${signStr}${rnd(1000) / 1000}`;
+    case 3:  return `${signStr}${rnd(0xffffffff) / 2}`;
+    case 4:  return `${signStr}${rnd(0xffffffff)}`;
     case 5:  return Random.index(["0.1", ".2", "3", "1.3", "4.", "5.0000000000000000000000",
       "1.2e3", "1e81", "1e+81", "1e-81", "1e4", "0", "-0", "(-0)", "-1", "(-1)", "0x99", "033",
       "3.141592653589793", "3/0", "-3/0", "0/0", "0x2D413CCC", "0x5a827999", "0xB504F332",
@@ -1410,8 +1412,8 @@ function makeNumber (d, b) { /* eslint-disable-line require-jsdoc */
       // See bug 1350097
       "0.000000000000001", "1.7976931348623157e308"
     ]);
-    case 6:  return signStr + (Math.pow(2, rnd(66)) + (rnd(3) - 1));
-    default: return signStr + rnd(30);
+    case 6:  return `${signStr}${Math.pow(2, rnd(66)) + (rnd(3) - 1)}`;
+    default: return `${signStr}${rnd(30)}`;
     /* eslint-enable no-multi-spaces */
   }
 }
@@ -1435,7 +1437,7 @@ function makeLetHeadItem (d, b) { /* eslint-disable-line require-jsdoc */
 
   d = d - 1;
 
-  if (d < 0 || rnd(2) === 0) { return rnd(2) ? uniqueVarName() : makeId(d, b); } else if (rnd(5) === 0) { return makeDestructuringLValue(d, b) + " = " + makeExpr(d, b); } else { return makeId(d, b) + " = " + makeExpr(d, b); }
+  if (d < 0 || rnd(2) === 0) { return rnd(2) ? uniqueVarName() : makeId(d, b); } else if (rnd(5) === 0) { return `${makeDestructuringLValue(d, b)} = ${makeExpr(d, b)}`; } else { return `${makeId(d, b)} = ${makeExpr(d, b)}`; }
 }
 
 function makeActualArgList (d, b) { /* eslint-disable-line require-jsdoc */
@@ -1447,7 +1449,7 @@ function makeActualArgList (d, b) { /* eslint-disable-line require-jsdoc */
 
   var argList = makeExpr(d, b);
 
-  for (var i = 1; i < nArgs; ++i) { argList += ", " + makeExpr(d - i, b); }
+  for (var i = 1; i < nArgs; ++i) { argList += `, ${makeExpr(d - i, b)}`; }
 
   return argList;
 }
@@ -1464,7 +1466,7 @@ function makeFormalArgList (d, b) { /* eslint-disable-line require-jsdoc */
 
   if (rnd(5) === 0) {
     // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/rest_parameters
-    argList.push("..." + makeId(d, b));
+    argList.push(`...${makeId(d, b)}`);
   }
 
   return argList.join(", ");
@@ -1475,7 +1477,7 @@ function makeFormalArg (d, b) { /* eslint-disable-line require-jsdoc */
 
   if (rnd(8) === 1) { return makeDestructuringLValue(d, b); }
 
-  return makeId(d, b) + (rnd(5) ? "" : " = " + makeExpr(d, b));
+  return makeId(d, b) + (rnd(5) ? "" : ` = ${makeExpr(d, b)}`);
 }
 
 function makeNewId (d, b) { /* eslint-disable-line require-jsdoc */
@@ -1503,7 +1505,7 @@ function makeId (d, b) { /* eslint-disable-line require-jsdoc */
     // but that's annoying, and some of these cause lots of syntax errors.
       return Random.index(["get", "set", "getter", "setter", "delete", "let", "yield", "await", "of"]);
     case 11: case 12: case 13:
-      return "this." + makeId(d, b);
+      return `this.${makeId(d, b)}`;
     case 14: case 15: case 16:
       return makeObjLiteralName(d - 1, b);
     case 17: case 18:
@@ -1568,7 +1570,7 @@ var lvalueMakers = [
 
   // Destructuring
   function (d, b) { return makeDestructuringLValue(d, b); },
-  function (d, b) { return "(" + makeDestructuringLValue(d, b) + ")"; },
+  function (d, b) { return `(${makeDestructuringLValue(d, b)})`; },
 
   // Certain functions can act as lvalues!  See JS_HAS_LVALUE_RETURN in js engine source.
   function (d, b) { return cat([makeId(d, b), "(", makeExpr(d, b), ")"]); },
@@ -1581,7 +1583,7 @@ var lvalueMakers = [
   // Arguments object, which can alias named parameters to the function
   function (d, b) { return "arguments"; },
   function (d, b) { return cat(["arguments", "[", makePropertyName(d, b), "]"]); },
-  function (d, b) { return makeFunOnCallChain(d, b) + ".arguments"; }, // read-only arguments object
+  function (d, b) { return `${makeFunOnCallChain(d, b)}.arguments`; }, // read-only arguments object
 
   // Property access / index into array
   function (d, b) { return cat([makeExpr(d, b), ".", makeId(d, b)]); },
@@ -1720,7 +1722,7 @@ function makeCrazyToken () { /* eslint-disable-line require-jsdoc */
     // Some of this is from reading jsscan.h.
 
     // Comments; comments hiding line breaks.
-    "//", UNTERMINATED_COMMENT, (UNTERMINATED_COMMENT + "\n"), "/*\n*/",
+    "//", UNTERMINATED_COMMENT, (`${UNTERMINATED_COMMENT}\n`), "/*\n*/",
 
     // groupers (which will usually be unmatched if they come from here ;)
     "[", "]",
@@ -1831,7 +1833,7 @@ function makeShapeyValue (d, b) { /* eslint-disable-line require-jsdoc */
     // Fun stuff
     [ "function(){}" ],
     [ "{}", "[]", "[1]", "['z']", "[undefined]", "this", "eval", "arguments", "arguments.caller", "arguments.callee" ],
-    [ "objectEmulatingUndefined()" ],
+    [ "createIsHTMLDDA()" ],
 
     // Actual variables (slightly dangerous)
     [ b.length ? Random.index(b) : "x" ]
@@ -1871,7 +1873,7 @@ function makeMixedTypeArray (d, b) { /* eslint-disable-line require-jsdoc */
     }
   }
 
-  return "/*MARR*/" + "[" + c.join(", ") + "]";
+  return `/*MARR*/[${c.join(", ")}]`;
 }
 
 function makeArrayLiteral (d, b) { /* eslint-disable-line require-jsdoc */
@@ -1881,7 +1883,7 @@ function makeArrayLiteral (d, b) { /* eslint-disable-line require-jsdoc */
 
   var elems = [];
   while (rnd(5)) elems.push(makeArrayLiteralElem(d, b));
-  return "/*FARR*/" + "[" + elems.join(", ") + "]";
+  return `/*FARR*/[${elems.join(", ")}]`;
 }
 
 function makeArrayLiteralElem (d, b) { /* eslint-disable-line require-jsdoc */
@@ -1889,7 +1891,7 @@ function makeArrayLiteralElem (d, b) { /* eslint-disable-line require-jsdoc */
 
   switch (rnd(5)) {
     /* eslint-disable no-multi-spaces */
-    case 0:  return "..." + makeIterable(d - 1, b); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Spread_operator
+    case 0:  return `...${makeIterable(d - 1, b)}`; // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Spread_operator
     case 1:  return ""; // hole
     default: return makeExpr(d - 1, b);
     /* eslint-enable no-multi-spaces */
@@ -1906,25 +1908,25 @@ function makeIterable (d, b) { /* eslint-disable-line require-jsdoc */
 
 var iterableExprMakers = Random.weighted([
   // Arrays
-  { w: 1, v: function (d, b) { return "new Array(" + makeNumber(d, b) + ")"; } },
+  { w: 1, v: function (d, b) { return `new Array(${makeNumber(d, b)})`; } },
   { w: 8, v: makeArrayLiteral },
 
   // Array comprehensions (JavaScript 1.7)
   { w: 1, v: function (d, b) { return cat(["[", makeExpr(d, b), makeComprehension(d, b), "]"]); } },
 
   // A generator that yields once
-  { w: 1, v: function (d, b) { return "(function() { " + directivePrologue() + "yield " + makeExpr(d - 1, b) + "; } })()"; } },
-  { w: 1, v: function (d, b) { return "(function*() { " + directivePrologue() + "yield " + makeExpr(d - 1, b) + "; } })()"; } },
+  { w: 1, v: function (d, b) { return `(function() { ${directivePrologue()}yield ${makeExpr(d - 1, b)}; } })()`; } },
+  { w: 1, v: function (d, b) { return `(function*() { ${directivePrologue()}yield ${makeExpr(d - 1, b)}; } })()`; } },
   // A pass-through generator
-  { w: 1, v: function (d, b) { return "/*PTHR*/(function() { " + directivePrologue() + "for (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
-  { w: 1, v: function (d, b) { return "/*PTHR*/(function*() { " + directivePrologue() + "for (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
+  { w: 1, v: function (d, b) { return `/*PTHR*/(function() { ${directivePrologue()}for (var i of ${makeIterable(d - 1, b)}) { yield i; } })()`; } },
+  { w: 1, v: function (d, b) { return `/*PTHR*/(function*() { ${directivePrologue()}for (var i of ${makeIterable(d - 1, b)}) { yield i; } })()`; } },
 
   // An async function that awaits once
-  { w: 1, v: function (d, b) { return "(async function() { " + directivePrologue() + "await " + makeExpr(d - 1, b) + "; } })()"; } },
+  { w: 1, v: function (d, b) { return `(async function() { ${directivePrologue()}await ${makeExpr(d - 1, b)}; } })()`; } },
 
   // A pass-through async generator
-  { w: 1, v: function (d, b) { return "/*PTHR*/(async function*() { " + directivePrologue() + "for (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
-  { w: 1, v: function (d, b) { return "/*PTHR*/(async function*() { " + directivePrologue() + "for await (var i of " + makeIterable(d - 1, b) + ") { yield i; } })()"; } },
+  { w: 1, v: function (d, b) { return `/*PTHR*/(async function*() { ${directivePrologue()}for (var i of ${makeIterable(d - 1, b)}) { yield i; } })()`; } },
+  { w: 1, v: function (d, b) { return `/*PTHR*/(async function*() { ${directivePrologue()}for await (var i of ${makeIterable(d - 1, b)}) { yield i; } })()`; } },
 
   { w: 1, v: makeFunction },
   { w: 1, v: makeExpr }
@@ -1944,12 +1946,12 @@ function makeAsmJSModule (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
   var interior = asmJSInterior([]);
-  return '(function(stdlib, foreign, heap){ "use asm"; ' + interior + " })";
+  return `(function(stdlib, foreign, heap){ "use asm"; ${interior} })`;
 }
 
 function makeAsmJSFunction (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
   var interior = asmJSInterior(["ff"]);
-  return '(function(stdlib, foreign, heap){ "use asm"; ' + interior + " })(this, {ff: " + makeFunction(d - 2, b) + "}, new " + arrayBufferType() + "(4096))";
+  return `(function(stdlib, foreign, heap){ "use asm"; ${interior} })(this, {ff: ${makeFunction(d - 2, b)}}, new ${arrayBufferType()}(4096))`;
 }

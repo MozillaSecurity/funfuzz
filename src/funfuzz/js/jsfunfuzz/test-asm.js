@@ -65,7 +65,7 @@ var compareAsm = (function () {
       var fr = f(x);
       var gr = g(x);
       if (!isSameNumber(fr, gr)) {
-        foundABug("asm mismatch", "(" + uneval(x) + ") -> " + uneval(fr) + " vs " + uneval(gr));
+        foundABug("asm mismatch", `(${uneval(x)}) -> ${uneval(fr)} vs ${uneval(gr)}`);
       }
     }
   }
@@ -78,7 +78,7 @@ var compareAsm = (function () {
         var fr = f(x, y);
         var gr = g(x, y);
         if (!isSameNumber(fr, gr)) {
-          foundABug("asm mismatch", "(" + uneval(x) + ", " + uneval(y) + ") -> " + uneval(fr) + " vs " + uneval(gr));
+          foundABug("asm mismatch", `(${uneval(x)}, ${uneval(y)}) -> ${uneval(fr)} vs ${uneval(gr)}`);
         }
       }
     }
@@ -106,11 +106,11 @@ var pureForeign = {
 };
 
 for (let f in unaryMathFunctions) {
-  pureForeign["Math_" + unaryMathFunctions[f]] = Math[unaryMathFunctions[f]];
+  pureForeign[`Math_${unaryMathFunctions[f]}`] = Math[unaryMathFunctions[f]];
 }
 
 for (let f in binaryMathFunctions) {
-  pureForeign["Math_" + binaryMathFunctions[f]] = Math[binaryMathFunctions[f]];
+  pureForeign[`Math_${binaryMathFunctions[f]}`] = Math[binaryMathFunctions[f]];
 }
 
 var pureMathNames = Object.keys(pureForeign);
@@ -126,7 +126,7 @@ function testAsmDifferential (stdlib, interior) { /* eslint-disable-line require
     return;
   }
 
-  var asmJs = "(function(stdlib, foreign, heap) { 'use asm'; " + interior + " })";
+  var asmJs = `(function(stdlib, foreign, heap) { 'use asm'; ${interior} })`;
   var asmModule = eval(asmJs); /* eslint-disable-line no-eval */
 
   if (isAsmJSModule(asmModule)) {
@@ -136,7 +136,7 @@ function testAsmDifferential (stdlib, interior) { /* eslint-disable-line require
 
     var normalHeap = new ArrayBuffer(4096);
     (new Int32Array(normalHeap))[0] = 0x12345678;
-    var normalJs = "(function(stdlib, foreign, heap) { " + interior + " })";
+    var normalJs = `(function(stdlib, foreign, heap) { ${interior} })`;
     var normalModule = eval(normalJs); /* eslint-disable-line no-eval */
     var normalFun = normalModule(stdlib, pureForeign, normalHeap);
 
@@ -147,7 +147,7 @@ function testAsmDifferential (stdlib, interior) { /* eslint-disable-line require
 // Call this instead of start() to run asm-differential tests
 function startAsmDifferential () { /* eslint-disable-line require-jsdoc */
   var asmFuzzSeed = Math.floor(Math.random() * Math.pow(2, 28));
-  dumpln("asmFuzzSeed: " + asmFuzzSeed);
+  dumpln(`asmFuzzSeed: ${asmFuzzSeed}`);
   Random.init(asmFuzzSeed);
 
   while (true) {

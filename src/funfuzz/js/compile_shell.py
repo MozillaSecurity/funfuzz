@@ -357,10 +357,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_env["CC"] = cfg_env["HOST_CC"] = f"clang {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
             cfg_env["CXX"] = cfg_env["HOST_CXX"] = f"clang++ {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
         # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux. (no matter Clang or GCC)
-        elif hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(e1cac03485d9)"):
-            # m-c rev 301874:e1cac03485d9, fx50 is the first rev that works with Clang 6.0 on Ubuntu 18.04
-            cfg_env["CC"] = f"gcc -m32 {SSE2_FLAGS}"
-            cfg_env["CXX"] = f"g++ -m32 {SSE2_FLAGS}"
         else:
             cfg_env["CC"] = f"clang -m32 {SSE2_FLAGS}"
             cfg_env["CXX"] = f"clang++ -m32 {SSE2_FLAGS}"
@@ -399,7 +395,11 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_cmds.append("--enable-simulator=arm64")
 
     elif platform.system() == "Windows":
-        cfg_env["LIBCLANG_PATH"] = f"{PROGRAMW6432_DIR}/LLVM/bin"
+        win_mozbuild_path = Path.home() / ".mozbuild" / "clang" / "bin"
+        assert win_mozbuild_path.is_dir(), 'Please first run "./mach bootstrap".'
+        assert (win_mozbuild_path / "clang.exe").is_file()
+        assert (win_mozbuild_path / "llvm-config.exe").is_file()
+        cfg_env["LIBCLANG_PATH"] = str(win_mozbuild_path)
         cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
         if shell.build_opts.buildWithClang:
             cfg_env["CC"] = f"clang-cl.exe {CLANG_PARAMS}"
@@ -686,15 +686,6 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if shell.build_opts.patch_file:
             hg_helpers.patch_hg_repo_with_mq(shell.build_opts.patch_file, shell.get_repo_dir())
 
-        if (platform.system() == "Linux" and
-                parse_version(subprocess.run(["sed", "--version"], stdout=subprocess.PIPE)
-                              .stdout.decode("utf-8", errors="replace").split()[3])
-                >= parse_version("4.3") and
-                hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(ebcbf47a83e7)")):
-            LOG_COMPILE_SHELL.info("Patching for Linux systems with sed >= 4.3 ...")
-            sm_compile_helpers.icu_m4_replace(Path(shell.get_repo_dir()))  # Patch the icu.m4 file
-            LOG_COMPILE_SHELL.info("Patching completed.")
-
         cfgJsCompile(shell)
         if platform.system() == "Windows":
             sm_compile_helpers.verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
@@ -715,15 +706,6 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             s3cache_obj.uploadFileToS3(f"{shell.get_shell_cache_js_bin_path()}.busted")
         raise
     finally:
-        if (platform.system() == "Linux" and
-                parse_version(subprocess.run(["sed", "--version"], stdout=subprocess.PIPE)
-                              .stdout.decode("utf-8", errors="replace").split()[3])
-                >= parse_version("4.3") and
-                hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(ebcbf47a83e7)")):
-            LOG_COMPILE_SHELL.info("Undo-ing patch for Linux systems with sed >= 4.3 ...")
-            sm_compile_helpers.icu_m4_undo(Path(shell.get_repo_dir()))  # Undo the icu.m4 patch
-            LOG_COMPILE_SHELL.info("Undo completed.")
-
         if shell.build_opts.patch_file:
             hg_helpers.qpop_qrm_applied_patch(shell.build_opts.patch_file, shell.get_repo_dir())
 

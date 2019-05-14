@@ -26,7 +26,7 @@ function tryRunningDirectly (f, code, wtt) { /* eslint-disable-line require-jsdo
 
   if (count % 23 === 4) {
     dumpln("About to recompile, using eval hack.");
-    f = directEvalC("(function(){" + code + "});");
+    f = directEvalC(`(function(){${code}});`);
   }
 
   try {
@@ -36,7 +36,7 @@ function tryRunningDirectly (f, code, wtt) { /* eslint-disable-line require-jsdo
   } catch (runError) {
     if (verbose) { dumpln("Running threw!  About to toString to error."); }
     var err = errorToString(runError);
-    dumpln("Running threw: " + err);
+    dumpln(`Running threw: ${err}`);
   }
 
   tryEnsureSanity();
@@ -65,7 +65,7 @@ function tryEnsureSanity () { /* eslint-disable-line require-jsdoc */
 
   // At least one bug in the past has put exceptions in strange places.  This also catches "eval getter" issues.
   try { eval(""); } catch (e) { /* eslint-disable-line no-eval */
-    dumpln("That really shouldn't have thrown: " + errorToString(e));
+    dumpln(`That really shouldn't have thrown: ${errorToString(e)}`);
   }
 
   if (!this) {
@@ -91,7 +91,7 @@ function tryEnsureSanity () { /* eslint-disable-line require-jsdoc */
     this.uneval = realUneval;
     this.toString = realToString;
   } catch (e) {
-    confused("tryEnsureSanity failed: " + errorToString(e));
+    confused(`tryEnsureSanity failed: ${errorToString(e)}`);
   }
 
   // These can fail if the page creates a getter for "eval", for example.
@@ -105,7 +105,7 @@ function tryItOut (code) { /* eslint-disable-line require-jsdoc */
 
   // SpiderMonkey shell does not schedule GC on its own.  Help it not use too much memory.
   if (count % 1000 === 0) {
-    dumpln("Paranoid GC (count=" + count + ")!");
+    dumpln(`Paranoid GC (count=${count})!`);
     realGC();
   }
 
@@ -115,13 +115,13 @@ function tryItOut (code) { /* eslint-disable-line require-jsdoc */
 
   code = code.replace(/\/\*DUPTRY\d+\*\//, function (k) { var n = parseInt(k.substr(8), 10); dumpln(n); return strTimes("try{}catch(e){}", n); });
 
-  if (jsStrictMode) { code = "'use strict'; " + code; } // ES5 10.1.1: new Function does not inherit strict mode
+  if (jsStrictMode) { code = `'use strict'; ${code}`; } // ES5 10.1.1: new Function does not inherit strict mode
 
   var f;
   try {
     f = new Function(code); /* eslint-disable-line no-new-func */
   } catch (compileError) {
-    dumpln("Compiling threw: " + errorToString(compileError));
+    dumpln(`Compiling threw: ${errorToString(compileError)}`);
   }
 
   if (f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossJITs) {
@@ -136,8 +136,8 @@ function tryItOut (code) { /* eslint-disable-line require-jsdoc */
       // But leave some things out of function(){} because some bugs are only detectable at top-level, and
       // pure jsfunfuzz doesn't test top-level at all.
       // (This is a good reason to use compare_jit even if I'm not interested in finding JIT bugs!)
-      if (nCode.indexOf("return") !== -1 || nCode.indexOf("yield") !== -1 || nCode.indexOf("const") !== -1 || failsToCompileInTry(nCode)) { nCode = "(function(){" + nCode + "})()"; }
-      dumpln(cookie1 + cookie2 + " try { " + nCode + " } catch(e) { }");
+      if (nCode.indexOf("return") !== -1 || nCode.indexOf("yield") !== -1 || nCode.indexOf("const") !== -1 || failsToCompileInTry(nCode)) { nCode = `(function(){${nCode}})()`; }
+      dumpln(`${cookie1 + cookie2} try { ${nCode} } catch(e) { }`);
     }
   }
 

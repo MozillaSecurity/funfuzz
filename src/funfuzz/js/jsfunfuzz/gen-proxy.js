@@ -107,7 +107,7 @@ function makeProxyHandlerFactory (d, b) { /* eslint-disable-line require-jsdoc *
           /* eslint-enable no-multi-spaces */
         }
       }
-      handlerFactoryText += p + ": " + funText + ", ";
+      handlerFactoryText += `${p}: ${funText}, `;
     }
 
     handlerFactoryText += "}; })";
@@ -119,12 +119,12 @@ function makeProxyHandlerFactory (d, b) { /* eslint-disable-line require-jsdoc *
 }
 
 function proxyMunge (funText, p) { /* eslint-disable-line require-jsdoc */
-  // funText = funText.replace(/\{/, "{ var yum = 'PCAL'; dumpln(yum + 'LED: " + p + "');");
+  // funText = funText.replace(/\{/, `{ var yum = 'PCAL'; dumpln(yum + 'LED: ${p}');`);
   return funText;
 }
 
 function makeProxyHandler (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
-  return makeProxyHandlerFactory(d, b) + "(" + makeExpr(d - 3, b) + ")";
+  return `${makeProxyHandlerFactory(d, b)}(${makeExpr(d - 3, b)})`;
 }

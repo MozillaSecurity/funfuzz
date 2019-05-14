@@ -35,7 +35,7 @@ function cat (toks) { /* eslint-disable-line require-jsdoc */
     //   return "/*foo*/" + ...
     // Unary plus in the first one coerces the string that follows to number!
     if (typeof (toks[i]) !== "string") {
-      dumpln("Strange item in the array passed to cat: typeof toks[" + i + "] == " + typeof (toks[i]));
+      dumpln(`Strange item in the array passed to cat: typeof toks[${i}] == ${typeof (toks[i])}`);
       dumpln(cat.caller);
       dumpln(cat.caller.caller);
     }
@@ -54,7 +54,7 @@ function cat (toks) { /* eslint-disable-line require-jsdoc */
           s += maybeSpace() + totallyRandom(2, ["x"]) + maybeSpace();
           break;
         case 5:
-          s = "(" + s + ")"; // randomly parenthesize some *prefix* of it.
+          s = `(${s})`; // randomly parenthesize some *prefix* of it.
           break;
         case 6:
           s = ""; // throw away everything before this point
@@ -87,7 +87,7 @@ function catNice(toks)
   var i;
   for (i=0; i<toks.length; ++i) {
     if(typeof(toks[i]) != "string")
-      confused("Strange toks[i]: " + toks[i]);
+      confused(`Strange toks[i]: ${toks[i]}`);
 
     s += toks[i];
   }

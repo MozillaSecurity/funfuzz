@@ -37,7 +37,7 @@ function optionalTests (f, code, wtt) { /* eslint-disable-line require-jsdoc */
 }
 
 function testExpressionDecompiler (code) { /* eslint-disable-line require-jsdoc */
-  var fullCode = "(function() { try { \n" + code + "\n; throw 1; } catch(exx) { this.nnn.nnn } })()";
+  var fullCode = `(function() { try { \n${code}\n; throw 1; } catch(exx) { this.nnn.nnn } })()`;
 
   try {
     eval(fullCode); /* eslint-disable-line no-eval */
@@ -60,19 +60,19 @@ function tryHalves (code) { /* eslint-disable-line require-jsdoc */
 
   try {
     firstHalf = code.substr(0, code.length / 2);
-    if (verbose) { dumpln("First half: " + firstHalf); }
+    if (verbose) { dumpln(`First half: ${firstHalf}`); }
     f = new Function(firstHalf); /* eslint-disable-line no-new-func */
-    void ("" + f);
+    void (`${f}`);
   } catch (e) {
-    if (verbose) { dumpln("First half compilation error: " + e); }
+    if (verbose) { dumpln(`First half compilation error: ${e}`); }
   }
 
   try {
     secondHalf = code.substr(code.length / 2, code.length);
-    if (verbose) { dumpln("Second half: " + secondHalf); }
+    if (verbose) { dumpln(`Second half: ${secondHalf}`); }
     f = new Function(secondHalf); /* eslint-disable-line no-new-func */
-    void ("" + f);
+    void (`${f}`);
   } catch (e) {
-    if (verbose) { dumpln("Second half compilation error: " + e); }
+    if (verbose) { dumpln(`Second half compilation error: ${e}`); }
   }
 }

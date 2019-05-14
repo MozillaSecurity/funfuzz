@@ -13,15 +13,15 @@ function makeRegisterStompFunction (d, b, pure) { /* eslint-disable-line require
   var args = [];
   var nArgs = (rnd(10) ? rnd(20) : rnd(100)) + 1;
   for (var i = 0; i < nArgs; ++i) {
-    args.push("a" + i);
+    args.push(`a${i}`);
   }
 
   var bv = b.concat(args);
 
   return (
-    "(function(" + args.join(", ") + ") { " +
+    `(function(${args.join(", ")}) { ` +
       makeRegisterStompBody(d, bv, pure) +
-      "return " + Random.index(bv) + "; " +
+      `return ${Random.index(bv)}; ` +
     "})"
   );
 }
@@ -32,7 +32,7 @@ function makeRegisterStompBody (d, b, pure) { /* eslint-disable-line require-jsd
   var s = "";
 
   function value () { /* eslint-disable-line require-jsdoc */
-    return rnd(3) && bv.length ? Random.index(bv) : "" + rnd(10);
+    return rnd(3) && bv.length ? Random.index(bv) : `${rnd(10)}`;
   }
 
   function expr () { /* eslint-disable-line require-jsdoc */
@@ -41,14 +41,14 @@ function makeRegisterStompBody (d, b, pure) { /* eslint-disable-line require-jsd
 
   while (rnd(100)) {
     if (bv.length === 0 || rnd(4)) {
-      var newVar = "r" + lastRVar;
+      var newVar = `r${lastRVar}`;
       ++lastRVar;
-      s += "var " + newVar + " = " + expr() + "; ";
+      s += `var ${newVar} = ${expr()}; `;
       bv.push(newVar);
     } else if (rnd(5) === 0 && !pure) {
-      s += "print(" + Random.index(bv) + "); ";
+      s += `print(${Random.index(bv)}); `;
     } else {
-      s += Random.index(bv) + " = " + expr() + "; ";
+      s += `${Random.index(bv)} = ${expr()}; `;
     }
   }
 

@@ -50,6 +50,7 @@ if platform.system() == "Windows":
     WIN_ICU_VERS.append(61)  # m-c 410692 Fx61, 1st w/ ICU 61.1, see bug 1445465
     WIN_ICU_VERS.append(62)  # m-c 425600 Fx63, 1st w/ ICU 62.1, see bug 1466471
     WIN_ICU_VERS.append(63)  # m-c 443997 Fx65, 1st w/ ICU 63.1, see bug 1499026
+    WIN_ICU_VERS.append(64)  # m-c 467933 Fx68, 1st w/ ICU 64.1, see bug 1533481
 
     # Update if the following changes:
     # https://dxr.mozilla.org/mozilla-central/search?q=%3C%2FOutputFile%3E+.dll+path%3Aintl%2Ficu%2Fsource%2F&case=true
@@ -100,7 +101,7 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
     filetype = unsplit_file_type.split(":", 1)[1]
     if platform.system() == "Windows":  # pylint: disable=no-else-return
         assert "MS Windows" in filetype
-        return "32" if "Intel 80386 32-bit" in filetype else "64"
+        return "32" if ("Intel 80386 32-bit" in filetype or "PE32+ executable" in filetype) else "64"
     else:
         if "32-bit" in filetype or "i386" in filetype:
             assert "64-bit" not in filetype
@@ -190,13 +191,8 @@ def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-
 
     assert queryBuildConfiguration(binary, "more-deterministic") == sh.build_opts.enableMoreDeterministic
     assert queryBuildConfiguration(binary, "asan") == sh.build_opts.buildWithAsan
+    assert queryBuildConfiguration(binary, "profiling") != sh.build_opts.disableProfiling
     assert (queryBuildConfiguration(binary, "arm-simulator") and
             sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm32
-
-    # m-c rev 250632:5f9e24957f2d Fx41 added the arm64-simulator entry in getBuildConfiguration.
-    if not hg_helpers.existsAndIsAncestor(sh.get_repo_dir(), sh.get_hg_hash(), "parents(5f9e24957f2d)"):
-        assert (queryBuildConfiguration(binary, "arm64-simulator") and not
-                sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm64
-    # Note that we should test whether a shell has profiling turned on or not.
-    # m-c rev 324836:800a887c705e turned profiling on by default, so once this is beyond the
-    # earliest known working revision, we can probably test it here.
+    assert (queryBuildConfiguration(binary, "arm64-simulator") and not
+            sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm64

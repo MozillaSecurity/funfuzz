@@ -52,7 +52,7 @@ def interesting(cli_args, temp_prefix):
     # Examine stack for crash signature, this is needed if args.sig is specified.
     runinfo = timedrun.timed_run(args.cmd_with_flags, args.timeout, temp_prefix)
     if runinfo.sta == timedrun.CRASHED:
-        os_ops.grab_crash_log(args.cmd_with_flags[0], runinfo.pid, temp_prefix, True)
+        os_ops.grab_crash_log(Path(args.cmd_with_flags[0]), runinfo.pid, Path(temp_prefix), True)
 
     crash_log = Path(f"{temp_prefix}-crash.txt")
     time_str = f" ({runinfo.elapsedtime:.3f} seconds)"
@@ -60,7 +60,7 @@ def interesting(cli_args, temp_prefix):
     if runinfo.sta == timedrun.CRASHED:
         if crash_log.resolve().is_file():
             # When using this script, remember to escape characters, e.g. "\(" instead of "(" !
-            if file_contains(str(crash_log), args.sig, args.regex)[0]:
+            if file_contains(str(crash_log), args.sig.encode("utf-8"), args.regex)[0]:
                 log.info("Exit status: %s%s", runinfo.msg, time_str)
                 return True
             log.info("[Uninteresting] It crashed somewhere else!%s", time_str)
