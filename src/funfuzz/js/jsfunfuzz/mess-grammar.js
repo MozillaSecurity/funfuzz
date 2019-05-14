@@ -46,7 +46,7 @@ function testEachMaker()
       try {
         var r = f(8, ["A", "B"]);
         if (typeof r != "string")
-          throw ("Got a " + typeof r);
+          throw (`Got a ${typeof r}`);
         dumpln(r);
       } catch(e) {
         dumpln("");

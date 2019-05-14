@@ -9,20 +9,20 @@
 
 function start (glob) { /* eslint-disable-line require-jsdoc */
   var fuzzSeed = Math.floor(Math.random() * Math.pow(2, 28));
-  dumpln("fuzzSeed: " + fuzzSeed);
+  dumpln(`fuzzSeed: ${fuzzSeed}`);
   Random.init(fuzzSeed);
 
   // Split this string across two source strings to ensure that if a
   // generated function manages to output the entire jsfunfuzz source,
   // that output won't match the grep command.
   var cookie = "/*F";
-  cookie += "RC-fuzzSeed-" + fuzzSeed + "*/";
+  cookie += `RC-fuzzSeed-${fuzzSeed}*/`;
 
   // Can be set to true if makeStatement has side effects, such as crashing, so you have to reduce "the hard way".
   var dumpEachSeed = false;
 
   if (dumpEachSeed) {
-    dumpln(cookie + "Random.init(0);");
+    dumpln(`${cookie}Random.init(0);`);
   }
 
   mathInitFCM();
@@ -39,7 +39,7 @@ function start (glob) { /* eslint-disable-line require-jsdoc */
       testOne();
       var elapsed1 = new Date() - lastTime;
       if (elapsed1 > 1000) {
-        print("That took " + elapsed1 + "ms!");
+        print(`That took ${elapsed1}ms!`);
       }
       lastTime = new Date();
     } while (lastTime - startTime < MAX_TOTAL_TIME);
@@ -50,7 +50,7 @@ function start (glob) { /* eslint-disable-line require-jsdoc */
   function testStuffForAWhile () { /* eslint-disable-line require-jsdoc */
     for (var j = 0; j < 100; ++j) { testOne(); }
 
-    if (count % 10000 < 100) { printImportant("Iterations: " + count); }
+    if (count % 10000 < 100) { printImportant(`Iterations: ${count}`); }
 
     setTimeout(testStuffForAWhile, 30); /* eslint-disable-line no-undef */
   }
@@ -67,16 +67,16 @@ function start (glob) { /* eslint-disable-line require-jsdoc */
       var MTA = uneval(Random.twister.export_mta());
       var MTI = Random.twister.export_mti();
       if (MTA !== Random.lastDumpedMTA) {
-        dumpln(cookie + "Random.twister.import_mta(" + MTA + ");");
+        dumpln(`${cookie}Random.twister.import_mta(${MTA});`);
         Random.lastDumpedMTA = MTA;
       }
-      dumpln(cookie + "Random.twister.import_mti(" + MTI + "); void (makeScript(" + depth + "));");
+      dumpln(`${cookie}Random.twister.import_mti(${MTI}); void (makeScript(${depth}));`);
     }
 
     var code = makeScript(depth);
 
     if (count === 1 && engine === ENGINE_SPIDERMONKEY_TRUNK && rnd(5)) {
-      code = "tryRunning = useSpidermonkeyShellSandbox(" + rnd(4) + ");";
+      code = `tryRunning = useSpidermonkeyShellSandbox(${rnd(4)});`;
       // print("Sane mode!")
     }
 
@@ -85,7 +85,7 @@ function start (glob) { /* eslint-disable-line require-jsdoc */
     //    if (dp)
     //      code = dp;
     //  }
-    dumpln(cookie + "count=" + count + "; tryItOut(" + uneval(code) + ");");
+    dumpln(`${cookie}count=${count}; tryItOut(${uneval(code)});`);
 
     tryItOut(code);
   }
@@ -94,7 +94,7 @@ function start (glob) { /* eslint-disable-line require-jsdoc */
 function failsToCompileInTry (code) { /* eslint-disable-line require-jsdoc */
   // Why would this happen? One way is "let x, x"
   try {
-    var codeInTry = "try { " + code + " } catch(e) { }";
+    var codeInTry = `try { ${code} } catch(e) { }`;
     void new Function(codeInTry); /* eslint-disable-line no-new-func */
     return false;
   } catch (e) {

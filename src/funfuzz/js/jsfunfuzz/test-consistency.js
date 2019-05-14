@@ -22,19 +22,19 @@ function sandboxResult (code, zone) { /* eslint-disable-line require-jsdoc */
     result = evalcx(code, sandbox);
     if (typeof result !== "object") {
       // Avoid cross-compartment excitement if it has a toString
-      resultStr = "" + result;
+      resultStr = `${result}`;
     }
   } catch (e) {
-    result = "Error: " + errorToString(e);
+    result = `Error: ${errorToString(e)}`;
   }
-  // print("resultStr: " + resultStr);
+  // print(`resultStr: ${resultStr}`);
   return resultStr;
 }
 
 function nestingConsistencyTest (code) { /* eslint-disable-line require-jsdoc */
   // Inspired by bug 676343
   // This only makes sense if |code| is an expression (or an expression followed by a semicolon). Oh well.
-  function nestExpr (e) { return "(function() { return " + code + "; })()"; } /* eslint-disable-line require-jsdoc */
+  function nestExpr (e) { return `(function() { return ${code}; })()`; } /* eslint-disable-line require-jsdoc */
   var codeNestedOnce = nestExpr(code);
   var codeNestedDeep = code;
   var depth = (count % 7) + 14; // 16 might be special
@@ -46,11 +46,11 @@ function nestingConsistencyTest (code) { /* eslint-disable-line require-jsdoc */
   var resultO = sandboxResult(codeNestedOnce, null); var resultD = sandboxResult(codeNestedDeep, null);
 
   // if (resultO != "" && resultO != "undefined" && resultO != "use strict")
-  //   print("NestTest: " + resultO);
+  //   print(`NestTest: ${resultO}`);
 
   if (resultO !== resultD) {
     foundABug("NestTest mismatch",
-      "resultO: " + resultO + "\n" +
-      "resultD: " + resultD);
+      `resultO: ${resultO}\n` +
+      `resultD: ${resultD}`);
   }
 }
