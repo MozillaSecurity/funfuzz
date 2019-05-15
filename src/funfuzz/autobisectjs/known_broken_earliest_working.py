@@ -80,7 +80,7 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
     return skips
 
 
-def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=missing-param-doc,missing-return-doc
+def earliest_known_working_rev(_options, flags, skip_revs):  # pylint: disable=missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc,too-many-branches,too-complex,too-many-statements
     """Return a revset which evaluates to the first revision of the shell that compiles with |options|
     and runs jsfunfuzz successfully with |flags|."""
@@ -106,12 +106,13 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("c6a8b4d451af")  # m-c 442977 Fx65, 1st w/ working --no-streams, see bug 1501734
     if "--enable-streams" in flags:
         required.append("b8c1b5582913")  # m-c 440275 Fx64, 1st w/ working --enable-streams, see bug 1445854
+    if platform.system() == "Windows":
+        # m-c 419184 Fx62, 1st w/ working Windows builds with a recent Win10 SDK, see bug 1462616
+        required.append("c085e1b32fb9bbdb00360bfb0a1057d20a752f4c")
     if "--wasm-gc" in flags:
         required.append("302befe7689a")  # m-c 413255 Fx61, 1st w/--wasm-gc, see bug 1445272
     if "--nursery-strings=on" in flags or "--nursery-strings=off" in flags:
         required.append("321c29f48508")  # m-c 406115 Fx60, 1st w/--nursery-strings=on, see bug 903519
-    if platform.system() == "Windows" and options.buildWithClang:
-        required.append("da5d7ba9a855")  # m-c 404087 Fx60, 1st w/ clang-cl.exe and MSVC 2017 builds, see bug 1402915
     if "--spectre-mitigations=on" in flags or "--spectre-mitigations=off" in flags:
         required.append("a98f615965d7")  # m-c 399868 Fx59, 1st w/--spectre-mitigations=on, see bug 1430053
     if "--test-wasm-await-tier2" in flags:
@@ -120,8 +121,6 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("e2ecf684f49e")  # m-c 383101 Fx58, 1st w/ successful Xcode 9 builds, see bug 1366564
     if cpu_count_flag:
         required.append("1b55231e6628")  # m-c 380023 Fx57, 1st w/--cpu-count=<NUM>, see bug 1206770
-    if platform.system() == "Windows" and platform.uname()[2] == "10":
-        required.append("530f7bd28399")  # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
     required.append("bb868860dfc3")  # m-c 330353 Fx53, 1st w/ revised template literals, see bug 1317375
 
     return f"first(({common_descendants(required)}) - ({skip_revs}))"
