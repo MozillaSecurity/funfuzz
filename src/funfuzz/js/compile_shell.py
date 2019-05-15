@@ -431,14 +431,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         if shell.build_opts.buildWithAsan:
             cfg_cmds.append("--enable-address-sanitizer")
     else:
-        if platform.machine() == "aarch64" and platform.system() == "Linux":
-            clang_path = Path.home() / ".mozbuild" / "clang" / "bin"
-            llvm_binary_aarch64_linux_url = "http://releases.llvm.org/8.0.0/clang%2bllvm-8.0.0-aarch64-linux-gnu.tar.xz"
-            assert clang_path.is_dir(), f"Please download LLVM for aarch64 from: {llvm_binary_aarch64_linux_url} " + \
-                                        f"and extract to: {clang_path}"
-            assert (clang_path / "clang").is_file()
-            assert (clang_path / "llvm-config").is_file()
-            cfg_env["LIBCLANG_PATH"] = str(clang_path)
         # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
         if shell.build_opts.buildWithClang:
             cfg_env["CC"] = f"clang {CLANG_PARAMS}"
