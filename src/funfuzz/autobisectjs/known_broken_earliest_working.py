@@ -104,8 +104,6 @@ def earliest_known_working_rev(_options, flags, skip_revs):  # pylint: disable=m
         required.append("450b8f0cbb4e")  # m-c 453627 Fx66, 1st w/--more-compartments, see bug 1518753
     if "--no-streams" in flags:
         required.append("c6a8b4d451af")  # m-c 442977 Fx65, 1st w/ working --no-streams, see bug 1501734
-    if "--enable-streams" in flags:
-        required.append("b8c1b5582913")  # m-c 440275 Fx64, 1st w/ working --enable-streams, see bug 1445854
     if platform.system() == "Windows":
         # m-c 419184 Fx62, 1st w/ working Windows builds with a recent Win10 SDK, see bug 1462616
         required.append("c085e1b32fb9bbdb00360bfb0a1057d20a752f4c")
