@@ -415,6 +415,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         if shell.build_opts.enable32:
+            cfg_cmds.append("--host=x86_64-pc-mingw32")
+            cfg_cmds.append("--target=i686-pc-mingw32")
             if shell.build_opts.enableSimulatorArm32:
                 # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
                 # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
