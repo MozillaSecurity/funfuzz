@@ -95,32 +95,35 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     required = []
 
     # These should be in descending order, or bisection will break at earlier changesets.
-    if "--enable-experimental-fields" in flags:
-        required.append("7a1ad6647c22")  # m-c 463705 Fx67, 1st w/--enable-experimental-fields, see bug 1529758
+    if "--enable-experimental-fields" in flags:  # 1st w/--enable-experimental-fields, see bug 1529758
+        required.append("7a1ad6647c22bd34a6c70e67dc26e5b83f71cea4")  # m-c 463705 Fx67
     if set(["--wasm-compiler=none", "--wasm-compiler=baseline+ion", "--wasm-compiler=baseline",
-            "--wasm-compiler=ion"]).intersection(flags):
-        required.append("48dc14f79fb0")  # m-c 455252 Fx66, 1st w/--wasm-compiler=none/<other options>, see bug 1509441
-    if "--more-compartments" in flags:
-        required.append("450b8f0cbb4e")  # m-c 453627 Fx66, 1st w/--more-compartments, see bug 1518753
-    if "--no-streams" in flags:
-        required.append("c6a8b4d451af")  # m-c 442977 Fx65, 1st w/ working --no-streams, see bug 1501734
+            "--wasm-compiler=ion"]).intersection(flags):  # 1st w/--wasm-compiler=none/<other options>, see bug 1509441
+        required.append("48dc14f79fb0a51ca796257a4179fe6f16b71b14")  # m-c 455252 Fx66
+    if "--more-compartments" in flags:  # 1st w/--more-compartments, see bug 1518753
+        required.append("450b8f0cbb4e494b399ebcf23a33b8d9cb883245")  # m-c 453627 Fx66
+    if "--no-streams" in flags:  # 1st w/ working --no-streams, see bug 1501734
+        required.append("c6a8b4d451afa922c4838bd202749c7e131cf05e")  # m-c 442977 Fx65
     if platform.system() == "Windows" and options.enable32:  # 1st w/ working 32-bit Windows builds, see bug 1483835
         required.append("577ffed9f102439db47afebcef95bbaaa2e04c93")  # m-c 432608 Fx63
     if platform.system() == "Windows":  # 1st w/ working Windows builds with a recent Win10 SDK, see bug 1462616
         required.append("c085e1b32fb9bbdb00360bfb0a1057d20a752f4c")  # m-c 419184 Fx62
-    if "--wasm-gc" in flags:
-        required.append("302befe7689a")  # m-c 413255 Fx61, 1st w/--wasm-gc, see bug 1445272
-    if "--nursery-strings=on" in flags or "--nursery-strings=off" in flags:
-        required.append("321c29f48508")  # m-c 406115 Fx60, 1st w/--nursery-strings=on, see bug 903519
-    if "--spectre-mitigations=on" in flags or "--spectre-mitigations=off" in flags:
-        required.append("a98f615965d7")  # m-c 399868 Fx59, 1st w/--spectre-mitigations=on, see bug 1430053
-    if "--test-wasm-await-tier2" in flags:
-        required.append("b1dc87a94262")  # m-c 387188 Fx58, 1st w/--test-wasm-await-tier2, see bug 1388785
-    if platform.system() == "Darwin":
-        required.append("e2ecf684f49e")  # m-c 383101 Fx58, 1st w/ successful Xcode 9 builds, see bug 1366564
-    if cpu_count_flag:
-        required.append("1b55231e6628")  # m-c 380023 Fx57, 1st w/--cpu-count=<NUM>, see bug 1206770
-    required.append("bb868860dfc3")  # m-c 330353 Fx53, 1st w/ revised template literals, see bug 1317375
+    if "--wasm-gc" in flags:  # 1st w/--wasm-gc, see bug 1445272
+        required.append("302befe7689abad94a75f66ded82d5e71b558dc4")  # m-c 413255 Fx61
+    if "--nursery-strings=on" in flags or \
+            "--nursery-strings=off" in flags:  # 1st w/--nursery-strings=on, see bug 903519
+        required.append("321c29f4850882a2f0220a4dc041c53992c47992")  # m-c 406115 Fx60
+    if "--spectre-mitigations=on" in flags or \
+            "--spectre-mitigations=off" in flags:  # 1st w/--spectre-mitigations=on, see bug 1430053
+        required.append("a98f615965d73f6462924188fc2b1f2a620337bb")  # m-c 399868 Fx59
+    if "--test-wasm-await-tier2" in flags:  # 1st w/--test-wasm-await-tier2, see bug 1388785
+        required.append("b1dc87a94262c1bf2747d2bf560e21af5deb3174")  # m-c 387188 Fx58
+    if platform.system() == "Darwin":  # 1st w/ successful Xcode 9 builds, see bug 1366564
+        required.append("e2ecf684f49e9a6f6d072c289df68ef679968c4c")  # m-c 383101 Fx58
+    if cpu_count_flag:  # 1st w/--cpu-count=<NUM>, see bug 1206770
+        required.append("1b55231e6628e70f0c2ee2b2cb40a1e9861ac4b4")  # m-c 380023 Fx57
+    # 1st w/ revised template literals, see bug 1317375
+    required.append("bb868860dfc35876d2d9c421c037c75a4fb9b3d2")  # m-c 330353 Fx53
 
     return f"first(({common_descendants(required)}) - ({skip_revs}))"
 
