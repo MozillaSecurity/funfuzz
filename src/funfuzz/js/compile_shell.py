@@ -17,6 +17,7 @@ import platform
 from shlex import quote
 import shutil
 import subprocess
+import sys
 import tarfile
 import traceback
 
@@ -722,7 +723,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
 
 def main():
     """Execute main() function in CompiledShell class."""
-    exit(CompiledShell.main())
+    sys.exit(CompiledShell.main())
 
 
 if __name__ == "__main__":
