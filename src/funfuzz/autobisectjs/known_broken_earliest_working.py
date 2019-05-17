@@ -35,46 +35,56 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
     # ANCIENT FIXME: It might make sense to avoid (or note) these in checkBlameParents.
 
     skips = [
-        hgrange("4c72627cfc6c", "926f80f2c5cc"),  # Fx60, broken spidermonkey
-        hgrange("1fb7ddfad86d", "5202cfbf8d60"),  # Fx63, broken spidermonkey
-        hgrange("aae4f349fa58", "c5fbbf959e23"),  # Fx64, broken spidermonkey
-        hgrange("f611bc50d11c", "39d0c50a2209"),  # Fx66, broken spidermonkey
+        # Fx60, broken spidermonkey
+        hgrange("4c72627cfc6c2dafb4590637fe1f3b5a24e133a4", "926f80f2c5ccaa5b0374b48678d62c304cbc9a68"),
+        # Fx63, broken spidermonkey
+        hgrange("1fb7ddfad86d5e085c4f2af23a2519d37e45a3e4", "5202cfbf8d60ffbb1ad9c385eda725992fc43d7f"),
+        # Fx64, broken spidermonkey
+        hgrange("aae4f349fa588aa844cfb14fae278b776aed6cb7", "c5fbbf959e23a4f33d450cb6c64ef739e09fbe13"),
+        # Fx66, broken spidermonkey
+        hgrange("f611bc50d11cae1f48cc44d1468f2c34ec46e287", "39d0c50a2209e0f0c982b1d121765c9dc950e161"),
     ]
 
     if platform.system() == "Darwin":
         skips.extend([
-            hgrange("3d0236f985f8", "32cef42080b1"),  # Fx68, see bug 1544418
+            # Fx68, see bug 1544418
+            hgrange("3d0236f985f83c6b2f4800f814c004e0a2902468", "32cef42080b1f7443dfe767652ea44e0dafbfd9c"),
         ])
 
     if platform.system() == "Linux":
         skips.extend([
-            # Failure specific to GCC 5 (and probably earlier) - supposedly works on GCC 6
-            hgrange("e94dceac8090", "516c01f62d84"),  # Fx56-57, see bug 1386011
+            # Fx56-57, failure specific to GCC 5 (and probably earlier) - supposedly works on GCC 6, see bug 1386011
+            hgrange("e94dceac80907abd4b579ddc8b7c202bbf461ec7", "516c01f62d840744648768b6fac23feb770ffdc1"),
         ])
         if platform.machine() == "aarch64":
             skips.extend([
-                hgrange("e8bb22053e65", "999757e9e5a5"),  # Fx54, see bug 1336344
+                # Fx54, see bug 1336344
+                hgrange("e8bb22053e65e2a82456e9243a07af023a8ebb13", "999757e9e5a576c884201746546a3420a92f7447"),
             ])
         if not options.disableProfiling:
             skips.extend([
-                # To bypass the following month-long breakage, use "--disable-profiling"
-                hgrange("aa1da5ed8a07", "5a03382283ae"),  # Fx54-55, see bug 1339190
+                # Fx54-55, to bypass the following month-long breakage, use "--disable-profiling", see bug 1339190
+                hgrange("aa1da5ed8a0719e0ab424e672d2f477b70ef593c", "5a03382283ae0a020b2a2d84bbbc91ff13cb2130"),
             ])
 
     if not options.enableDbg:
         skips.extend([
-            hgrange("c5561749c1c6", "f4c15a88c937"),  # Fx58-59, broken opt builds w/ --enable-gczeal
-            hgrange("247e265373eb", "e4aa68e2a85b"),  # Fx66, broken opt builds w/ --enable-gczeal
+            # Fx58-59, broken opt builds w/ --enable-gczeal
+            hgrange("c5561749c1c64793c31699d46bbf12cc0c69815c", "f4c15a88c937e8b3940f5c1922142a6ffb137320"),
+            # Fx66, broken opt builds w/ --enable-gczeal
+            hgrange("247e265373eb26566e94303fa42b1237b80295d9", "e4aa68e2a85b027c5498bf8d8f379b06d07df6c2"),
         ])
 
     if options.enableMoreDeterministic:
         skips.extend([
-            hgrange("427b854cdb1c", "4c4e45853808"),  # Fx68, see bug 1542980
+            # Fx68, see bug 1542980
+            hgrange("427b854cdb1c47ce6a643f83245914d66dca4382", "4c4e45853808229f832e32f6bcdbd4c92a72b13b"),
         ])
 
     if options.enableSimulatorArm32:
         skips.extend([
-            hgrange("284002382c21", "05669ce25b03"),  # Fx57-61, broken 32-bit ARM-simulator builds
+            # Fx57-61, broken 32-bit ARM-simulator builds
+            hgrange("284002382c21842a7ebb39dcf53d5d34fd3f7692", "05669ce25b032bf83ca38e082e6f2c1bf683ed19"),
         ])
 
     return skips
