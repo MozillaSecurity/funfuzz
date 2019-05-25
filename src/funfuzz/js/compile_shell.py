@@ -445,8 +445,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         cfg_cmds.append("--enable-optimize" + ("=-O1" if shell.build_opts.buildWithVg else ""))
     elif shell.build_opts.disableOpt:
         cfg_cmds.append("--disable-optimize")
-    if shell.build_opts.enableProfiling:  # Now obsolete, retained for backward compatibility
-        cfg_cmds.append("--enable-profiling")
     if shell.build_opts.disableProfiling:
         cfg_cmds.append("--disable-profiling")
 

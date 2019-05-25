@@ -96,10 +96,6 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
     randomizeBool(["--disable-optimize"], 0.1,
                   dest="disableOpt",
                   help='Build shells with --disable-optimize. Defaults to "%(default)s".')
-    randomizeBool(["--enable-profiling"], 0,
-                  dest="enableProfiling",
-                  help='Build shells with --enable-profiling. Defaults to "%(default)s". '
-                       "Currently defaults to True in configure.in on mozilla-central.")
     randomizeBool(["--disable-profiling"], 0.5,
                   dest="disableProfiling",
                   help='Build with profiling off. Defaults to "True" on Linux, else "%(default)s".')
@@ -217,8 +213,6 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
     if build_options.disableOpt:
         fileName.append("optDisabled")
     fileName.append("32" if build_options.enable32 else "64")
-    if build_options.enableProfiling:
-        fileName.append("prof")
     if build_options.disableProfiling:
         fileName.append("profDisabled")
     if build_options.enableMoreDeterministic:
