@@ -104,10 +104,6 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
                   dest="disableProfiling",
                   help='Build with profiling off. Defaults to "True" on Linux, else "%(default)s".')
 
-    # Alternative compiler for Linux. Clang is always turned on, on Win and Mac.
-    randomizeBool(["--build-with-clang"], 0.5,
-                  dest="buildWithClang",
-                  help='Build with clang. Defaults to "True" on Win and Mac, "%(default)s" otherwise.')
     # Memory debuggers
     randomizeBool(["--build-with-asan"], 0.3,
                   dest="buildWithAsan",
@@ -172,12 +168,6 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
     parser, randomizer = addParserOptions()
     build_options = parser.parse_args(args.split())
 
-    if platform.system() == "Darwin":
-        build_options.buildWithClang = True  # Clang seems to be the only supported compiler
-
-    if platform.system() == "Windows":
-        build_options.buildWithClang = True
-
     if build_options.enableArmSimulatorObsolete:
         build_options.enableSimulatorArm32 = True
 
@@ -233,8 +223,6 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
         fileName.append("profDisabled")
     if build_options.enableMoreDeterministic:
         fileName.append("dm")
-    if build_options.buildWithClang:
-        fileName.append("clang")
     if build_options.buildWithAsan:
         fileName.append("asan")
     if build_options.buildWithVg:
@@ -308,13 +296,7 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     if args.runWithVg and not args.buildWithVg:
         return False, "--run-with-valgrind needs --build-with-valgrind."
 
-    if args.buildWithClang:
-        if platform.system() == "Linux" and not args.buildWithAsan:
-            return False, "We do not really care about non-Asan clang-compiled Linux builds yet."
-
     if args.buildWithAsan:
-        if not args.buildWithClang:
-            return False, "We must only test ASan builds with Clang, else GCC builds crash on startup."
         if args.enable32:
             return False, "32-bit ASan builds fail on 18.04 due to https://github.com/google/sanitizers/issues/954."
         if platform.system() == "Linux" and "Microsoft" in platform.release():

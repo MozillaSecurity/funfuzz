@@ -47,7 +47,6 @@ else:
     CLANG_PARAMS = ""
     CLANG_ASAN_PARAMS = "-fsanitize=address"
     SSE2_FLAGS = "-msse2 -mfpmath=sse"  # See bug 948321
-    CLANG_X86_FLAG = "-arch i386"
 
 if multiprocessing.cpu_count() > 2:
     COMPILATION_JOBS = multiprocessing.cpu_count() + 1
@@ -353,13 +352,9 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     if shell.build_opts.enable32 and platform.system() == "Linux":
         # 32-bit shell on 32/64-bit x86 Linux
         cfg_env["PKG_CONFIG_LIBDIR"] = "/usr/lib/pkgconfig"
-        if shell.build_opts.buildWithClang:
-            cfg_env["CC"] = cfg_env["HOST_CC"] = f"clang {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
-            cfg_env["CXX"] = cfg_env["HOST_CXX"] = f"clang++ {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
-        # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux. (no matter Clang or GCC)
-        else:
-            cfg_env["CC"] = f"clang -m32 {SSE2_FLAGS}"
-            cfg_env["CXX"] = f"clang++ -m32 {SSE2_FLAGS}"
+        # apt-get `libc6-dev-i386 g++-multilib` first, if on 64-bit Linux. (no matter Clang or GCC)
+        cfg_env["CC"] = f"clang -m32 {SSE2_FLAGS}"
+        cfg_env["CXX"] = f"clang++ -m32 {SSE2_FLAGS}"
         if shell.build_opts.buildWithAsan:
             cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
             cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
@@ -401,10 +396,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         assert (win_mozbuild_path / "llvm-config.exe").is_file()
         cfg_env["LIBCLANG_PATH"] = str(win_mozbuild_path)
         cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
-        if shell.build_opts.buildWithClang:
-            cfg_env["CC"] = f"clang-cl.exe {CLANG_PARAMS}"
-            cfg_env["CXX"] = f"clang-cl.exe {CLANG_PARAMS}"
-            cfg_env["LINKER"] = "lld-link.exe"
         if shell.build_opts.buildWithAsan:
             cfg_env["CFLAGS"] = CLANG_ASAN_PARAMS
             cfg_env["CXXFLAGS"] = CLANG_ASAN_PARAMS
@@ -434,28 +425,15 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         if shell.build_opts.buildWithAsan:
             cfg_cmds.append("--enable-address-sanitizer")
     else:
-        # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
-        if shell.build_opts.buildWithClang:
-            cfg_env["CC"] = f"clang {CLANG_PARAMS}"
-            cfg_env["CXX"] = f"clang++ {CLANG_PARAMS}"
-            if shell.build_opts.buildWithAsan:
-                cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
-                cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
+        if shell.build_opts.buildWithAsan:
+            cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
+            cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         if shell.build_opts.buildWithAsan:
             cfg_cmds.append("--enable-address-sanitizer")
         if shell.build_opts.enableSimulatorArm64:
             cfg_cmds.append("--enable-simulator=arm64")
-
-    if shell.build_opts.buildWithClang:
-        if platform.system() == "Windows":
-            assert "clang-cl" in cfg_env["CC"]
-            assert "clang-cl" in cfg_env["CXX"]
-        else:
-            assert "clang" in cfg_env["CC"]
-            assert "clang++" in cfg_env["CXX"]
-        cfg_cmds.append("--disable-jemalloc")  # See bug 1146895
 
     if shell.build_opts.enableDbg:
         cfg_cmds.append("--enable-debug")
