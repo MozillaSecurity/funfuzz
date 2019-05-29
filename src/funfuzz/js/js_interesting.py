@@ -76,9 +76,13 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
                 runthis)
 
         timed_run_kw = {"env": (env or os.environ)}
-        if not (platform.system() == "Windows" or
-                # We cannot set a limit for RLIMIT_AS for ASan binaries
-                inspect_shell.queryBuildConfiguration(options.jsengine, "asan")):
+
+        if not platform.system() == "Windows":
+            timed_run_kw["preexec_fn"] = set_ulimit
+
+        if inspect_shell.queryBuildConfiguration(options.jsengine, "asan"):
+            timed_run_kw["ASAN_OPTIONS"] = "detect_leaks=1"  # Enable LSan which is enabled together with ASan
+            # We cannot set a limit for RLIMIT_AS for ASan binaries
             timed_run_kw["preexec_fn"] = set_ulimit
 
         lithium_logPrefix = str(logPrefix).encode("utf-8")
