@@ -361,8 +361,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         cfg_cmds.append("--target=i686-pc-linux")
-        if shell.build_opts.buildWithAsan:
-            cfg_cmds.append("--enable-address-sanitizer")
         if shell.build_opts.enableSimulatorArm32:
             # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
             # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
@@ -384,8 +382,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         cfg_cmds.append("--target=x86_64-apple-darwin17.7.0")  # macOS 10.13.6
         cfg_cmds.append("--disable-xcode-checks")
-        if shell.build_opts.buildWithAsan:
-            cfg_cmds.append("--enable-address-sanitizer")
         if shell.build_opts.enableSimulatorArm64:
             cfg_cmds.append("--enable-simulator=arm64")
 
@@ -422,16 +418,12 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_cmds.append("--target=x86_64-pc-mingw32")
             if shell.build_opts.enableSimulatorArm64:
                 cfg_cmds.append("--enable-simulator=arm64")
-        if shell.build_opts.buildWithAsan:
-            cfg_cmds.append("--enable-address-sanitizer")
     else:
         if shell.build_opts.buildWithAsan:
             cfg_env["CC"] = f"clang {CLANG_PARAMS} {CLANG_ASAN_PARAMS}"
             cfg_env["CXX"] = f"clang++ {CLANG_PARAMS} {CLANG_ASAN_PARAMS}"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
-        if shell.build_opts.buildWithAsan:
-            cfg_cmds.append("--enable-address-sanitizer")
         if shell.build_opts.enableSimulatorArm64:
             cfg_cmds.append("--enable-simulator=arm64")
 
@@ -456,6 +448,9 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     if shell.build_opts.enableWithoutIntlApi:  # Speeds up compilation but is non-default
         cfg_cmds.append("--without-intl-api")
 
+    if shell.build_opts.buildWithAsan:
+        cfg_cmds.append("--enable-address-sanitizer")
+        cfg_cmds.append("--disable-jemalloc")
     if shell.build_opts.buildWithVg:
         cfg_cmds.append("--enable-valgrind")
         cfg_cmds.append("--disable-jemalloc")
