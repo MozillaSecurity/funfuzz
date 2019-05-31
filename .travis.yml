@@ -8,7 +8,7 @@ matrix:
       dist: xenial
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-        --build-with-valgrind --enable-oom-breakpoint"
+        --enable-valgrind --enable-oom-breakpoint"
       addons:
         apt:
           update: true
@@ -45,7 +45,7 @@ matrix:
       dist: xenial
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-        --build-with-valgrind --enable-oom-breakpoint"
+        --enable-valgrind --enable-oom-breakpoint"
       addons:
         apt:
           update: true
@@ -100,7 +100,7 @@ matrix:
       dist: xenial
       env: >
         BUILD="--enable-debug --disable-optimize --enable-more-deterministic
-        --build-with-valgrind --enable-oom-breakpoint"
+        --enable-valgrind --enable-oom-breakpoint"
       addons:
         apt:
           update: true
