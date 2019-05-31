@@ -39,7 +39,7 @@ def test_shell_compile():
     # "-R ~/trees/mozilla-central/")
 
     default_parameters_debug = ("--enable-debug --disable-optimize --enable-more-deterministic "
-                                "--build-with-valgrind --enable-oom-breakpoint")
+                                "--enable-valgrind --enable-oom-breakpoint")
     # Remember to update the corresponding BUILD build parameters in .travis.yml as well
     build_opts = os.environ.get("BUILD", default_parameters_debug)
 

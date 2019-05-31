@@ -104,17 +104,17 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
     randomizeBool(["--enable-address-sanitizer"], 0.3,
                   dest="enableAddressSanitizer",
                   help='Build with clang AddressSanitizer support. Defaults to "%(default)s".')
-    randomizeBool(["--build-with-valgrind"], 0.2,
-                  dest="buildWithVg",
+    randomizeBool(["--enable-valgrind"], 0.2,
+                  dest="enableValgrind",
                   help='Build with valgrind.h bits. Defaults to "%(default)s". '
                        "Requires --enable-hardfp for ARM platforms.")
-    # We do not use randomizeBool because we add this flag automatically if --build-with-valgrind
+    # We do not use randomizeBool because we add this flag automatically if --enable-valgrind
     # is selected.
     parser.add_argument("--run-with-valgrind",
                         dest="runWithVg",
                         action="store_true",
                         default=False,
-                        help="Run the shell under Valgrind. Requires --build-with-valgrind.")
+                        help="Run the shell under Valgrind. Requires --enable-valgrind.")
 
     # Misc spidermonkey options
     randomizeBool(["--enable-more-deterministic"], 0.75,
@@ -219,7 +219,7 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
         fileName.append("dm")
     if build_options.enableAddressSanitizer:
         fileName.append("asan")
-    if build_options.buildWithVg:
+    if build_options.enableValgrind:
         fileName.append("vg")
     if build_options.enableOomBreakpoint:
         fileName.append("oombp")
@@ -268,7 +268,7 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     if "Microsoft" in platform.release() and args.enable32:
         return False, "WSL does not seem to support 32-bit Linux binaries yet."
 
-    if args.buildWithVg:
+    if args.enableValgrind:
         return False, "FIXME: We need to set LD_LIBRARY_PATH first, else Valgrind segfaults."
         # Test with leak-checking disabled, test that reporting works, test only on x64 16.04
         # Test with bug 1278887
@@ -287,8 +287,8 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
         # if platform.system() == "Darwin":
         #     return False, "Valgrind does not work well with Mac OS X 10.10 Yosemite."
 
-    if args.runWithVg and not args.buildWithVg:
-        return False, "--run-with-valgrind needs --build-with-valgrind."
+    if args.runWithVg and not args.enableValgrind:
+        return False, "--run-with-valgrind needs --enable-valgrind."
 
     if args.enableAddressSanitizer:
         if args.enable32:
@@ -319,7 +319,7 @@ def generateRandomConfigurations(parser, randomizer):  # pylint: disable=invalid
     # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
     while True:
         randomArgs = randomizer.getRandomSubset()  # pylint: disable=invalid-name
-        if "--build-with-valgrind" in randomArgs and chance(0.95):
+        if "--enable-valgrind" in randomArgs and chance(0.95):
             randomArgs.append("--run-with-valgrind")
         build_options = parser.parse_args(randomArgs)
         if areArgsValid(build_options)[0]:

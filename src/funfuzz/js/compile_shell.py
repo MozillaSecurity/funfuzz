@@ -434,7 +434,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
 
     if shell.build_opts.enableOpt:
         # pylint complains if this line uses an f-string with nested if-else, see https://git.io/fxfSo
-        cfg_cmds.append("--enable-optimize" + ("=-O1" if shell.build_opts.buildWithVg else ""))
+        cfg_cmds.append("--enable-optimize" + ("=-O1" if shell.build_opts.enableValgrind else ""))
     elif shell.build_opts.disableOpt:
         cfg_cmds.append("--disable-optimize")
     if shell.build_opts.disableProfiling:
@@ -451,7 +451,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     if shell.build_opts.enableAddressSanitizer:
         cfg_cmds.append("--enable-address-sanitizer")
         cfg_cmds.append("--disable-jemalloc")
-    if shell.build_opts.buildWithVg:
+    if shell.build_opts.enableValgrind:
         cfg_cmds.append("--enable-valgrind")
         cfg_cmds.append("--disable-jemalloc")
 
