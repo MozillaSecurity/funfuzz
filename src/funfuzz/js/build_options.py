@@ -101,8 +101,8 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
                   help='Build with profiling off. Defaults to "True" on Linux, else "%(default)s".')
 
     # Memory debuggers
-    randomizeBool(["--build-with-asan"], 0.3,
-                  dest="buildWithAsan",
+    randomizeBool(["--enable-address-sanitizer"], 0.3,
+                  dest="enableAddressSanitizer",
                   help='Build with clang AddressSanitizer support. Defaults to "%(default)s".')
     randomizeBool(["--build-with-valgrind"], 0.2,
                   dest="buildWithVg",
@@ -217,7 +217,7 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
         fileName.append("profDisabled")
     if build_options.enableMoreDeterministic:
         fileName.append("dm")
-    if build_options.buildWithAsan:
+    if build_options.enableAddressSanitizer:
         fileName.append("asan")
     if build_options.buildWithVg:
         fileName.append("vg")
@@ -279,7 +279,7 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
         # if not args.enableOpt:
         #     # FIXME: Isn't this enabled by default??  # pylint: disable=fixme
         #     return False, "Valgrind needs opt builds."
-        # if args.buildWithAsan:
+        # if args.enableAddressSanitizer:
         #     return False, "One should not compile with both Valgrind flags and ASan flags."
 
         # if platform.system() == "Windows":
@@ -290,7 +290,7 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     if args.runWithVg and not args.buildWithVg:
         return False, "--run-with-valgrind needs --build-with-valgrind."
 
-    if args.buildWithAsan:
+    if args.enableAddressSanitizer:
         if args.enable32:
             return False, "32-bit ASan builds fail on 18.04 due to https://github.com/google/sanitizers/issues/954."
         if platform.system() == "Linux" and "Microsoft" in platform.release():

@@ -355,7 +355,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         # apt-get `libc6-dev-i386 g++-multilib` first, if on 64-bit Linux. (no matter Clang or GCC)
         cfg_env["CC"] = f"clang -m32 {SSE2_FLAGS}"
         cfg_env["CXX"] = f"clang++ -m32 {SSE2_FLAGS}"
-        if shell.build_opts.buildWithAsan:
+        if shell.build_opts.enableAddressSanitizer:
             cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
             cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
         cfg_cmds.append("sh")
@@ -373,7 +373,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     elif parse_version(platform.mac_ver()[0]) >= parse_version("10.13") and not shell.build_opts.enable32:
         cfg_env["CC"] = f"clang {CLANG_PARAMS}"
         cfg_env["CXX"] = f"clang++ {CLANG_PARAMS}"
-        if shell.build_opts.buildWithAsan:
+        if shell.build_opts.enableAddressSanitizer:
             cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
             cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
         if shutil.which("brew"):
@@ -392,7 +392,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         assert (win_mozbuild_path / "llvm-config.exe").is_file()
         cfg_env["LIBCLANG_PATH"] = str(win_mozbuild_path)
         cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
-        if shell.build_opts.buildWithAsan:
+        if shell.build_opts.enableAddressSanitizer:
             cfg_env["CFLAGS"] = CLANG_ASAN_PARAMS
             cfg_env["CXXFLAGS"] = CLANG_ASAN_PARAMS
             cfg_env["LDFLAGS"] = ("clang_rt.asan_dynamic-x86_64.lib "
@@ -419,7 +419,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             if shell.build_opts.enableSimulatorArm64:
                 cfg_cmds.append("--enable-simulator=arm64")
     else:
-        if shell.build_opts.buildWithAsan:
+        if shell.build_opts.enableAddressSanitizer:
             cfg_env["CC"] = f"clang {CLANG_PARAMS} {CLANG_ASAN_PARAMS}"
             cfg_env["CXX"] = f"clang++ {CLANG_PARAMS} {CLANG_ASAN_PARAMS}"
         cfg_cmds.append("sh")
@@ -448,7 +448,7 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     if shell.build_opts.enableWithoutIntlApi:  # Speeds up compilation but is non-default
         cfg_cmds.append("--without-intl-api")
 
-    if shell.build_opts.buildWithAsan:
+    if shell.build_opts.enableAddressSanitizer:
         cfg_cmds.append("--enable-address-sanitizer")
         cfg_cmds.append("--disable-jemalloc")
     if shell.build_opts.buildWithVg:
@@ -554,7 +554,7 @@ def sm_compile(shell):
         for run_lib in shell.get_shell_compiled_runlibs_path():
             if run_lib.is_file():
                 shutil.copy2(str(run_lib), str(shell.get_shell_cache_dir()))
-        if platform.system() == "Windows" and shell.build_opts.buildWithAsan:
+        if platform.system() == "Windows" and shell.build_opts.enableAddressSanitizer:
             shutil.copy2(str(f"{PROGRAMW6432_DIR}/LLVM/lib/clang/{CLANG_VER}/lib/windows/"
                              f"clang_rt.asan_dynamic-x86_64.dll"),
                          str(shell.get_shell_cache_dir()))

@@ -187,7 +187,7 @@ def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-
     assert queryBuildConfiguration(binary, "debug") == sh.build_opts.enableDbg
 
     assert queryBuildConfiguration(binary, "more-deterministic") == sh.build_opts.enableMoreDeterministic
-    assert queryBuildConfiguration(binary, "asan") == sh.build_opts.buildWithAsan
+    assert queryBuildConfiguration(binary, "asan") == sh.build_opts.enableAddressSanitizer
     assert queryBuildConfiguration(binary, "profiling") != sh.build_opts.disableProfiling
     assert (queryBuildConfiguration(binary, "arm-simulator") and
             sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm32
