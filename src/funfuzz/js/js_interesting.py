@@ -7,6 +7,7 @@
 """Check whether a testcase causes an interesting result in a shell.
 """
 
+from copy import deepcopy
 import io
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
@@ -75,7 +76,7 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
                 [f"--suppressions={filename}" for filename in "valgrind_suppressions.txt"] +
                 runthis)
 
-        timed_run_kw = {"env": (env or os.environ)}
+        timed_run_kw = {"env": (env or deepcopy(os.environ))}
 
         if inspect_shell.queryBuildConfiguration(options.jsengine, "asan"):
             timed_run_kw["env"].update({"ASAN_OPTIONS": "detect_leaks=1"})  # Enable LSan which is enabled with ASan

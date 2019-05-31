@@ -7,6 +7,7 @@
 """Reports coverage build results to CovManager.
 """
 
+from copy import deepcopy
 import logging
 import os
 
@@ -19,8 +20,9 @@ RUN_COV_LOG = logging.getLogger("funfuzz")
 def disable_pool():
     """Disables coverage pool on collection completion."""
     spotman_env_var_name = "EC2SPOTMANAGER_POOLID"
-    if spotman_env_var_name in os.environ:  # pragma: no cover
-        pool_id = os.environ[spotman_env_var_name]
+    test_env = deepcopy(os.environ)
+    if spotman_env_var_name in test_env:  # pragma: no cover
+        pool_id = test_env[spotman_env_var_name]
         RUN_COV_LOG.info("About to disable EC2SpotManager pool ID: %s", pool_id)
         EC2Reporter.main(argv=["--disable", str(pool_id)])
         RUN_COV_LOG.info("Pool disabled!")

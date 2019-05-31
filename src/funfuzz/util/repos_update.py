@@ -49,7 +49,7 @@ def time_cmd(cmd, cwd=None, env=None, timeout=None):
         timeout (int): Timeout for the command.
     """
     if not env:
-        env = os.environ.copy()
+        env = deepcopy(os.environ)
 
     logger.info("\nRunning `%s` now..\n", " ".join(cmd))
     cmd_start = time.time()
