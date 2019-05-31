@@ -426,8 +426,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_cmds.append("--enable-address-sanitizer")
     else:
         if shell.build_opts.buildWithAsan:
-            cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
-            cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
+            cfg_env["CC"] = f"clang {CLANG_PARAMS} {CLANG_ASAN_PARAMS}"
+            cfg_env["CXX"] = f"clang++ {CLANG_PARAMS} {CLANG_ASAN_PARAMS}"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         if shell.build_opts.buildWithAsan:
