@@ -17,6 +17,7 @@ from lithium.interestingness.utils import env_with_path
 
 from ..util import subprocesses as sps
 
+ASAN_ERROR_EXIT_CODE = 77
 RUN_MOZGLUE_LIB = ""
 RUN_NSPR_LIB = ""
 RUN_PLDS_LIB = ""
@@ -150,11 +151,13 @@ def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylin
     # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
     test_cmd = (constructVgCmdList() if useValgrind else []) + [str(shellPath)] + args
+    test_env = env_with_path(str(shellPath.parent))
+    test_env.update({"ASAN_OPTIONS": f"detect_leaks=1,exitcode={ASAN_ERROR_EXIT_CODE}"})  # Turn on LSan throughout
     sps.vdump(f'The testing command is: {" ".join(quote(str(x)) for x in test_cmd)}')
     test_cmd_result = subprocess.run(
         test_cmd,
         cwd=os.getcwd(),
-        env=env_with_path(str(shellPath.parent)),
+        env=test_env,
         stderr=stderr,
         stdout=subprocess.PIPE,
         timeout=999)
