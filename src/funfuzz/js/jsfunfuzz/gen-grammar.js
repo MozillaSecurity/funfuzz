@@ -934,7 +934,7 @@ var exprMakers =
   function (d, b) { return makeMathExpr(d + rnd(3), b); }
 ];
 
-var fuzzTestingFunctions = fuzzTestingFunctionsCtor(!jsshell, fuzzTestingFunctionArg, fuzzTestingFunctionArg);
+var fuzzTestingFunctions = fuzzTestingFunctionsCtor(fuzzTestingFunctionArg);
 
 // Ensure that even if makeExpr returns "" or "1, 2", we only pass one argument to functions like schedulegc
 // (null || (" + makeExpr(d - 2, b) + "))
