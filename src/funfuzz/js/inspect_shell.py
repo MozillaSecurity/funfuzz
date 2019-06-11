@@ -151,9 +151,16 @@ def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylin
     # pylint: disable=missing-param-doc,missing-return-doc,missing-return-type-doc,missing-type-doc
     """Test the given shell with the given args."""
     test_cmd = (constructVgCmdList() if useValgrind else []) + [str(shellPath)] + args
-    test_env = env_with_path(str(shellPath.parent))
-    test_env.update({"ASAN_OPTIONS": f"detect_leaks=1,exitcode={ASAN_ERROR_EXIT_CODE}"})  # Turn on LSan throughout
     sps.vdump(f'The testing command is: {" ".join(quote(str(x)) for x in test_cmd)}')
+
+    test_env = env_with_path(str(shellPath.parent))
+    asan_options = f"exitcode={ASAN_ERROR_EXIT_CODE}"
+    # Turn on LSan, except on macOS: https://github.com/google/sanitizers/issues/1026
+    # Note: Unsure about Windows for now
+    if platform.system() != "Darwin":
+        asan_options = "detect_leaks=1," + asan_options
+    test_env.update({"ASAN_OPTIONS": asan_options})
+
     test_cmd_result = subprocess.run(
         test_cmd,
         cwd=os.getcwd(),
