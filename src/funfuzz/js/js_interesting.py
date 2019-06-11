@@ -78,8 +78,9 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
 
         timed_run_kw = {"env": (env or deepcopy(os.environ))}
 
-        if inspect_shell.queryBuildConfiguration(options.jsengine, "asan"):
-            timed_run_kw["env"].update({"ASAN_OPTIONS": "detect_leaks=1"})  # Enable LSan which is enabled with ASan
+        # Enable LSan which is enabled with ASan, except on macOS
+        if inspect_shell.queryBuildConfiguration(options.jsengine, "asan") and not platform.system() == "Darwin":
+            timed_run_kw["env"].update({"ASAN_OPTIONS": "detect_leaks=1"})
         elif not platform.system() == "Windows":
             timed_run_kw["preexec_fn"] = set_ulimit
 
