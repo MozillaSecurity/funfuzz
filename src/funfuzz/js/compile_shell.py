@@ -465,14 +465,14 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     # Disable cranelift if on macOS
     # Disable cranelift if repository revision is on/after m-c rev 438680:4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0, fx64
     # and before m-c rev 457352:e1d8da551f52e0625d2ad01b7d5fa631c0d142dd, fx67
-    # Edit as of 20190612: cranelift still does not seem stable enough
-    if not hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
-                                          "parents(4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0)"):
     # if platform.system() == "Darwin" or \
     #         (hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
     #                                         "e1d8da551f52e0625d2ad01b7d5fa631c0d142dd") and not
     #          hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
     #                                         "parents(4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0)")):
+    # Edit as of 20190612: cranelift still does not seem stable enough
+    if not hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
+                                          "parents(4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0)"):
         cfg_cmds.append("--disable-cranelift")
 
     if platform.system() == "Windows":
