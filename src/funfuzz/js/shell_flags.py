@@ -183,14 +183,14 @@ def add_random_wasm_flags(shell_path, input_list=False):
     if shell_supports_flag(shell_path, "--wasm-compiler=none") and chance(.9):
         if chance(.4):
             wasm_compiler_option = "baseline+ion"
-        elif chance(.4):  # pragma: no cover
-            wasm_compiler_option = "cranelift"
         elif chance(.5):  # pragma: no cover
             wasm_compiler_option = "baseline"
         elif chance(.6):  # pragma: no cover
             wasm_compiler_option = "ion"
         # elif chance(.7):  # pragma: no cover
         #     wasm_compiler_option = "baseline+cranelift"
+        # elif chance(.8):  # pragma: no cover
+        #     wasm_compiler_option = "cranelift"
         else:  # pragma: no cover
             wasm_compiler_option = "none"
         # m-c rev 455252:48dc14f79fb0, see bug 1509441
