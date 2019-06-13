@@ -22,8 +22,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 # Add your repository here.
-REPOS = ["gecko-dev", "octo"] + \
-    ["mozilla-" + x for x in ["inbound", "central", "beta", "release"]]
+REPOS = ["gecko-dev", "octo"] + ["mozilla-" + x for x in ["central"]]
 
 if platform.system() == "Windows":
     # pylint: disable=invalid-name

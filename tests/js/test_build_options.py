@@ -10,8 +10,6 @@ import logging
 from pathlib import Path
 import random
 
-import pytest
-
 from funfuzz.js import build_options
 
 FUNFUZZ_TEST_LOG = logging.getLogger("funfuzz_test")
@@ -32,16 +30,3 @@ def test_chance(monkeypatch):
     assert build_options.chance(0.1)
     assert not build_options.chance(0)
     assert not build_options.chance(-0.2)
-
-
-# pylint: disable=no-member
-@pytest.mark.skipif(not (TREES_PATH / "mozilla-central" / ".hg" / "hgrc").is_file(),
-                    reason="requires a Mozilla Mercurial repository")
-def test_get_random_valid_repo(monkeypatch):
-    """Test that a valid repository can be obtained.
-
-    Args:
-        monkeypatch (class): For monkeypatching some variables/functions
-    """
-    monkeypatch.setattr(random, "random", lambda: 0)
-    assert build_options.get_random_valid_repo(TREES_PATH) == TREES_PATH / "mozilla-central"

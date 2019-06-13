@@ -184,11 +184,7 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
         if build_options.repo_dir:
             build_options.repo_dir = build_options.repo_dir.expanduser()
         else:
-            # For patch fuzzing without a specified repo, do not randomize repos, assume m-c instead
-            if build_options.enableRandom and not build_options.patch_file:
-                build_options.repo_dir = get_random_valid_repo(DEFAULT_TREES_LOCATION)
-            else:
-                build_options.repo_dir = DEFAULT_TREES_LOCATION / "mozilla-central"
+            build_options.repo_dir = DEFAULT_TREES_LOCATION / "mozilla-central"
 
             if not build_options.repo_dir.is_dir():
                 sys.exit("repo_dir is not specified, and a default repository location cannot be confirmed. Exiting...")
@@ -326,30 +322,6 @@ def generateRandomConfigurations(parser, randomizer):  # pylint: disable=invalid
             build_options.build_options_str = " ".join(randomArgs)  # Used for autobisectjs
             build_options.enableRandom = True  # This has to be true since we are randomizing...
             return build_options
-
-
-def get_random_valid_repo(tree):
-    """Given a path to Mozilla Mercurial repositories, return a randomly chosen valid one.
-
-    Args:
-        tree (Path): Intended location of Mozilla Mercurial repositories
-
-    Returns:
-        Path: Location of a valid Mozilla repository
-    """
-    assert isinstance(tree, Path)
-    tree = tree.resolve()
-
-    valid_repos = []
-    for branch in ["mozilla-central", "mozilla-beta"]:
-        if (tree / branch / ".hg" / "hgrc").is_file():
-            valid_repos.append(branch)
-
-    # After checking if repos are valid, reduce chances that non-mozilla-central repos are chosen
-    if "mozilla-beta" in valid_repos and chance(.8):
-        valid_repos.remove("mozilla-beta")
-
-    return tree / random.choice(valid_repos)
 
 
 def main():  # pylint: disable=missing-docstring
