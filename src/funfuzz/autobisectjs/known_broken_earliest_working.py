@@ -107,6 +107,7 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     # These should be in descending order, or bisection will break at earlier changesets.
     if "--enable-experimental-fields" in flags:  # 1st w/--enable-experimental-fields, see bug 1529758
         required.append("7a1ad6647c22bd34a6c70e67dc26e5b83f71cea4")  # m-c 463705 Fx67
+    # Note that m-c rev 457581:4b74d76e55a819852c8fa925efd25c57fdf35c9d is the first with BigInt on by default
     if set(["--wasm-compiler=none", "--wasm-compiler=baseline+ion", "--wasm-compiler=baseline", "--wasm-compiler=ion",
             "--wasm-compiler=cranelift"]).intersection(flags):  # 1st w/--wasm-compiler=none/<others>, see bug 1509441
         required.append("48dc14f79fb0a51ca796257a4179fe6f16b71b14")  # m-c 455252 Fx66
