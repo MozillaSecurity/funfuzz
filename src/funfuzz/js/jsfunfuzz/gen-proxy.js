@@ -11,63 +11,68 @@
 // The letter 'x' is special.
 var proxyHandlerProperties = {
   getOwnPropertyDescriptor: {
-    empty: "function(){}",
-    forward: "function(name) { var desc = Object.getOwnPropertyDescriptor(x); desc.configurable = true; return desc; }",
-    throwing: "function(name) { return {get: function() { throw 4; }, set: function() { throw 5; }}; }"
+    empty: "function(target, name) {}",
+    forward: "function(target, name) { var desc = Reflect.getOwnPropertyDescriptor(x); desc.configurable = true; return desc; }",
+    throwing: "function(target, name) { return {get: function() { throw 4; }, set: function() { throw 5; }}; }"
   },
   defineProperty: {
-    empty: "function(){}",
-    forward: "function(name, desc) { Object.defineProperty(x, name, desc); }"
+    empty: "function(target, name, desc) {}",
+    forward: "function(target, name, desc) { return Reflect.defineProperty(x, name, desc); }"
   },
-  getOwnPropertyNames: {
-    empty: "function() { return []; }",
-    forward: "function() { return Object.getOwnPropertyNames(x); }"
+  ownKeys: {
+    empty: "function(target) { return []; }",
+    forward: "function(target) { return Reflect.ownKeys(x); }"
   },
-  delete: {
-    empty: "function() { return true; }",
-    yes: "function() { return true; }",
-    no: "function() { return false; }",
-    forward: "function(name) { return delete x[name]; }"
-  },
-  fix: {
-    empty: "function() { return []; }",
-    yes: "function() { return []; }",
-    no: "function() { }",
-    forward: "function() { if (Object.isFrozen(x)) { return Object.getOwnProperties(x); } }"
+  deleteProperty: {
+    empty: "function(target, name) { return true; }",
+    yes: "function(target, name) { return true; }",
+    no: "function(target, name) { return false; }",
+    forward: "function(target, name) { return Reflect.deleteProperty(x, name); }"
   },
   has: {
-    empty: "function() { return false; }",
-    yes: "function() { return true; }",
-    no: "function() { return false; }",
-    forward: "function(name) { return name in x; }"
-  },
-  hasOwn: {
-    empty: "function() { return false; }",
-    yes: "function() { return true; }",
-    no: "function() { return false; }",
-    forward: "function(name) { return Object.prototype.hasOwnProperty.call(x, name); }"
+    empty: "function(target, name) { return false; }",
+    yes: "function(target, name) { return true; }",
+    no: "function(target, name) { return false; }",
+    forward: "function(target, name) { return name in x; }"
   },
   get: {
-    empty: "function() { return undefined }",
-    forward: "function(receiver, name) { return x[name]; }",
-    bind: "function(receiver, name) { var prop = x[name]; return (typeof prop) === 'function' ? prop.bind(x) : prop; }"
+    empty: "function(target, name, receiver) { return undefined }",
+    forward: "function(target, name, receiver) { return Reflect.get(x, name, receiver); }",
+    bind: "function(target, name, receiver) { var prop = Reflect.get(x, name, receiver); return (typeof prop) === 'function' ? prop.bind(x) : prop; }"
   },
   set: {
-    empty: "function() { return true; }",
-    yes: "function() { return true; }",
-    no: "function() { return false; }",
-    forward: "function(receiver, name, val) { x[name] = val; return true; }"
+    empty: "function(target, name, val, receiver) { return true; }",
+    yes: "function(target, name, val, receiver) { return true; }",
+    no: "function(target, name, val, receiver) { return false; }",
+    forward: "function(target, name, val, receiver) { return Reflect.set(x, name, val, receiver); }"
   },
-  iterate: {
-    forward: "function() { return (function() { for (var name in x) { yield name; } })(); }"
+  getPrototypeOf: {
+    empty: "function(target) { return null; }",
+    forward: "function(target) { return Reflect.getPrototypeOf(x); }"
   },
-  enumerate: {
-    empty: "function() { return []; }",
-    forward: "function() { var result = []; for (var name in x) { result.push(name); }; return result; }"
+  setPrototypeOf: {
+    yes: "function(target, proto) { return true; }",
+    no: "function(target, proto) { return false; }",
+    forward: "function(target, proto) { return Reflect.setPrototypeOf(x, proto); }"
   },
-  keys: {
-    empty: "function() { return []; }",
-    forward: "function() { return Object.keys(x); }"
+  isExtensible: {
+    yes: "function(target) { return true; }",
+    no: "function(target) { return false; }",
+    forward: "function(target) { return Reflect.isExtensible(x); }"
+  },
+  preventExtensions: {
+    yes: "function(target) { return true; }",
+    no: "function(target) { return false; }",
+    forward: "function(target) { return Reflect.preventExtensions(x); }"
+  },
+  apply: {
+    empty: "function(target, thisArgument, argumentsList) {}",
+    forward: "function(target, thisArgument, argumentsList) { return Reflect.apply(x, thisArgument, argumentsList); }"
+  },
+  construct: {
+    empty: "function(target, argumentsList, newTarget) { return []; }",
+    invalid: "function(target, argumentsList, newTarget) { return 3; }",
+    forward: "function(target, argumentsList, newTarget) { return Reflect.construct(x, argumentsList, newTarget); }"
   }
 };
 

@@ -126,23 +126,25 @@ var makeEvilCallback;
     return (Random.index(builderFunctionMakers))(d - 1, b);
   };
 
-  var handlerTraps = ["getOwnPropertyDescriptor", "defineProperty", "getOwnPropertyNames", "delete", "fix", "has", "hasOwn", "get", "set", "iterate", "enumerate", "keys"];
+  var handlerTraps = ["getOwnPropertyDescriptor", "defineProperty", "ownKeys", "deleteProperty", "has", "get", "set",
+    "getPrototypeOf", "setPrototypeOf", "isExtensible", "preventExtensions", "apply", "construct"];
 
   function forwardingHandler (d, b) { /* eslint-disable-line require-jsdoc */
     return (
       "({" +
-        "getOwnPropertyDescriptor: function(name) { Z; var desc = Object.getOwnPropertyDescriptor(X); desc.configurable = true; return desc; }, " +
-        "defineProperty: function(name, desc) { Z; Object.defineProperty(X, name, desc); }, " +
-        "getOwnPropertyNames: function() { Z; return Object.getOwnPropertyNames(X); }, " +
-        "delete: function(name) { Z; return delete X[name]; }, " +
-        "fix: function() { Z; if (Object.isFrozen(X)) { return Object.getOwnProperties(X); } }, " +
-        "has: function(name) { Z; return name in X; }, " +
-        "hasOwn: function(name) { Z; return Object.prototype.hasOwnProperty.call(X, name); }, " +
-        "get: function(receiver, name) { Z; return X[name]; }, " +
-        "set: function(receiver, name, val) { Z; X[name] = val; return true; }, " +
-        "iterate: function() { Z; return (function() { for (var name in X) { yield name; } })(); }, " +
-        "enumerate: function() { Z; var result = []; for (var name in X) { result.push(name); }; return result; }, " +
-        "keys: function() { Z; return Object.keys(X); } " +
+        "getOwnPropertyDescriptor: function(target, name) { Z; var desc = Reflect.getOwnPropertyDescriptor(X); desc.configurable = true; return desc; }, " +
+        "defineProperty: function(target, name, desc) { Z; return Reflect.defineProperty(X, name, desc); }, " +
+        "ownKeys: function(target) { Z; return Reflect.ownKeys(X); }, " +
+        "deleteProperty: function(target, name) { Z; return Reflect.deleteProperty(X, name); }, " +
+        "has: function(target, name) { Z; return name in X; }, " +
+        "get: function(target, name, receiver) { Z; return Reflect.get(X, name, receiver); }, " +
+        "set: function(target, name, val, receiver) { Z; return Reflect.set(X, name, val, receiver); }, " +
+        "getPrototypeOf: function(target) { Z; return Reflect.getPrototypeOf(X); }" +
+        "setPrototypeOf: function(target, proto) { Z; return Reflect.setPrototypeOf(X, proto); }" +
+        "isExtensible: function(target) { Z; return Reflect.isExtensible(X); }" +
+        "preventExtensions: function(target) { Z; return Reflect.preventExtensions(X); }" +
+        "apply: function(target, thisArgument, argumentsList) { Z; return Reflect.apply(X, thisArgument, argumentsList); }" +
+        "construct: function(target, argumentsList, newTarget) { Z; return Reflect.construct(X, argumentsList, newTarget); }" +
       "})"
     )
       .replace(/X/g, m())
@@ -347,8 +349,8 @@ var makeEvilCallback;
     { w: 1, v: function (d, b) { return `delete ${m("h")}.${Random.index(handlerTraps)};`; } },
     { w: 4, v: function (d, b) { return `${m("h")}.${Random.index(handlerTraps)} = ${makeEvilCallback(d, b)};`; } },
     { w: 4, v: function (d, b) { return `${m("h")}.${Random.index(handlerTraps)} = ${m("f")};`; } },
-    { w: 1, v: function (d, b) { return assign(d, b, null, `Proxy.create(${m("h")}, ${m()})`); } },
-    { w: 1, v: function (d, b) { return assign(d, b, "f", `Proxy.createFunction(${m("h")}, ${m("f")}, ${m("f")})`); } },
+    { w: 1, v: function (d, b) { return assign(d, b, null, `new Proxy(${m()}, ${m("h")})`); } },
+    { w: 1, v: function (d, b) { return assign(d, b, "f", `new Proxy(${m("f")}, ${m("h")})`); } },
 
     // r: regexp
     // The separate regex code is better at matching strings with regexps, but this is better at reusing the objects.

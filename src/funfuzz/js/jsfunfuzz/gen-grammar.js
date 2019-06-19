@@ -907,10 +907,8 @@ var exprMakers =
   function (d, b) { return `Math.${Random.index(binaryMathFunctions)}(${makeNumber(d, b)}, ${makeNumber(d, b)})`; },
   /* eslint-enable no-multi-spaces */
 
-  // Harmony proxy creation: object, function without constructTrap, function with constructTrap
-  function (d, b) { return `${makeId(d, b)} = Proxy.create(${makeProxyHandler(d, b)}, ${makeExpr(d, b)})`; },
-  function (d, b) { return `${makeId(d, b)} = Proxy.createFunction(${makeProxyHandler(d, b)}, ${makeFunction(d, b)})`; },
-  function (d, b) { return `${makeId(d, b)} = Proxy.createFunction(${makeProxyHandler(d, b)}, ${makeFunction(d, b)}, ${makeFunction(d, b)})`; },
+  // ES6 scripted proxy creation
+  function (d, b) { return `${makeId(d, b)} = new Proxy(${makeExpr(d, b)}, ${makeProxyHandler(d, b)})`; },
 
   function (d, b) { return cat(["delete", " ", makeId(d, b), ".", makeId(d, b)]); },
 
@@ -1306,6 +1304,9 @@ var functionMakers = [
 
   // Methods with known names
   function (d, b) { return cat([makeExpr(d, b), ".", Random.index(allMethodNames)]); },
+
+  // ES6 scripted proxy function
+  function (d, b) { return `(new Proxy(${makeFunction(d, b)}, ${makeProxyHandler(d, b)}))`; },
 
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
   function (d, b) { return "eval"; }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
