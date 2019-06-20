@@ -90,7 +90,7 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
     return skips
 
 
-def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=missing-param-doc,missing-return-doc
+def earliest_known_working_rev(_options, flags, skip_revs):  # pylint: disable=missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc,too-many-branches,too-complex,too-many-statements
     """Return a revset which evaluates to the first revision of the shell that compiles with |options|
     and runs jsfunfuzz successfully with |flags|."""
@@ -115,10 +115,8 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("450b8f0cbb4e494b399ebcf23a33b8d9cb883245")  # m-c 453627 Fx66
     if "--no-streams" in flags:  # 1st w/ working --no-streams, see bug 1501734
         required.append("c6a8b4d451afa922c4838bd202749c7e131cf05e")  # m-c 442977 Fx65
-    if platform.system() == "Windows" and options.enable32:  # 1st w/ working 32-bit Windows builds, see bug 1483835
-        required.append("577ffed9f102439db47afebcef95bbaaa2e04c93")  # m-c 432608 Fx63
-    if platform.system() == "Windows":  # 1st w/ working Windows builds with a recent Win10 SDK, see bug 1462616
-        required.append("c085e1b32fb9bbdb00360bfb0a1057d20a752f4c")  # m-c 419184 Fx62
+    if platform.system() == "Windows":  # 1st w/ working Windows builds with a recent Win10 SDK, see bug 1485224
+        required.append("b2a536ba5d4bbf0be909652caee1d2d4d63ddcb4")  # m-c 436503 Fx64
     if "--wasm-gc" in flags:  # 1st w/--wasm-gc, see bug 1445272
         required.append("302befe7689abad94a75f66ded82d5e71b558dc4")  # m-c 413255 Fx61
     if "--nursery-strings=on" in flags or \
