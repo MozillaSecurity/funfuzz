@@ -67,6 +67,12 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
                 hgrange("aa1da5ed8a0719e0ab424e672d2f477b70ef593c", "5a03382283ae0a020b2a2d84bbbc91ff13cb2130"),
             ])
 
+    if platform.system() == "Windows":
+        skips.extend([
+            # Fx69, see bug 1560432
+            hgrange("b314f6c6148efb8909c3483eb2a49117049a06cd", "e996920037965b669fe3fd6306d6f8bee0ebc8bf"),
+        ])
+
     if not options.enableDbg:
         skips.extend([
             # Fx58-59, broken opt builds w/ --enable-gczeal
