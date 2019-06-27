@@ -40,8 +40,8 @@ if platform.system() == "Windows":
     # CLANG_ASAN_PARAMS = "-fsanitize=address -Dxmalloc=myxmalloc"
     # Note that Windows ASan builds are still a work-in-progress
     CLANG_ASAN_PARAMS = ""
-    CLANG_VER = "7.0.1"
-    PROGRAMW6432_DIR = os.getenv("PROGRAMW6432").replace("\\", "/")
+    CLANG_VER = "8.0.0"
+    WIN_MOZBUILD_CLANG_PATH = Path.home() / ".mozbuild" / "clang"
 else:
     MAKE_BINARY = "make"
     CLANG_PARAMS = ""
@@ -386,18 +386,18 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_cmds.append("--enable-simulator=arm64")
 
     elif platform.system() == "Windows":
-        win_mozbuild_path = Path.home() / ".mozbuild" / "clang" / "bin"
-        assert win_mozbuild_path.is_dir(), 'Please first run "./mach bootstrap".'
-        assert (win_mozbuild_path / "clang.exe").is_file()
-        assert (win_mozbuild_path / "llvm-config.exe").is_file()
-        cfg_env["LIBCLANG_PATH"] = str(win_mozbuild_path)
+        win_mozbuild_clang_bin_path = WIN_MOZBUILD_CLANG_PATH / "bin"
+        assert win_mozbuild_clang_bin_path.is_dir(), 'Please first run "./mach bootstrap".'
+        assert (win_mozbuild_clang_bin_path / "clang.exe").is_file()
+        assert (win_mozbuild_clang_bin_path / "llvm-config.exe").is_file()
+        cfg_env["LIBCLANG_PATH"] = str(win_mozbuild_clang_bin_path)
         cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
         if shell.build_opts.enableAddressSanitizer:
             cfg_env["CFLAGS"] = CLANG_ASAN_PARAMS
             cfg_env["CXXFLAGS"] = CLANG_ASAN_PARAMS
             cfg_env["LDFLAGS"] = ("clang_rt.asan_dynamic-x86_64.lib "
                                   "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib")
-            cfg_env["CLANG_LIB_DIR"] = f"{PROGRAMW6432_DIR}/LLVM/lib/clang/{CLANG_VER}/lib/windows"
+            cfg_env["CLANG_LIB_DIR"] = str(WIN_MOZBUILD_CLANG_PATH / "lib" / "clang" / CLANG_VER / "lib" / "windows")
             cfg_env["MOZ_CLANG_RT_ASAN_LIB_PATH"] = f'{cfg_env["CLANG_LIB_DIR"]}/clang_rt.asan_dynamic-x86_64.dll'
             cfg_env["LIB"] = cfg_env.get("LIB", "") + cfg_env["CLANG_LIB_DIR"]
         cfg_cmds.append("sh")
@@ -562,8 +562,8 @@ def sm_compile(shell):
             if run_lib.is_file():
                 shutil.copy2(str(run_lib), str(shell.get_shell_cache_dir()))
         if platform.system() == "Windows" and shell.build_opts.enableAddressSanitizer:
-            shutil.copy2(str(f"{PROGRAMW6432_DIR}/LLVM/lib/clang/{CLANG_VER}/lib/windows/"
-                             f"clang_rt.asan_dynamic-x86_64.dll"),
+            shutil.copy2(str(WIN_MOZBUILD_CLANG_PATH / "lib" / "clang" / CLANG_VER / "lib" / "windows" /
+                             "clang_rt.asan_dynamic-x86_64.dll"),
                          str(shell.get_shell_cache_dir()))
 
         shell.set_version(sm_compile_helpers.extract_vers(shell.get_js_objdir()))
