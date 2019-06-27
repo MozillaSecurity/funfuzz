@@ -45,8 +45,8 @@ def ensure_binaryen(url, version):
         Path: Path of the extracted wasm-opt binary
     """
     shell_cache = sm_compile_helpers.ensure_cache_dir(Path.home())
-    wasmopt_path = Path(shell_cache / f"binaryen-version_{version}" / "wasm-opt" +
-                        (".exe" if platform.system() == "Windows" else "")).resolve()
+    wasmopt_path = Path(shell_cache / f"binaryen-version_{version}" /
+                        ("wasm-opt" + (".exe" if platform.system() == "Windows" else ""))).resolve()
 
     sleep_time = 2
     t_lock = threading.Lock()
