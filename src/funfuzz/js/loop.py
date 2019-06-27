@@ -189,7 +189,7 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
         # funbind - integrate with binaryen wasm project but only on Linux x86_64
         # For binaryen Linux x86/aarch64, first wait for https://github.com/WebAssembly/binaryen/issues/1615 to be fixed
         # I do not believe binaryen x86 builds are needed since all our host OS'es are 64-bit
-        if platform.system() == "Linux" and "64" in platform.machine() \
+        if platform.system() == "Linux" and "64" in platform.machine() and "aarch64" not in platform.machine() \
                 and out_log.is_file() and not options.valgrind:
             run_to_report_wasm(options, js_interesting_opts, env, log_prefix,
                                out_log, ccoverage, collector, target_time)
