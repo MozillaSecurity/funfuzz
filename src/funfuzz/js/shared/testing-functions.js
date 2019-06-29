@@ -57,7 +57,7 @@ function fuzzTestingFunctionsCtor (browser, fGlobal, fObject) { /* eslint-disabl
     // https://hg.mozilla.org/mozilla-central/file/3c70f36ad62c9c714db319/js/src/builtin/TestingFunctions.cpp#l478
     switch (rnd(12)) {
       /* eslint-disable no-multi-spaces */
-      case 0:  return _set("sliceTimeBudget", rnd(100));
+      case 0:  return _set("sliceTimeBudgetMS", rnd(100));
       case 1:  return _set("minNurseryBytes", rnd(2) ? 0 : (1 + rnd(30))); // See bug 1540670
       case 2:  return _set("maxNurseryBytes", rnd(2) ? rnd(30) : (2 ** 32 - 1)); // See bug 1538594
       case 3:  return _set("mode", rnd(4));
