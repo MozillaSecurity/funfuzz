@@ -104,12 +104,13 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
 
         # FuzzManager expects a list of strings rather than an iterable, so bite the
         # bullet and "readlines" everything into memory.
+        # Collector adds newlines later, see https://git.io/fjoMB
         out_log = (logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")
         with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
-            out = f.readlines()
+            out = [line.rstrip() for line in f]
         err_log = (logPrefix.parent / f"{logPrefix.stem}-err").with_suffix(".txt")
         with io.open(str(err_log), "r", encoding="utf-8", errors="replace") as f:
-            err = f.readlines()
+            err = [line.rstrip() for line in f]
 
         if options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
             issues.append("valgrind reported an error")
