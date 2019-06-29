@@ -352,7 +352,7 @@ def main():  # pylint: disable=missing-docstring
     if options.submit:  # pylint: disable=no-member
         if res.lev >= options.minimumInterestingLevel:  # pylint: disable=no-member
             testcase_filename = options.jsengineWithArgs[-1]  # pylint: disable=no-member
-            if testcase_filename.suffix == "wasm":
+            if testcase_filename.suffix == ".wasm":
                 # binaryen integration, we do not yet have pinpoint nor autobisectjs support, so temporarily quality 10
                 wrapper_file = options.jsengineWithArgs[-2]  # pylint: disable=no-member
                 assert wrapper_file.is_file()
