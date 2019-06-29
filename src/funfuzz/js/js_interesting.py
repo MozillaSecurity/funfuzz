@@ -358,7 +358,7 @@ def main():  # pylint: disable=missing-docstring
                 # binaryen integration, we do not yet have pinpoint nor autobisectjs support, so temporarily quality 10
                 assert testcase_filename.is_file()
                 assert wrapper_file.is_file()
-                result_zip = "reduced.zip"
+                result_zip = Path.cwd() / "webassembly_files.zip"
                 with zipfile.ZipFile(result_zip, "w") as f:
                     f.write(wrapper_file, wrapper_file.name, compress_type=zipfile.ZIP_DEFLATED)
                     f.write(testcase_filename, testcase_filename.name, compress_type=zipfile.ZIP_DEFLATED)
