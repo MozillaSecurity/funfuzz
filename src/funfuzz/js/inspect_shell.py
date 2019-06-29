@@ -42,11 +42,8 @@ if platform.system() == "Windows":
     ALL_RUN_LIBS.append(RUN_TESTPLUG_LIB)
     WIN_ICU_VERS = []
     # Needs to be updated when the earliest known working revision changes. Currently:
-    # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
-    WIN_ICU_VERS.append(59)  # prior version
-    WIN_ICU_VERS.append(60)  # m-c 391988 Fx59, 1st w/ ICU 60.1, see bug 1405993
-    WIN_ICU_VERS.append(61)  # m-c 410692 Fx61, 1st w/ ICU 61.1, see bug 1445465
-    WIN_ICU_VERS.append(62)  # m-c 425600 Fx63, 1st w/ ICU 62.1, see bug 1466471
+    # m-c 436503 Fx64, 1st w/ working Windows builds with a recent Win10 SDK, see bug 1485224
+    WIN_ICU_VERS.append(62)  # prior version
     WIN_ICU_VERS.append(63)  # m-c 443997 Fx65, 1st w/ ICU 63.1, see bug 1499026
     WIN_ICU_VERS.append(64)  # m-c 467933 Fx68, 1st w/ ICU 64.1, see bug 1533481
 
