@@ -17,6 +17,7 @@ from shlex import quote
 import shutil
 import subprocess
 import sys
+import zipfile
 
 from FTB.ProgramConfiguration import ProgramConfiguration
 import FTB.Signatures.CrashInfo as Crash_Info
@@ -350,11 +351,28 @@ def main():  # pylint: disable=missing-docstring
     print(res.lev)
     if options.submit:  # pylint: disable=no-member
         if res.lev >= options.minimumInterestingLevel:  # pylint: disable=no-member
-            testcaseFilename = options.jsengineWithArgs[-1]  # pylint: disable=invalid-name,no-member
-            print(f"Submitting {testcaseFilename}")
-            quality = 0
-            # pylint: disable=no-member
-            create_collector.submit_collector(options.collector, res.crashInfo, str(testcaseFilename), quality)
+            testcase_filename = options.jsengineWithArgs[-1]  # pylint: disable=no-member
+            if testcase_filename.endswith("wasm"):
+                # binaryen integration, we do not yet have pinpoint nor autobisectjs support, so temporarily quality 10
+                wrapper_file = options.jsengineWithArgs[-2]  # pylint: disable=no-member
+                assert wrapper_file.is_file()
+                wasm_file = options.jsengineWithArgs[-1]  # pylint: disable=no-member
+                assert wasm_file.is_file()
+                result_zip = "reduced.zip"
+                with zipfile.ZipFile(result_zip, "w") as f:
+                    f.write(wrapper_file, wrapper_file.name, compress_type=zipfile.ZIP_DEFLATED)
+                    f.write(wasm_file, wasm_file.name, compress_type=zipfile.ZIP_DEFLATED)
+
+                # Quality is 10, meta_data {}
+                print(f"Submitting {result_zip}")
+                # pylint: disable=no-member
+                create_collector.submit_collector(options.collector, res.crashInfo, str(result_zip), 10, meta_data={})
+                print(f"Submitted {result_zip}")
+            else:
+                print(f"Submitting {testcase_filename}")
+                # pylint: disable=no-member
+                create_collector.submit_collector(options.collector, res.crashInfo, str(testcase_filename), 0)
+                print(f"Submitted {testcase_filename}")
         else:
             print("Not submitting (not interesting)")
 
