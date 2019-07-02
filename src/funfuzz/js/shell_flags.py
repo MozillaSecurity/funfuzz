@@ -181,18 +181,20 @@ def add_random_wasm_flags(shell_path, input_list=False):
         list: List of flags to be tested, with probable wasm flags added.
     """
     if shell_supports_flag(shell_path, "--wasm-compiler=none") and chance(.9):
-        if chance(.4):
+        if chance(.2):
             wasm_compiler_option = "baseline+ion"
-        elif chance(.5):  # pragma: no cover
-            wasm_compiler_option = "baseline"
-        elif chance(.6):  # pragma: no cover
-            wasm_compiler_option = "ion"
-        # elif chance(.7):  # pragma: no cover
-        #     wasm_compiler_option = "baseline+cranelift"
-        # elif chance(.8):  # pragma: no cover
-        #     wasm_compiler_option = "cranelift"
         else:  # pragma: no cover
-            wasm_compiler_option = "none"
+            random_value = random.random()
+            if 0 < random_value <= 0.2:  # pragma: no cover
+                wasm_compiler_option = "ion"
+            elif 0.2 < random_value <= 0.4:  # pragma: no cover
+                wasm_compiler_option = "baseline+cranelift"
+            elif 0.4 < random_value <= 0.6:  # pragma: no cover
+                wasm_compiler_option = "cranelift"
+            elif 0.6 < random_value <= 0.8:  # pragma: no cover
+                wasm_compiler_option = "none"
+            else:  # pragma: no cover
+                wasm_compiler_option = "baseline"
         # m-c rev 455252:48dc14f79fb0, see bug 1509441
         input_list.append("--wasm-compiler=" + wasm_compiler_option)
     # --wasm-gc is now unstable as of bug 1488205
