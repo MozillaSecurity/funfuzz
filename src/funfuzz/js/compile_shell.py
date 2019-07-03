@@ -463,14 +463,12 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     cfg_cmds.append("--enable-debug-symbols")  # gets debug symbols on opt shells
     cfg_cmds.append("--disable-tests")
 
-    # Disable cranelift if on macOS
     # Disable cranelift if repository revision is on/after m-c rev 438680:4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0, fx64
-    # and before m-c rev 480766:42bc4b6a03dd87d08bf5e10fc72972abdc6fca7b, fx69
-    if platform.system() == "Darwin" or \
-            (hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
-                                            "42bc4b6a03dd87d08bf5e10fc72972abdc6fca7b") and not
-             hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
-                                            "parents(4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0)")):
+    # and before m-c rev 479295:9e7c1e1a993d51d611558244049a97599511e965, fx69
+    if hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
+                                      "9e7c1e1a993d51d611558244049a97599511e965") and not \
+        hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
+                                       "parents(4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0)"):
         # if not hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
         #                                       "parents(4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0)"):
         cfg_cmds.append("--disable-cranelift")
