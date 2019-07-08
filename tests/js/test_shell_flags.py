@@ -55,7 +55,6 @@ def test_add_random_ion_flags(monkeypatch):
     assert "--no-bigint" in all_flags
     assert "--cache-ir-stubs=on" in all_flags
     assert "--ion-pgo=on" in all_flags
-    assert "--ion-sincos=on" in all_flags
     assert "--ion-instruction-reordering=on" in all_flags
     assert "--ion-regalloc=testbed" in all_flags
     assert '--execute="setJitCompilerOption(\\"ion.forceinlineCaches\\",1)"' in all_flags

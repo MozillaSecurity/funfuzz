@@ -115,9 +115,6 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
         # m-c rev 272274:b0a0ff5fa705, see bug 1209515
         input_list.append("--ion-pgo=" + ("on" if chance(.1) else "off"))
     if chance(.2):
-        # m-c rev 262544:3dec2b935295, see bug 984018
-        input_list.append("--ion-sincos=" + ("on" if chance(.5) else "off"))
-    if chance(.2):
         # m-c rev 259672:59d2f2e62420, see bug 1195545
         input_list.append("--ion-instruction-reordering=" + ("on" if chance(.9) else "off"))
     if chance(.2):
