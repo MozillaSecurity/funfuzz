@@ -242,6 +242,14 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         args.append("--no-ion")
 
     # Other flags
+    if shell_supports_flag(shell_path, "--blinterp-eager") and chance(.8):
+        # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
+        args.append("--blinterp")
+        args.append("--blinterp-eager")
+    elif shell_supports_flag(shell_path, "--no-blinterp") and chance(.2):
+        # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
+        args.append("--no-blinterp")
+
     if shell_supports_flag(shell_path, "--more-compartments") and chance(.9):
         # m-c rev 453627:450b8f0cbb4e, see bug 1518753
         args.append("--more-compartments")
@@ -354,7 +362,8 @@ def basic_flag_sets():
         ["--fuzzing-safe", "--ion-offthread-compile=off"],
         ["--fuzzing-safe", "--baseline-eager"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--baseline-eager", "--no-ion"],  # May find > w/o --no-ion
-        ["--fuzzing-safe", "--no-baseline", "--no-ion"],
+        ["--fuzzing-safe", "--no-blinterp", "--no-baseline", "--no-ion"],
+        ["--fuzzing-safe", "--blinterp", "--blinterp-eager"],
         # --wasm-compiler=none was removed for compare_jit
         ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--no-native-regexp"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--ion-check-range-analysis",
