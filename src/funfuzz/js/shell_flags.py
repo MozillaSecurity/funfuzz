@@ -242,10 +242,21 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         args.append("--no-ion")
 
     # Other flags
-    if shell_supports_flag(shell_path, "--blinterp-eager") and chance(.8):
+    if shell_supports_flag(shell_path, "--blinterp") and chance(.8):
         # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
         args.append("--blinterp")
-        args.append("--blinterp-eager")
+        if shell_supports_flag(shell_path, "--blinterp-eager") and chance(.5):
+            # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
+            args.append("--blinterp-eager")
+        if shell_supports_flag(shell_path, "--blinterp-warmup-threshold=0") and chance(.2):
+            # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
+            args.append("--blinterp-warmup-threshold=0")  # Default value is 10
+        elif shell_supports_flag(shell_path, "--blinterp-warmup-threshold=0") and chance(.3):
+            # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
+            args.append("--blinterp-warmup-threshold=1")  # Default value is 10
+        elif shell_supports_flag(shell_path, "--blinterp-warmup-threshold=0") and chance(.4):
+            # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
+            args.append("--blinterp-warmup-threshold=100")  # Default value is 10
     elif shell_supports_flag(shell_path, "--no-blinterp") and chance(.2):
         # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
         args.append("--no-blinterp")
