@@ -465,11 +465,10 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
 
     # Disable cranelift if repository revision is on/after m-c rev 438680:4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0, fx64
     # and before m-c rev 479295:9e7c1e1a993d51d611558244049a97599511e965, fx69
-    if shell.build_opts.enableAddressSanitizer or (
-            hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
-                                           "9e7c1e1a993d51d611558244049a97599511e965") and not
-            hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
-                                           "parents(4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0)")):
+    if hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
+                                      "9e7c1e1a993d51d611558244049a97599511e965") and not \
+        hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
+                                       "parents(4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0)"):
         # if not hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
         #                                       "parents(4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0)"):
         cfg_cmds.append("--disable-cranelift")
