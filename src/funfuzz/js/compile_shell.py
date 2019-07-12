@@ -45,7 +45,7 @@ if platform.system() == "Windows":
 else:
     MAKE_BINARY = "make"
     CLANG_PARAMS = ""
-    CLANG_ASAN_PARAMS = "-fsanitize=address"
+    CLANG_ASAN_PARAMS = ""  # -fsanitize=address *cannot* be in CC or CXX as it's added by --enable-address-sanitizer
     SSE2_FLAGS = "-msse2 -mfpmath=sse"  # See bug 948321
 
 if multiprocessing.cpu_count() > 2:
