@@ -109,6 +109,7 @@ def test_random_flag_set(monkeypatch):
     assert "--fuzzing-safe" in all_flags
     assert "--blinterp" in all_flags
     assert "--blinterp-eager" in all_flags
+    assert "--blinterp-warmup-threshold=0" in all_flags
     assert "--more-compartments" in all_flags
     assert "--no-streams" in all_flags
     assert "--nursery-strings=on" in all_flags
