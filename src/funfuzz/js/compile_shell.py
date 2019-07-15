@@ -368,8 +368,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_cmds.append("--enable-simulator=arm")
     # 64-bit shell on Mac OS X 10.13 El Capitan and greater
     elif parse_version(platform.mac_ver()[0]) >= parse_version("10.13") and not shell.build_opts.enable32:
-        cfg_env["CC"] = f"clang {CLANG_PARAMS}"
-        cfg_env["CXX"] = f"clang++ {CLANG_PARAMS}"
         if shutil.which("brew"):
             cfg_env["AUTOCONF"] = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
         cfg_cmds.append("sh")
