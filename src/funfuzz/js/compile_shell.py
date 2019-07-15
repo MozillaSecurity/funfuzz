@@ -465,16 +465,19 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
 
     if (
             (
-                shell.build_opts.enableAddressSanitizer
-                # Disable cranelift on ASan builds if repository revision is on/after
+                shell.build_opts.enableAddressSanitizer and
+                # Disable cranelift on ASan builds if repository revision is on/after:
                 #   m-c rev 428135:6fcf54117a3b21164e6e769343416d2262991f6e, fx63
-                # Remove when bug 1565768 is fixed, disable cranelift on all ASan builds throughout for now
-                and not hg_helpers.existsAndIsAncestor(shell.get_repo_dir(),
-                                                       shell.get_hg_hash(),
-                                                       "parents(6fcf54117a3b21164e6e769343416d2262991f6e)")
+                #   and before m-c rev 479295:9e7c1e1a993d51d611558244049a97599511e965, fx69
+                hg_helpers.existsAndIsAncestor(shell.get_repo_dir(),
+                                               shell.get_hg_hash(),
+                                               "9e7c1e1a993d51d611558244049a97599511e965") and not
+                hg_helpers.existsAndIsAncestor(shell.get_repo_dir(),
+                                               shell.get_hg_hash(),
+                                               "parents(6fcf54117a3b21164e6e769343416d2262991f6e)")
             ) or (
-                # Disable cranelift if:
-                #   repository revision is on/after m-c rev 438680:4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0, fx64
+                # Disable cranelift if repository revision is on/after:
+                #   m-c rev 438680:4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0, fx64
                 #   and before m-c rev 479295:9e7c1e1a993d51d611558244049a97599511e965, fx69
                 hg_helpers.existsAndIsAncestor(shell.get_repo_dir(),
                                                shell.get_hg_hash(),
@@ -483,8 +486,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
                                                shell.get_hg_hash(),
                                                "parents(4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0)")
             )):
-        # if not hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(),
-        #                                       "parents(4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0)"):
         cfg_cmds.append("--disable-cranelift")
 
     if platform.system() == "Windows":
