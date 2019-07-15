@@ -355,9 +355,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         # apt-get `libc6-dev-i386 g++-multilib` first, if on 64-bit Linux. (no matter Clang or GCC)
         cfg_env["CC"] = f"clang -m32 {SSE2_FLAGS}"
         cfg_env["CXX"] = f"clang++ -m32 {SSE2_FLAGS}"
-        if shell.build_opts.enableAddressSanitizer:
-            cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
-            cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         cfg_cmds.append("--target=i686-pc-linux")
@@ -373,9 +370,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     elif parse_version(platform.mac_ver()[0]) >= parse_version("10.13") and not shell.build_opts.enable32:
         cfg_env["CC"] = f"clang {CLANG_PARAMS}"
         cfg_env["CXX"] = f"clang++ {CLANG_PARAMS}"
-        if shell.build_opts.enableAddressSanitizer:
-            cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
-            cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
         if shutil.which("brew"):
             cfg_env["AUTOCONF"] = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
         cfg_cmds.append("sh")
@@ -420,9 +414,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             if shell.build_opts.enableSimulatorArm64:
                 cfg_cmds.append("--enable-simulator=arm64")
     else:
-        if shell.build_opts.enableAddressSanitizer:
-            cfg_env["CC"] = f"clang {CLANG_PARAMS} {CLANG_ASAN_PARAMS}"
-            cfg_env["CXX"] = f"clang++ {CLANG_PARAMS} {CLANG_ASAN_PARAMS}"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         if shell.build_opts.enableSimulatorArm64:
