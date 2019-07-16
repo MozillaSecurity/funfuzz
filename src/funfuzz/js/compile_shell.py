@@ -382,6 +382,8 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_env["LDFLAGS"] = ("clang_rt.asan_dynamic-x86_64.lib "
                                   "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib")
             cfg_env["CLANG_LIB_DIR"] = str(WIN_MOZBUILD_CLANG_PATH / "lib" / "clang" / CLANG_VER / "lib" / "windows")
+            # Not sure if the following line works. One seems to need to first copy a .dll to ~/.mozbuild/clang/bin
+            #   cp ~/.mozbuild/clang/lib/clang/*/lib/windows/clang_rt.asan_dynamic-x86_64.dll ~/.mozbuild/clang/bin/
             cfg_env["MOZ_CLANG_RT_ASAN_LIB_PATH"] = f'{cfg_env["CLANG_LIB_DIR"]}/clang_rt.asan_dynamic-x86_64.dll'
             assert Path(cfg_env["MOZ_CLANG_RT_ASAN_LIB_PATH"]).is_file()
             cfg_env["LIB"] = cfg_env.get("LIB", "") + cfg_env["CLANG_LIB_DIR"]
