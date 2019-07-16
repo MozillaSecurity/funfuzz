@@ -152,9 +152,11 @@ def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylin
 
     test_env = env_with_path(str(shellPath.parent))
     asan_options = f"exitcode={ASAN_ERROR_EXIT_CODE}"
-    # Turn on LSan, except on macOS: https://github.com/google/sanitizers/issues/1026
-    # Note: Unsure about Windows for now
-    if not platform.system() == "Darwin":
+    # Turn on LSan, Linux-only
+    # macOS non-support: https://github.com/google/sanitizers/issues/1026
+    # Windows non-support: https://developer.mozilla.org/en-US/docs/Mozilla/Testing/Firefox_and_Address_Sanitizer
+    #   (search for LSan)
+    if platform.system() == "Linux":
         asan_options = "detect_leaks=1," + asan_options
         test_env.update({"LSAN_OPTIONS": "max_leaks=1,"})
     test_env.update({"ASAN_OPTIONS": asan_options})
