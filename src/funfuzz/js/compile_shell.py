@@ -36,16 +36,10 @@ S3_SHELL_CACHE_DIRNAME = "shell-cache"  # Used by autobisectjs
 
 if platform.system() == "Windows":
     MAKE_BINARY = "mozmake"
-    CLANG_PARAMS = "-fallback"
-    # CLANG_ASAN_PARAMS = "-fsanitize=address -Dxmalloc=myxmalloc"
-    # Note that Windows ASan builds are still a work-in-progress
-    CLANG_ASAN_PARAMS = ""
     CLANG_VER = "8.0.0"
     WIN_MOZBUILD_CLANG_PATH = Path.home() / ".mozbuild" / "clang"
 else:
     MAKE_BINARY = "make"
-    CLANG_PARAMS = ""
-    CLANG_ASAN_PARAMS = ""  # -fsanitize=address *cannot* be in CC or CXX as it's added by --enable-address-sanitizer
     SSE2_FLAGS = "-msse2 -mfpmath=sse"  # See bug 948321
 
 if multiprocessing.cpu_count() > 2:
@@ -385,8 +379,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         cfg_env["LIBCLANG_PATH"] = str(win_mozbuild_clang_bin_path)
         cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
         if shell.build_opts.enableAddressSanitizer:
-            cfg_env["CFLAGS"] = CLANG_ASAN_PARAMS
-            cfg_env["CXXFLAGS"] = CLANG_ASAN_PARAMS
             cfg_env["LDFLAGS"] = ("clang_rt.asan_dynamic-x86_64.lib "
                                   "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib")
             cfg_env["CLANG_LIB_DIR"] = str(WIN_MOZBUILD_CLANG_PATH / "lib" / "clang" / CLANG_VER / "lib" / "windows")
