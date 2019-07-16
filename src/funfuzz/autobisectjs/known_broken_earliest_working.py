@@ -96,7 +96,7 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
     return skips
 
 
-def earliest_known_working_rev(_options, flags, skip_revs):  # pylint: disable=missing-param-doc,missing-return-doc
+def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc,too-many-branches,too-complex,too-many-statements
     """Return a revset which evaluates to the first revision of the shell that compiles with |options|
     and runs jsfunfuzz successfully with |flags|."""
@@ -118,6 +118,8 @@ def earliest_known_working_rev(_options, flags, skip_revs):  # pylint: disable=m
     if "--enable-experimental-fields" in flags:  # 1st w/--enable-experimental-fields, see bug 1529758
         required.append("7a1ad6647c22bd34a6c70e67dc26e5b83f71cea4")  # m-c 463705 Fx67
     # Note that m-c rev 457581:4b74d76e55a819852c8fa925efd25c57fdf35c9d is the first with BigInt on by default
+    if platform.system() == "Windows" and options.enableAddressSanitizer:  # 1st w/ ASan builds w/recent Win10 SDK
+        required.append("a12f5e7e9da2713d93b571b31f67c78aa784e2a4")  # m-c 455758 Fx67
     if set(["--wasm-compiler=none", "--wasm-compiler=baseline+ion", "--wasm-compiler=baseline", "--wasm-compiler=ion",
             "--wasm-compiler=cranelift"]).intersection(flags):  # 1st w/--wasm-compiler=none/<others>, see bug 1509441
         required.append("48dc14f79fb0a51ca796257a4179fe6f16b71b14")  # m-c 455252 Fx66
