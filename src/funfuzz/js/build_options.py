@@ -293,8 +293,6 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
             return False, "Linux ASan builds cannot yet work in WSL though there may be workarounds."
         if platform.system() == "Windows" and args.enable32:
             return False, "ASan is explicitly not supported in 32-bit Windows builds."
-        if platform.system() == "Windows":
-            return False, "Windows ASan builds still seem to run into issues."
 
     if args.enableSimulatorArm32 or args.enableSimulatorArm64:
         if platform.system() == "Windows" and args.enableSimulatorArm32:
