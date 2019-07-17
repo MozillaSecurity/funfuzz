@@ -29,6 +29,7 @@ if platform.system() == "Darwin":
 elif platform.system() == "Windows":
     BINARYEN_ARCH = "x86_64"
 
+# funfuzz ARM64 userscript has to be changed if this BINARYEN_VERSION name is changed
 BINARYEN_VERSION = 84
 BINARYEN_URL = (f"https://github.com/WebAssembly/binaryen/releases/download/version_{BINARYEN_VERSION}/"
                 f"binaryen-version_{BINARYEN_VERSION}-{BINARYEN_ARCH}-{BINARYEN_OS}.tar.gz")
