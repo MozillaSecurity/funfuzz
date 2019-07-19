@@ -628,6 +628,7 @@ var exceptionyStatementMakers = [
 function makeTryBlock (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
+  // The following comment was added *before* guarded/conditional catch support was removed from jsfunfuzz
   // Catches: 1/6 chance of having none
   // Catches: maybe 2 + 1/2
   // So approximately 4 recursions into makeExceptionyStatement on average!
@@ -638,14 +639,6 @@ function makeTryBlock (d, b) { /* eslint-disable-line require-jsdoc */
   var s = cat(["try", " { ", makeExceptionyStatement(d, b), " } "]);
 
   var numCatches = 0;
-
-  while (rnd(3) === 0) {
-    // Add a guarded catch, using an expression or a function call.
-    ++numCatches;
-    let catchId = makeId(d, b);
-    let catchBlock = makeExceptionyStatement(d, b.concat([catchId]));
-    if (rnd(2)) { s += cat(["catch", "(", catchId, " if ", makeExpr(d, b), ")", " { ", catchBlock, " } "]); } else { s += cat(["catch", "(", catchId, " if ", "(function(){", makeExceptionyStatement(d, b), "})())", " { ", catchBlock, " } "]); }
-  }
 
   if (rnd(2)) {
     // Add an unguarded catch.
