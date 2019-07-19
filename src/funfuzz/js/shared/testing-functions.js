@@ -170,7 +170,16 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
     { w: 1, v: function (d, b) { return `grayRoot();`; } },
 
     // Test monitorType as per bug 1560070
-    { w: 10, v: function (d, b) { return `monitorType(${(rnd(2) ? makeFunction(d, b) : undefined)}, ${rnd(1000)}, ${(rnd(2) ? (rnd(2) ? "unknown" : "unknownObject") : makeId(d, b))});`; } }
+    { w: 10,
+      v: function (d, b) {
+        return (
+          `monitorType(` +
+          `${rnd(2) ? makeFunction(d, b) : undefined}, ` +
+          `${rnd(2) ? (rnd(2) ? 0 : 1) : rnd(1000)}, ` +
+          `${rnd(2) ? (rnd(2) ? "'unknown'" : "'unknownObject'") : makeId(d, b)});`
+        );
+      }
+    }
   ];
 
   // Functions only in the SpiderMonkey shell
