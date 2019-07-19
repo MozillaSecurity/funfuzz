@@ -48,7 +48,7 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
   }
 
   function tryCatch (statement) { /* eslint-disable-line require-jsdoc */
-    return `try { ${statement} } catch(e) { }`;
+    return `try { ${statement} } catch${rnd(2) ? "(e)" : ""} { }`;
   }
 
   function setGcparam () { /* eslint-disable-line require-jsdoc */

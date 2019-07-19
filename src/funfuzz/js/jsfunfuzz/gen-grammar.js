@@ -645,7 +645,11 @@ function makeTryBlock (d, b) { /* eslint-disable-line require-jsdoc */
     ++numCatches;
     let catchId = makeId(d, b); /* eslint-disable-line no-redeclare */
     let catchBlock = makeExceptionyStatement(d, b.concat([catchId])); /* eslint-disable-line no-redeclare */
-    s += cat(["catch", "(", catchId, ")", " { ", catchBlock, " } "]);
+    if (rnd(2)) {
+      s += cat(["catch", "(", catchId, ")", " { ", catchBlock, " } "]);
+    } else {
+      s += cat(["catch", " { ", catchBlock, " } "]); // Catch bindings are now optional thanks to bug 1380881
+    }
   }
 
   if (numCatches === 0 || rnd(2) === 1) {
