@@ -1914,9 +1914,6 @@ var iterableExprMakers = Random.weighted([
   { w: 1, v: function (d, b) { return `new Array(${makeNumber(d, b)})`; } },
   { w: 8, v: makeArrayLiteral },
 
-  // Array comprehensions (JavaScript 1.7)
-  { w: 1, v: function (d, b) { return cat(["[", makeExpr(d, b), makeComprehension(d, b), "]"]); } },
-
   // A generator that yields once
   { w: 1, v: function (d, b) { return `(function() { ${directivePrologue()}yield ${makeExpr(d - 1, b)}; } })()`; } },
   { w: 1, v: function (d, b) { return `(function*() { ${directivePrologue()}yield ${makeExpr(d - 1, b)}; } })()`; } },
