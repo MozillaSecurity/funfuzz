@@ -1529,25 +1529,6 @@ function makeId (d, b) { /* eslint-disable-line require-jsdoc */
   // but bad things happen if you have "eval setter". so let's not put eval in this list.
 }
 
-function makeComprehension (d, b) { /* eslint-disable-line require-jsdoc */
-  if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
-
-  if (d < 0) { return ""; }
-
-  switch (rnd(7)) {
-    case 0:
-      return "";
-    case 1:
-      return cat([" for ", "(", makeForInLHS(d, b), " in ", makeExpr(d - 2, b), ")"]) + makeComprehension(d - 1, b);
-    case 2:
-      return cat([" for ", "(", makeId(d, b), " of ", makeExpr(d - 2, b), ")"]) + makeComprehension(d - 1, b);
-    case 3:
-      return cat([" for ", "(", makeId(d, b), " of ", makeIterable(d - 2, b), ")"]) + makeComprehension(d - 1, b);
-    default:
-      return cat([" if ", "(", makeExpr(d - 2, b), ")"]); // this is always last (and must be preceded by a "for", oh well)
-  }
-}
-
 // for..in LHS can be a single variable OR it can be a destructuring array of exactly two elements.
 function makeForInLHS (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
