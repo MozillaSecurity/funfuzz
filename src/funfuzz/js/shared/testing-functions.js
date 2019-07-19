@@ -132,7 +132,7 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
     { w: 1, v: function (d, b) { return `setJitCompilerOption('ion.warmup.trigger', ${rnd(40)});`; } },
 
     // Test the baseline compiler
-    { w: 10, v: function (d, b) { return `baselineCompile();`; } },
+    { w: 5, v: function (d, b) { return `baselineCompile();`; } },
 
     // Force inline cache.
     { w: 1, v: function (d, b) { return `setJitCompilerOption('ion.forceinlineCaches', ${rnd(2)});`; } },
@@ -161,7 +161,7 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
 
     // JIT bailout
     { w: 5, v: function (d, b) { return `bailout();`; } },
-    { w: 10, v: function (d, b) { return `bailAfter(${numberOfInstructions()});`; } },
+    { w: 5, v: function (d, b) { return `bailAfter(${numberOfInstructions()});`; } },
 
     // Enable some slow Shape assertions. See bug 1412289
     { w: 1, v: function (d, b) { return `enableShapeConsistencyChecks();`; } },
