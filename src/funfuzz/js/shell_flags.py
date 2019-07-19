@@ -137,6 +137,8 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     if chance(.7):  # m-c rev 204669:891d587c19c4, see bug 1063816
         # Added due to fuzz-flags.txt addition: m-c rev 460895:e0f409bac9bd, see bug 1529072
         input_list.append("--ion-warmup-threshold=0")
+    elif chance(.3):  # m-c rev 204669:891d587c19c4, see bug 1063816
+        input_list.append("--ion-warmup-threshold=1")
     elif chance(.5):  # m-c rev 204669:891d587c19c4, see bug 1063816
         # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
         input_list.append("--ion-warmup-threshold=100")
