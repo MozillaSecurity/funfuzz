@@ -330,6 +330,16 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         # m-c rev 211115:35025fd9e99b, see bug 958492
         args.append("--no-incremental-gc")
 
+    if shell_supports_flag(shell_path, "--baseline-warmup-threshold=0") and chance(.7):
+        # m-c rev 204669:891d587c19c4, see bug 1063816
+        args.append("--baseline-warmup-threshold=0")
+    elif shell_supports_flag(shell_path, "--baseline-warmup-threshold=0") and chance(.3):
+        # m-c rev 204669:891d587c19c4, see bug 1063816
+        args.append("--baseline-warmup-threshold=1")
+    elif shell_supports_flag(shell_path, "--baseline-warmup-threshold=0") and chance(.5):
+        # m-c rev 204669:891d587c19c4, see bug 1063816
+        args.append("--baseline-warmup-threshold=100")
+
     if shell_supports_flag(shell_path, "--no-threads") and chance(.5):
         # m-c rev 195996:35038c3324ee, see bug 1031529
         args.append("--no-threads")

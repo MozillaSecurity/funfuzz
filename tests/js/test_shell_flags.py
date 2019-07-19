@@ -119,6 +119,7 @@ def test_random_flag_set(monkeypatch):
     assert "--no-cgc" in all_flags
     assert "--gc-zeal=4,999" in all_flags
     assert "--no-incremental-gc" in all_flags
+    assert "--baseline-warmup-threshold=0" in all_flags
     assert "--no-threads" in all_flags
     assert "--no-native-regexp" in all_flags
     assert "--no-ggc" in all_flags
