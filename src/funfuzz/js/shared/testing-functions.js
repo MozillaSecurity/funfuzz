@@ -4,7 +4,8 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 /* exported fuzzTestingFunctionsCtor */
-/* global finalLevel:writable, maxLevel:writable, oomAfterAllocations, oomAtAllocation, Random, resetOOMFailure, rnd */
+/* global finalLevel:writable, makeFunction, makeId, maxLevel:writable, oomAfterAllocations, oomAtAllocation */
+/* global Random, resetOOMFailure, rnd */
 
 // Generate calls to SpiderMonkey "testing functions" for:
 // * testing that they do not cause assertions/crashes
