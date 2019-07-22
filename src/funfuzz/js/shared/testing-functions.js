@@ -169,7 +169,10 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
     // Create gray root Array for the current compartment. See bug 1452602
     { w: 1, v: function (d, b) { return `grayRoot();`; } },
 
-    // Test monitorType as per bug 1560070
+    // Test monitorType(fun, index, val) as per bug 1560070
+    // fun: function/null/undefined
+    // index: a number [0-999]? (the larger the number, the larger the function/memory used so 999 may be reasonable?)
+    // val: any value, string or null object or even createIsHTMLDDA, but especially test "unknown" and "unknownObject"
     { w: 10,
       v: function (d, b) {
         return (
