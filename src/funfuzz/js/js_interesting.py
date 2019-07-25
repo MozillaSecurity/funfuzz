@@ -79,8 +79,9 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
 
         timed_run_kw = {"env": (env or deepcopy(os.environ))}
 
-        # Enable LSan which is enabled with ASan, only on Linux
-        if inspect_shell.queryBuildConfiguration(options.jsengine, "asan") and platform.system() == "Linux":
+        # Enable LSan which is enabled with non-ARM64 simulator ASan, only on Linux
+        if (platform.system() == "Linux" and inspect_shell.queryBuildConfiguration(options.jsengine, "asan") and not
+                inspect_shell.queryBuildConfiguration(options.jsengine, "arm64-simulator")):
             timed_run_kw["env"].update({"ASAN_OPTIONS": "detect_leaks=1,"})
             timed_run_kw["env"].update({"LSAN_OPTIONS": "max_leaks=1,"})
         elif not platform.system() == "Windows":

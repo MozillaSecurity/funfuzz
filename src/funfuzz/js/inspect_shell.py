@@ -156,7 +156,7 @@ def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylin
     # macOS non-support: https://github.com/google/sanitizers/issues/1026
     # Windows non-support: https://developer.mozilla.org/en-US/docs/Mozilla/Testing/Firefox_and_Address_Sanitizer
     #   (search for LSan)
-    if platform.system() == "Linux":
+    if platform.system() == "Linux" and not ("-asan-" in str(shellPath) and "-armsim64-" in str(shellPath)):
         asan_options = "detect_leaks=1," + asan_options
         test_env.update({"LSAN_OPTIONS": "max_leaks=1,"})
     test_env.update({"ASAN_OPTIONS": asan_options})
