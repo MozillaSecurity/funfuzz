@@ -439,6 +439,6 @@ function infrequentCondition (v, n) { /* eslint-disable-line require-jsdoc */
   }
 }
 
-var arrayBufferType = "SharedArrayBuffer" in this ?
+var arrayBufferType = (typeof SharedArrayBuffer !== "undefined") ?
   function () { return rnd(2) ? "SharedArrayBuffer" : "ArrayBuffer"; } :
   function () { return "ArrayBuffer"; };
