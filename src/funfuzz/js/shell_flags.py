@@ -102,9 +102,6 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
         # m-c rev 466417:a812f6daf98e, see bug 1382650
         input_list.append("--ion-full-warmup-threshold=5000")
-    if shell_supports_flag(shell_path, "--no-bigint") and chance(.2):
-        # m-c rev 461970:e262ebb01282, see bug 1527900
-        input_list.append("--no-bigint")
 
     # m-c rev 330353:bb868860dfc3 is the earliest known working revision, so stop testing prior existence of flag
 

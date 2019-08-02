@@ -52,7 +52,6 @@ def test_add_random_ion_flags(monkeypatch):
     all_flags = js.shell_flags.add_random_ion_flags(test_shell_compile(), [])
     assert "--ion-optimization-levels=on" in all_flags
     assert "--ion-full-warmup-threshold=0" in all_flags
-    assert "--no-bigint" in all_flags
     assert "--cache-ir-stubs=on" in all_flags
     assert "--ion-pgo=on" in all_flags
     assert "--ion-instruction-reordering=on" in all_flags
