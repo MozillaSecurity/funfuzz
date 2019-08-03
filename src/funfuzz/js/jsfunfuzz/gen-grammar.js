@@ -643,8 +643,8 @@ function makeTryBlock (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(2)) {
     // Add an unguarded catch.
     ++numCatches;
-    let catchId = makeId(d, b); /* eslint-disable-line no-redeclare */
-    let catchBlock = makeExceptionyStatement(d, b.concat([catchId])); /* eslint-disable-line no-redeclare */
+    let catchId = makeId(d, b);
+    let catchBlock = makeExceptionyStatement(d, b.concat([catchId]));
     if (rnd(2)) {
       s += cat(["catch", "(", catchId, ")", " { ", catchBlock, " } "]);
     } else {
