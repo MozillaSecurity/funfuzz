@@ -276,7 +276,7 @@ var statementMakers = Random.weighted([
   { w: 1, v: function (d, b) { return makeShapeyConstructorLoop(d, b); } },
 
   // Replace a variable with a long linked list pointing to it.  (Forces SpiderMonkey's GC marker into a stackless mode.)
-  { w: 1, v: function (d, b) { var x = makeId(d, b); return `${x} = linkedList(${x}, ${rnd(100) * rnd(100)});`; } },
+  { w: 1, v: function (d, b) { var x = makeId(d, b); return `${x} = ${linkedList(x, (rnd(100) * rnd(100)))}`; } },
 
   // Oddly placed "use strict" or "use asm"
   { w: 1, v: function (d, b) { return directivePrologue() + makeStatement(d - 1, b); } },
