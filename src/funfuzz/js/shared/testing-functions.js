@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 /* exported fuzzTestingFunctionsCtor */
-/* global finalLevel:writable, makeFunction, makeId, maxLevel:writable, oomAfterAllocations, oomAtAllocation */
+/* global makeFunction, makeId, oomAfterAllocations, oomAtAllocation */
 /* global Random, resetOOMFailure, rnd */
 
 // Generate calls to SpiderMonkey "testing functions" for:
@@ -20,13 +20,14 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
   function enableGCZeal () { /* eslint-disable-line require-jsdoc */
     // As of m-c 451466:79cf24341024 2018-12-19
     // https://hg.mozilla.org/mozilla-central/file/79cf24341024/js/src/gc/GC.cpp#l1000
-    maxLevel = 25;
+    let maxLevel = 25;
     maxLevel++; // rnd function starts from zero
-    var level = finalLevel = rnd(maxLevel - 3); // 3 levels disabled below
+    let level = rnd(maxLevel - 3); // 3 levels disabled below
+    let finalLevel = level;
 
     // Generate the second level.
     // ref https://hg.mozilla.org/mozilla-central/file/02aa9c921aed/js/src/gc/GC.cpp#l1001
-    var levelTwo = rnd(maxLevel - 3); // 3 levels disabled below
+    let levelTwo = rnd(maxLevel - 3); // 3 levels disabled below
     if (levelTwo >= 3) ++levelTwo; // gczeal 3 does not exist, so repurpose it
     if (levelTwo >= 5) ++levelTwo; // gczeal 5 does not exist, so repurpose it
     if (levelTwo >= 6) ++levelTwo; // gczeal 6 does not exist, so repurpose it
