@@ -194,7 +194,7 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
     patch_abs_path = patch_file.resolve()
     pname = patch_abs_path.name
     qimport_result = subprocess.run(
-        ["hg", "-R", str(repo_dir), "qimport", patch_abs_path],
+        ["hg", "-R", str(repo_dir), "qimport", str(patch_abs_path)],
         cwd=os.getcwd(),
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
@@ -209,7 +209,7 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
     print("Patch qimport'ed...", end=" ")
 
     qpush_result = subprocess.run(
-        ["hg", "-R", str(repo_dir), "qpush", pname],
+        ["hg", "-R", str(repo_dir), "qpush", str(pname)],
         cwd=os.getcwd(),
         check=True,
         stderr=subprocess.STDOUT,
@@ -252,5 +252,5 @@ def qpop_qrm_applied_patch(patch_file, repo_dir):
         raise OSError(f"Return code from `hg qpop` is: {qpop_return_code}")
 
     print("Patch qpop'ed...", end=" ")
-    subprocess.run(["hg", "-R", str(repo_dir), "qdelete", patch_file.name], check=True)
+    subprocess.run(["hg", "-R", str(repo_dir), "qdelete", str(patch_file.name)], check=True)
     print("Patch qdelete'd.")
