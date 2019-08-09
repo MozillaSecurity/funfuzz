@@ -67,12 +67,6 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
                 hgrange("aa1da5ed8a0719e0ab424e672d2f477b70ef593c", "5a03382283ae0a020b2a2d84bbbc91ff13cb2130"),
             ])
 
-    if platform.system() == "Windows":
-        skips.extend([
-            # Fx69, see bug 1560432
-            hgrange("b314f6c6148efb8909c3483eb2a49117049a06cd", "e996920037965b669fe3fd6306d6f8bee0ebc8bf"),
-        ])
-
     if not options.enableDbg:
         skips.extend([
             # Fx58-59, broken opt builds w/ --enable-gczeal
@@ -96,7 +90,7 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
     return skips
 
 
-def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=missing-param-doc,missing-return-doc
+def earliest_known_working_rev(_options, flags, skip_revs):  # pylint: disable=missing-param-doc,missing-return-doc
     # pylint: disable=missing-return-type-doc,missing-type-doc,too-many-branches,too-complex,too-many-statements
     """Return a revset which evaluates to the first revision of the shell that compiles with |options|
     and runs jsfunfuzz successfully with |flags|."""
@@ -115,11 +109,11 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
     if set(["--blinterp-eager", "--no-blinterp",
             "--blinterp"]).intersection(flags):  # 1st w/--blinterp-eager,--no-blinterp,--blinterp, see bug 1562129
         required.append("2e490776b07e35013ae07a47798a983f482ffaa3")  # m-c 481620 Fx69
+    if platform.system() == "Windows":  # 1st w/ working Windows builds w/a recent Win10 SDK and Win-specific shell fix
+        required.append("e996920037965b669fe3fd6306d6f8bee0ebc8bf")  # m-c 480164 Fx69
     if "--enable-experimental-fields" in flags:  # 1st w/--enable-experimental-fields, see bug 1529758
         required.append("7a1ad6647c22bd34a6c70e67dc26e5b83f71cea4")  # m-c 463705 Fx67
     # Note that m-c rev 457581:4b74d76e55a819852c8fa925efd25c57fdf35c9d is the first with BigInt on by default
-    if platform.system() == "Windows" and options.enableAddressSanitizer:  # 1st w/ ASan builds w/recent Win10 SDK
-        required.append("a12f5e7e9da2713d93b571b31f67c78aa784e2a4")  # m-c 455758 Fx67
     if set(["--wasm-compiler=none", "--wasm-compiler=baseline+ion", "--wasm-compiler=baseline", "--wasm-compiler=ion",
             "--wasm-compiler=cranelift"]).intersection(flags):  # 1st w/--wasm-compiler=none/<others>, see bug 1509441
         required.append("48dc14f79fb0a51ca796257a4179fe6f16b71b14")  # m-c 455252 Fx66
@@ -127,8 +121,6 @@ def earliest_known_working_rev(options, flags, skip_revs):  # pylint: disable=mi
         required.append("450b8f0cbb4e494b399ebcf23a33b8d9cb883245")  # m-c 453627 Fx66
     if "--no-streams" in flags:  # 1st w/ working --no-streams, see bug 1501734
         required.append("c6a8b4d451afa922c4838bd202749c7e131cf05e")  # m-c 442977 Fx65
-    if platform.system() == "Windows":  # 1st w/ working Windows builds with a recent Win10 SDK, see bug 1485224
-        required.append("b2a536ba5d4bbf0be909652caee1d2d4d63ddcb4")  # m-c 436503 Fx64
     if "--wasm-gc" in flags:  # 1st w/--wasm-gc, see bug 1445272
         required.append("302befe7689abad94a75f66ded82d5e71b558dc4")  # m-c 413255 Fx61
     if "--nursery-strings=on" in flags or \
