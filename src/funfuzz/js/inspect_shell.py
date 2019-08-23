@@ -19,6 +19,7 @@ from ..util.logging_helpers import get_logger
 
 LOG_INSPECT_SHELL = get_logger(__name__)
 
+ASAN_ERROR_EXIT_CODE = 77
 RUN_MOZGLUE_LIB = ""
 RUN_NSPR_LIB = ""
 RUN_PLDS_LIB = ""
@@ -43,11 +44,8 @@ if platform.system() == "Windows":
     ALL_RUN_LIBS.append(RUN_TESTPLUG_LIB)
     WIN_ICU_VERS = []
     # Needs to be updated when the earliest known working revision changes. Currently:
-    # m-c 369571 Fx56, 1st w/ successful MSVC 2017 builds, see bug 1356493
-    WIN_ICU_VERS.append(59)  # prior version
-    WIN_ICU_VERS.append(60)  # m-c 391988 Fx59, 1st w/ ICU 60.1, see bug 1405993
-    WIN_ICU_VERS.append(61)  # m-c 410692 Fx61, 1st w/ ICU 61.1, see bug 1445465
-    WIN_ICU_VERS.append(62)  # m-c 425600 Fx63, 1st w/ ICU 62.1, see bug 1466471
+    # m-c 436503 Fx64, 1st w/ working Windows builds with a recent Win10 SDK, see bug 1485224
+    WIN_ICU_VERS.append(62)  # prior version
     WIN_ICU_VERS.append(63)  # m-c 443997 Fx65, 1st w/ ICU 63.1, see bug 1499026
     WIN_ICU_VERS.append(64)  # m-c 467933 Fx68, 1st w/ ICU 64.1, see bug 1533481
 
@@ -100,7 +98,7 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
     filetype = unsplit_file_type.split(":", 1)[1]
     if platform.system() == "Windows":  # pylint: disable=no-else-return
         assert "MS Windows" in filetype
-        return "32" if ("Intel 80386 32-bit" in filetype or "PE32+ executable" in filetype) else "64"
+        return "32" if ("Intel 80386 32-bit" in filetype or "PE32 executable" in filetype) else "64"
     else:
         if "32-bit" in filetype or "i386" in filetype:
             assert "64-bit" not in filetype
@@ -153,10 +151,22 @@ def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylin
     """Test the given shell with the given args."""
     test_cmd = (constructVgCmdList() if useValgrind else []) + [str(shellPath)] + args
     LOG_INSPECT_SHELL.debug("The testing command is: %s", " ".join(quote(str(x)) for x in test_cmd))
+
+    test_env = env_with_path(str(shellPath.parent))
+    asan_options = f"exitcode={ASAN_ERROR_EXIT_CODE}"
+    # Turn on LSan, Linux-only
+    # macOS non-support: https://github.com/google/sanitizers/issues/1026
+    # Windows non-support: https://developer.mozilla.org/en-US/docs/Mozilla/Testing/Firefox_and_Address_Sanitizer
+    #   (search for LSan)
+    if platform.system() == "Linux" and not ("-asan-" in str(shellPath) and "-armsim64-" in str(shellPath)):
+        asan_options = "detect_leaks=1," + asan_options
+        test_env.update({"LSAN_OPTIONS": "max_leaks=1,"})
+    test_env.update({"ASAN_OPTIONS": asan_options})
+
     test_cmd_result = subprocess.run(
         test_cmd,
         cwd=os.getcwd(),
-        env=env_with_path(str(shellPath.parent)),
+        env=test_env,
         stderr=stderr,
         stdout=subprocess.PIPE,
         timeout=999)
@@ -189,7 +199,7 @@ def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-
     assert queryBuildConfiguration(binary, "debug") == sh.build_opts.enableDbg
 
     assert queryBuildConfiguration(binary, "more-deterministic") == sh.build_opts.enableMoreDeterministic
-    assert queryBuildConfiguration(binary, "asan") == sh.build_opts.buildWithAsan
+    assert queryBuildConfiguration(binary, "asan") == sh.build_opts.enableAddressSanitizer
     assert queryBuildConfiguration(binary, "profiling") != sh.build_opts.disableProfiling
     assert (queryBuildConfiguration(binary, "arm-simulator") and
             sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm32

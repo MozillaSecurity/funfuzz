@@ -190,7 +190,10 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
                                      fuzzjs, ccoverage, collector, target_time)
 
         # funbind - integrate with binaryen wasm project but only on Linux x86_64
-        if platform.system() == "Linux" and platform.machine() == "x86_64" and out_log.is_file():
+        # (aarch64 got activated as we now first compile our own binaryen aarch64 Linux builds)
+        # For binaryen Linux x86, first wait for https://github.com/WebAssembly/binaryen/issues/1615 to be fixed
+        # I do not believe binaryen x86 builds are needed since all our host OS'es are 64-bit
+        if platform.system() == "Linux" and "64" in platform.machine() and out_log.is_file() and not options.valgrind:
             run_to_report_wasm(options, js_interesting_opts, env, log_prefix,
                                out_log, ccoverage, collector, target_time)
 
@@ -373,7 +376,6 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "clearMarkObservers = function() { };\n",
         "dumpHeap = function() { };\n",
         "dumpObject = function() { };\n",
-        "dumpScopeChain = function() { };\n",
         "dumpStringRepresentation = function() { };\n",
         "evalInCooperativeThread = function() { };\n",
         "evalInWorker = function() { };\n",
@@ -381,6 +383,7 @@ def jitCompareLines(jsfunfuzzOutputFilename, marker):  # pylint: disable=invalid
         "getLcovInfo = function() { };\n",
         "getMarks = function() { };\n",
         "isAsmJSCompilationAvailable = function() { };\n",
+        "nukeAllCCWs = function() { };\n",
         "Object.getOwnPropertyNames = function() { };\n",
         "Object.getOwnPropertyDescriptors = function() { };\n",
         "offThreadCompileScript = function() { };\n",

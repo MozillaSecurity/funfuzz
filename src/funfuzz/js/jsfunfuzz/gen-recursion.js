@@ -62,10 +62,9 @@ var recursiveFunctions = [
     testSub: function (text) { return text.replace(/EXPR1/, "0").replace(/STATEMENT1/, "return thisitem + recval;"); },
     randSub: function (text, varMap, d, b) {
       /* eslint-disable indent, no-multi-spaces */
-      var expr1 =      makeExpr(d, b.concat([varMap["array"], varMap["start"]]));
-      var statement1 = rnd(2) ?
-                                 makeStatement(d, b.concat([varMap["thisitem"], varMap["recval"]]))        :
-                          `return ${makeExpr(d, b.concat([varMap["thisitem"], varMap["recval"]]))};`;
+      var expr1 =                    makeExpr(d, b.concat([varMap["array"], varMap["start"]]));
+      var statement1 = rnd(2) ? makeStatement(d, b.concat([varMap["thisitem"], varMap["recval"]])) :
+                           `return ${makeExpr(d, b.concat([varMap["thisitem"], varMap["recval"]]))};`;
 
       return (text.replace(/EXPR1/,      expr1)
                   .replace(/STATEMENT1/, statement1)

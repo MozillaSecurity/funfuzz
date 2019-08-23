@@ -48,6 +48,7 @@ def gather_coverage(dirpath):
                                  "-t", "coveralls+",
                                  "--commit-sha", fm_conf.get("Main", "product_version"),
                                  "--token", "NONE",
+                                 "--guess-directory-when-missing",
                                  "-p", "/srv/jenkins/jobs/coverage-clone-mozilla-central/workspace/"],
                                 check=True,
                                 stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")

@@ -7,6 +7,7 @@
 """Check whether a testcase causes an interesting result in a shell.
 """
 
+from copy import deepcopy
 import io
 from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
@@ -16,6 +17,7 @@ from shlex import quote
 import shutil
 import subprocess
 import sys
+import zipfile
 
 from FTB.ProgramConfiguration import ProgramConfiguration
 import FTB.Signatures.CrashInfo as Crash_Info
@@ -78,11 +80,17 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
                 [f"--suppressions={filename}" for filename in "valgrind_suppressions.txt"] +
                 runthis)
 
-        timed_run_kw = {"env": (env or os.environ)}
-        if not (platform.system() == "Windows" or
-                # We cannot set a limit for RLIMIT_AS for ASan binaries
-                inspect_shell.queryBuildConfiguration(options.jsengine, "asan")):
+        timed_run_kw = {"env": (env or deepcopy(os.environ))}
+
+        # Enable LSan which is enabled with non-ARM64 simulator ASan, only on Linux
+        if (platform.system() == "Linux" and inspect_shell.queryBuildConfiguration(options.jsengine, "asan") and not
+                inspect_shell.queryBuildConfiguration(options.jsengine, "arm64-simulator")):
+            timed_run_kw["env"].update({"ASAN_OPTIONS": "detect_leaks=1,"})
+            timed_run_kw["env"].update({"LSAN_OPTIONS": "max_leaks=1,"})
+        elif not platform.system() == "Windows":
             timed_run_kw["preexec_fn"] = set_ulimit
+
+        pc.addEnvironmentVariables(dict(timed_run_kw["env"]))
 
         lithium_logPrefix = str(logPrefix).encode("utf-8")
         if isinstance(lithium_logPrefix, b"".__class__):
@@ -101,12 +109,13 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
 
         # FuzzManager expects a list of strings rather than an iterable, so bite the
         # bullet and "readlines" everything into memory.
+        # Collector adds newlines later, see https://git.io/fjoMB
         out_log = (logPrefix.parent / f"{logPrefix.stem}-out").with_suffix(".txt")
         with io.open(str(out_log), "r", encoding="utf-8", errors="replace") as f:
-            out = f.readlines()
+            out = [line.rstrip() for line in f]
         err_log = (logPrefix.parent / f"{logPrefix.stem}-err").with_suffix(".txt")
         with io.open(str(err_log), "r", encoding="utf-8", errors="replace") as f:
-            err = f.readlines()
+            err = [line.rstrip() for line in f]
 
         if options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
             issues.append("valgrind reported an error")
@@ -348,11 +357,27 @@ def main():  # pylint: disable=missing-docstring
     LOG_JS_INTERESTING.info(res.lev)
     if options.submit:  # pylint: disable=no-member
         if res.lev >= options.minimumInterestingLevel:  # pylint: disable=no-member
-            testcaseFilename = options.jsengineWithArgs[-1]  # pylint: disable=invalid-name,no-member
-            LOG_JS_INTERESTING.info("Submitting %s", testcaseFilename)
-            quality = 0
-            # pylint: disable=no-member
-            create_collector.submit_collector(options.collector, res.crashInfo, str(testcaseFilename), quality)
+            testcase_filename = Path(options.jsengineWithArgs[-1])  # pylint: disable=no-member
+            wrapper_file = Path(options.jsengineWithArgs[-2])  # pylint: disable=no-member
+            if testcase_filename.suffix == ".wasm" and wrapper_file.suffix == ".wrapper":
+                # binaryen integration, we do not yet have pinpoint nor autobisectjs support, so temporarily quality 10
+                assert testcase_filename.is_file()
+                assert wrapper_file.is_file()
+                result_zip = Path.cwd() / "webassembly_files.zip"
+                with zipfile.ZipFile(result_zip, "w") as f:
+                    f.write(wrapper_file, wrapper_file.name, compress_type=zipfile.ZIP_DEFLATED)
+                    f.write(testcase_filename, testcase_filename.name, compress_type=zipfile.ZIP_DEFLATED)
+
+                # Quality is 10, meta_data {}
+                LOG_JS_INTERESTING.info("Submitting %s", result_zip)
+                # pylint: disable=no-member
+                create_collector.submit_collector(options.collector, res.crashInfo, str(result_zip), 10, meta_data={})
+                LOG_JS_INTERESTING.info("Submitted %s", result_zip)
+            else:
+                LOG_JS_INTERESTING.info("Submitting %s", testcase_filename)
+                # pylint: disable=no-member
+                create_collector.submit_collector(options.collector, res.crashInfo, str(testcase_filename), 0)
+                LOG_JS_INTERESTING.info("Submitted %s", testcase_filename)
         else:
             LOG_JS_INTERESTING.info("Not submitting (not interesting)")
 

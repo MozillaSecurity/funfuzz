@@ -26,7 +26,7 @@ WRAPPER_FILE = Path(__file__).resolve().with_suffix(".wrapper")
 
 
 # See https://github.com/WebAssembly/binaryen/issues/1615
-@pytest.mark.skipif(platform.machine() != "x86_64", reason="Only Linux x86_64 binaryen binary is usable now")
+@pytest.mark.skipif("64" not in platform.machine(), reason="Only 64-bit binaryen binary makes sense to use now")
 @pytest.fixture()
 @pytest.mark.skipif(platform.system() != "Linux", reason="Only Linux binaryen binary is obtained for now")
 def test_ensure_binaryen():
@@ -35,7 +35,7 @@ def test_ensure_binaryen():
 
 
 # See https://github.com/WebAssembly/binaryen/issues/1615
-@pytest.mark.skipif(platform.machine() != "x86_64", reason="Only Linux x86_64 binaryen binary is usable now")
+@pytest.mark.skipif("64" not in platform.machine(), reason="Only 64-bit binaryen binary makes sense to use now")
 @pytest.fixture()
 @pytest.mark.skipif(platform.system() != "Linux", reason="Only Linux binaryen binary is obtained for now")
 def test_wasmopt_run(test_ensure_binaryen):  # pylint: disable=redefined-outer-name,unused-argument
@@ -48,7 +48,7 @@ def test_wasmopt_run(test_ensure_binaryen):  # pylint: disable=redefined-outer-n
 
 
 # See https://github.com/WebAssembly/binaryen/issues/1615
-@pytest.mark.skipif(platform.machine() != "x86_64", reason="Only Linux x86_64 binaryen binary is usable now")
+@pytest.mark.skipif("64" not in platform.machine(), reason="Only 64-bit binaryen binary makes sense to use now")
 @pytest.fixture()
 @pytest.mark.skipif(platform.system() != "Linux", reason="Only Linux binaryen binary is obtained for now")
 @pytest.mark.slow

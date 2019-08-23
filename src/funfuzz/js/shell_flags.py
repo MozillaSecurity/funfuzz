@@ -102,9 +102,6 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
         # m-c rev 466417:a812f6daf98e, see bug 1382650
         input_list.append("--ion-full-warmup-threshold=5000")
-    if shell_supports_flag(shell_path, "--no-bigint") and chance(.2):
-        # m-c rev 461970:e262ebb01282, see bug 1527900
-        input_list.append("--no-bigint")
 
     # m-c rev 330353:bb868860dfc3 is the earliest known working revision, so stop testing prior existence of flag
 
@@ -114,9 +111,6 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     if chance(.2):
         # m-c rev 272274:b0a0ff5fa705, see bug 1209515
         input_list.append("--ion-pgo=" + ("on" if chance(.1) else "off"))
-    if chance(.2):
-        # m-c rev 262544:3dec2b935295, see bug 984018
-        input_list.append("--ion-sincos=" + ("on" if chance(.5) else "off"))
     if chance(.2):
         # m-c rev 259672:59d2f2e62420, see bug 1195545
         input_list.append("--ion-instruction-reordering=" + ("on" if chance(.9) else "off"))
@@ -140,6 +134,8 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     if chance(.7):  # m-c rev 204669:891d587c19c4, see bug 1063816
         # Added due to fuzz-flags.txt addition: m-c rev 460895:e0f409bac9bd, see bug 1529072
         input_list.append("--ion-warmup-threshold=0")
+    elif chance(.3):  # m-c rev 204669:891d587c19c4, see bug 1063816
+        input_list.append("--ion-warmup-threshold=1")
     elif chance(.5):  # m-c rev 204669:891d587c19c4, see bug 1063816
         # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
         input_list.append("--ion-warmup-threshold=100")
@@ -181,18 +177,20 @@ def add_random_wasm_flags(shell_path, input_list=False):
         list: List of flags to be tested, with probable wasm flags added.
     """
     if shell_supports_flag(shell_path, "--wasm-compiler=none") and chance(.9):
-        if chance(.4):
+        if chance(.2):
             wasm_compiler_option = "baseline+ion"
-        elif chance(.5):  # pragma: no cover
-            wasm_compiler_option = "baseline"
-        elif chance(.6):  # pragma: no cover
-            wasm_compiler_option = "ion"
-        # elif chance(.7):  # pragma: no cover
-        #     wasm_compiler_option = "baseline+cranelift"
-        # elif chance(.8):  # pragma: no cover
-        #     wasm_compiler_option = "cranelift"
         else:  # pragma: no cover
-            wasm_compiler_option = "none"
+            random_value = random.random()
+            if 0 < random_value <= 0.2:  # pragma: no cover
+                wasm_compiler_option = "ion"
+            elif 0.2 < random_value <= 0.4:  # pragma: no cover
+                wasm_compiler_option = "baseline+cranelift"
+            elif 0.4 < random_value <= 0.6:  # pragma: no cover
+                wasm_compiler_option = "cranelift"
+            elif 0.6 < random_value <= 0.8:  # pragma: no cover
+                wasm_compiler_option = "none"
+            else:  # pragma: no cover
+                wasm_compiler_option = "baseline"
         # m-c rev 455252:48dc14f79fb0, see bug 1509441
         input_list.append("--wasm-compiler=" + wasm_compiler_option)
     # --wasm-gc is now unstable as of bug 1488205
@@ -243,6 +241,25 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         args.append("--no-ion")
 
     # Other flags
+    if shell_supports_flag(shell_path, "--blinterp") and chance(.8):
+        # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
+        args.append("--blinterp")
+        if shell_supports_flag(shell_path, "--blinterp-eager") and chance(.5):
+            # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
+            args.append("--blinterp-eager")
+        if shell_supports_flag(shell_path, "--blinterp-warmup-threshold=0") and chance(.2):
+            # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
+            args.append("--blinterp-warmup-threshold=0")  # Default value is 10
+        elif shell_supports_flag(shell_path, "--blinterp-warmup-threshold=0") and chance(.3):
+            # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
+            args.append("--blinterp-warmup-threshold=1")  # Default value is 10
+        elif shell_supports_flag(shell_path, "--blinterp-warmup-threshold=0") and chance(.4):
+            # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
+            args.append("--blinterp-warmup-threshold=100")  # Default value is 10
+    elif shell_supports_flag(shell_path, "--no-blinterp") and chance(.2):
+        # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
+        args.append("--no-blinterp")
+
     if shell_supports_flag(shell_path, "--more-compartments") and chance(.9):
         # m-c rev 453627:450b8f0cbb4e, see bug 1518753
         args.append("--more-compartments")
@@ -312,6 +329,16 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         # m-c rev 211115:35025fd9e99b, see bug 958492
         args.append("--no-incremental-gc")
 
+    if shell_supports_flag(shell_path, "--baseline-warmup-threshold=0") and chance(.7):
+        # m-c rev 204669:891d587c19c4, see bug 1063816
+        args.append("--baseline-warmup-threshold=0")
+    elif shell_supports_flag(shell_path, "--baseline-warmup-threshold=0") and chance(.3):
+        # m-c rev 204669:891d587c19c4, see bug 1063816
+        args.append("--baseline-warmup-threshold=1")
+    elif shell_supports_flag(shell_path, "--baseline-warmup-threshold=0") and chance(.5):
+        # m-c rev 204669:891d587c19c4, see bug 1063816
+        args.append("--baseline-warmup-threshold=100")
+
     if shell_supports_flag(shell_path, "--no-threads") and chance(.5):
         # m-c rev 195996:35038c3324ee, see bug 1031529
         args.append("--no-threads")
@@ -355,7 +382,8 @@ def basic_flag_sets():
         ["--fuzzing-safe", "--ion-offthread-compile=off"],
         ["--fuzzing-safe", "--baseline-eager"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--baseline-eager", "--no-ion"],  # May find > w/o --no-ion
-        ["--fuzzing-safe", "--no-baseline", "--no-ion"],
+        ["--fuzzing-safe", "--no-blinterp", "--no-baseline", "--no-ion"],
+        ["--fuzzing-safe", "--blinterp", "--blinterp-eager"],
         # --wasm-compiler=none was removed for compare_jit
         ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--no-native-regexp"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--ion-check-range-analysis",

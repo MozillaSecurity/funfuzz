@@ -98,33 +98,25 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
     randomizeBool(["--disable-optimize"], 0.1,
                   dest="disableOpt",
                   help='Build shells with --disable-optimize. Defaults to "%(default)s".')
-    randomizeBool(["--enable-profiling"], 0,
-                  dest="enableProfiling",
-                  help='Build shells with --enable-profiling. Defaults to "%(default)s". '
-                       "Currently defaults to True in configure.in on mozilla-central.")
     randomizeBool(["--disable-profiling"], 0.5,
                   dest="disableProfiling",
                   help='Build with profiling off. Defaults to "True" on Linux, else "%(default)s".')
 
-    # Alternative compiler for Linux. Clang is always turned on, on Win and Mac.
-    randomizeBool(["--build-with-clang"], 0.5,
-                  dest="buildWithClang",
-                  help='Build with clang. Defaults to "True" on Win and Mac, "%(default)s" otherwise.')
     # Memory debuggers
-    randomizeBool(["--build-with-asan"], 0.3,
-                  dest="buildWithAsan",
+    randomizeBool(["--enable-address-sanitizer"], 0.3,
+                  dest="enableAddressSanitizer",
                   help='Build with clang AddressSanitizer support. Defaults to "%(default)s".')
-    randomizeBool(["--build-with-valgrind"], 0.2,
-                  dest="buildWithVg",
+    randomizeBool(["--enable-valgrind"], 0.2,
+                  dest="enableValgrind",
                   help='Build with valgrind.h bits. Defaults to "%(default)s". '
                        "Requires --enable-hardfp for ARM platforms.")
-    # We do not use randomizeBool because we add this flag automatically if --build-with-valgrind
+    # We do not use randomizeBool because we add this flag automatically if --enable-valgrind
     # is selected.
     parser.add_argument("--run-with-valgrind",
                         dest="runWithVg",
                         action="store_true",
                         default=False,
-                        help="Run the shell under Valgrind. Requires --build-with-valgrind.")
+                        help="Run the shell under Valgrind. Requires --enable-valgrind.")
 
     # Misc spidermonkey options
     randomizeBool(["--enable-more-deterministic"], 0.75,
@@ -174,12 +166,6 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
     parser, randomizer = addParserOptions()
     build_options = parser.parse_args(args.split())
 
-    if platform.system() == "Darwin":
-        build_options.buildWithClang = True  # Clang seems to be the only supported compiler
-
-    if platform.system() == "Windows":
-        build_options.buildWithClang = True
-
     if build_options.enableArmSimulatorObsolete:
         build_options.enableSimulatorArm32 = True
 
@@ -200,11 +186,7 @@ def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
         if build_options.repo_dir:
             build_options.repo_dir = build_options.repo_dir.expanduser()
         else:
-            # For patch fuzzing without a specified repo, do not randomize repos, assume m-c instead
-            if build_options.enableRandom and not build_options.patch_file:
-                build_options.repo_dir = get_random_valid_repo(DEFAULT_TREES_LOCATION)
-            else:
-                build_options.repo_dir = DEFAULT_TREES_LOCATION / "mozilla-central"
+            build_options.repo_dir = DEFAULT_TREES_LOCATION / "mozilla-central"
 
             if not build_options.repo_dir.is_dir():
                 sys.exit("repo_dir is not specified, and a default repository location cannot be confirmed. Exiting...")
@@ -229,17 +211,13 @@ def computeShellType(build_options):  # pylint: disable=invalid-name,missing-par
     if build_options.disableOpt:
         fileName.append("optDisabled")
     fileName.append("32" if build_options.enable32 else "64")
-    if build_options.enableProfiling:
-        fileName.append("prof")
     if build_options.disableProfiling:
         fileName.append("profDisabled")
     if build_options.enableMoreDeterministic:
         fileName.append("dm")
-    if build_options.buildWithClang:
-        fileName.append("clang")
-    if build_options.buildWithAsan:
+    if build_options.enableAddressSanitizer:
         fileName.append("asan")
-    if build_options.buildWithVg:
+    if build_options.enableValgrind:
         fileName.append("vg")
     if build_options.enableOomBreakpoint:
         fileName.append("oombp")
@@ -288,7 +266,7 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
     if "Microsoft" in platform.release() and args.enable32:
         return False, "WSL does not seem to support 32-bit Linux binaries yet."
 
-    if args.buildWithVg:
+    if args.enableValgrind:
         return False, "FIXME: We need to set LD_LIBRARY_PATH first, else Valgrind segfaults."
         # Test with leak-checking disabled, test that reporting works, test only on x64 16.04
         # Test with bug 1278887
@@ -299,7 +277,7 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
         # if not args.enableOpt:
         #     # FIXME: Isn't this enabled by default??  # pylint: disable=fixme
         #     return False, "Valgrind needs opt builds."
-        # if args.buildWithAsan:
+        # if args.enableAddressSanitizer:
         #     return False, "One should not compile with both Valgrind flags and ASan flags."
 
         # if platform.system() == "Windows":
@@ -307,16 +285,10 @@ def areArgsValid(args):  # pylint: disable=invalid-name,missing-param-doc,missin
         # if platform.system() == "Darwin":
         #     return False, "Valgrind does not work well with Mac OS X 10.10 Yosemite."
 
-    if args.runWithVg and not args.buildWithVg:
-        return False, "--run-with-valgrind needs --build-with-valgrind."
+    if args.runWithVg and not args.enableValgrind:
+        return False, "--run-with-valgrind needs --enable-valgrind."
 
-    if args.buildWithClang:
-        if platform.system() == "Linux" and not args.buildWithAsan:
-            return False, "We do not really care about non-Asan clang-compiled Linux builds yet."
-
-    if args.buildWithAsan:
-        if not args.buildWithClang:
-            return False, "We must only test ASan builds with Clang, else GCC builds crash on startup."
+    if args.enableAddressSanitizer:
         if args.enable32:
             return False, "32-bit ASan builds fail on 18.04 due to https://github.com/google/sanitizers/issues/954."
         if platform.system() == "Linux" and "Microsoft" in platform.release():
@@ -345,37 +317,13 @@ def generateRandomConfigurations(parser, randomizer):  # pylint: disable=invalid
     # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
     while True:
         randomArgs = randomizer.getRandomSubset()  # pylint: disable=invalid-name
-        if "--build-with-valgrind" in randomArgs and chance(0.95):
+        if "--enable-valgrind" in randomArgs and chance(0.95):
             randomArgs.append("--run-with-valgrind")
         build_options = parser.parse_args(randomArgs)
         if areArgsValid(build_options)[0]:
             build_options.build_options_str = " ".join(randomArgs)  # Used for autobisectjs
             build_options.enableRandom = True  # This has to be true since we are randomizing...
             return build_options
-
-
-def get_random_valid_repo(tree):
-    """Given a path to Mozilla Mercurial repositories, return a randomly chosen valid one.
-
-    Args:
-        tree (Path): Intended location of Mozilla Mercurial repositories
-
-    Returns:
-        Path: Location of a valid Mozilla repository
-    """
-    assert isinstance(tree, Path)
-    tree = tree.resolve()
-
-    valid_repos = []
-    for branch in ["mozilla-central", "mozilla-beta"]:
-        if (tree / branch / ".hg" / "hgrc").is_file():
-            valid_repos.append(branch)
-
-    # After checking if repos are valid, reduce chances that non-mozilla-central repos are chosen
-    if "mozilla-beta" in valid_repos and chance(.999):  # Reduce m-b likelihood until May 14, 2019
-        valid_repos.remove("mozilla-beta")
-
-    return tree / random.choice(valid_repos)
 
 
 def main():  # pylint: disable=missing-docstring

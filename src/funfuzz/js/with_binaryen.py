@@ -22,9 +22,19 @@ import requests
 from ..util import sm_compile_helpers
 from ..util.logging_helpers import get_logger
 
-BINARYEN_VERSION = 81
+BINARYEN_OS = platform.system().lower()
+BINARYEN_ARCH = platform.machine()
+
+if platform.system() == "Darwin":
+    BINARYEN_OS = "apple-" + BINARYEN_OS
+elif platform.system() == "Windows":
+    BINARYEN_ARCH = "x86_64"
+
+# funfuzz ARM64 userscript has to be changed if this BINARYEN_VERSION name is changed
+# If BINARYEN_VERSION number is bumped, we have to create new ARM64 VMs
+BINARYEN_VERSION = 89
 BINARYEN_URL = (f"https://github.com/WebAssembly/binaryen/releases/download/version_{BINARYEN_VERSION}/"
-                f"binaryen-version_{BINARYEN_VERSION}-{platform.uname()[4]}-linux.tar.gz")
+                f"binaryen-version_{BINARYEN_VERSION}-{BINARYEN_ARCH}-{BINARYEN_OS}.tar.gz")
 LOG_WITH_BINARYEN = get_logger(__name__)
 
 
@@ -39,7 +49,8 @@ def ensure_binaryen(url, version):
         Path: Path of the extracted wasm-opt binary
     """
     shell_cache = sm_compile_helpers.ensure_cache_dir(Path.home())
-    wasmopt_path = Path(shell_cache / f"binaryen-version_{version}" / "wasm-opt").resolve()
+    wasmopt_path = Path(shell_cache / f"binaryen-version_{version}" /
+                        ("wasm-opt" + (".exe" if platform.system() == "Windows" else ""))).resolve()
 
     sleep_time = 2
     t_lock = threading.Lock()

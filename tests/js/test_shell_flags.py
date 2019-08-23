@@ -52,10 +52,8 @@ def test_add_random_ion_flags(monkeypatch):
     all_flags = js.shell_flags.add_random_ion_flags(test_shell_compile(), [])
     assert "--ion-optimization-levels=on" in all_flags
     assert "--ion-full-warmup-threshold=0" in all_flags
-    assert "--no-bigint" in all_flags
     assert "--cache-ir-stubs=on" in all_flags
     assert "--ion-pgo=on" in all_flags
-    assert "--ion-sincos=on" in all_flags
     assert "--ion-instruction-reordering=on" in all_flags
     assert "--ion-regalloc=testbed" in all_flags
     assert '--execute="setJitCompilerOption(\\"ion.forceinlineCaches\\",1)"' in all_flags
@@ -108,6 +106,9 @@ def test_random_flag_set(monkeypatch):
 
     all_flags = js.shell_flags.random_flag_set(test_shell_compile())
     assert "--fuzzing-safe" in all_flags
+    assert "--blinterp" in all_flags
+    assert "--blinterp-eager" in all_flags
+    assert "--blinterp-warmup-threshold=0" in all_flags
     assert "--more-compartments" in all_flags
     assert "--no-streams" in all_flags
     assert "--nursery-strings=on" in all_flags
@@ -117,6 +118,7 @@ def test_random_flag_set(monkeypatch):
     assert "--no-cgc" in all_flags
     assert "--gc-zeal=4,999" in all_flags
     assert "--no-incremental-gc" in all_flags
+    assert "--baseline-warmup-threshold=0" in all_flags
     assert "--no-threads" in all_flags
     assert "--no-native-regexp" in all_flags
     assert "--no-ggc" in all_flags

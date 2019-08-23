@@ -276,7 +276,7 @@ var statementMakers = Random.weighted([
   { w: 1, v: function (d, b) { return makeShapeyConstructorLoop(d, b); } },
 
   // Replace a variable with a long linked list pointing to it.  (Forces SpiderMonkey's GC marker into a stackless mode.)
-  { w: 1, v: function (d, b) { var x = makeId(d, b); return `${x} = linkedList(${x}, ${rnd(100) * rnd(100)});`; } },
+  { w: 1, v: function (d, b) { var x = makeId(d, b); return `${x} = ${linkedList(x, (rnd(100) * rnd(100)))}`; } },
 
   // Oddly placed "use strict" or "use asm"
   { w: 1, v: function (d, b) { return directivePrologue() + makeStatement(d - 1, b); } },
@@ -628,6 +628,7 @@ var exceptionyStatementMakers = [
 function makeTryBlock (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
+  // The following comment was added *before* guarded/conditional catch support was removed from jsfunfuzz
   // Catches: 1/6 chance of having none
   // Catches: maybe 2 + 1/2
   // So approximately 4 recursions into makeExceptionyStatement on average!
@@ -639,20 +640,16 @@ function makeTryBlock (d, b) { /* eslint-disable-line require-jsdoc */
 
   var numCatches = 0;
 
-  while (rnd(3) === 0) {
-    // Add a guarded catch, using an expression or a function call.
-    ++numCatches;
-    let catchId = makeId(d, b);
-    let catchBlock = makeExceptionyStatement(d, b.concat([catchId]));
-    if (rnd(2)) { s += cat(["catch", "(", catchId, " if ", makeExpr(d, b), ")", " { ", catchBlock, " } "]); } else { s += cat(["catch", "(", catchId, " if ", "(function(){", makeExceptionyStatement(d, b), "})())", " { ", catchBlock, " } "]); }
-  }
-
   if (rnd(2)) {
     // Add an unguarded catch.
     ++numCatches;
-    let catchId = makeId(d, b); /* eslint-disable-line no-redeclare */
-    let catchBlock = makeExceptionyStatement(d, b.concat([catchId])); /* eslint-disable-line no-redeclare */
-    s += cat(["catch", "(", catchId, ")", " { ", catchBlock, " } "]);
+    let catchId = makeId(d, b);
+    let catchBlock = makeExceptionyStatement(d, b.concat([catchId]));
+    if (rnd(2)) {
+      s += cat(["catch", "(", catchId, ")", " { ", catchBlock, " } "]);
+    } else {
+      s += cat(["catch", " { ", catchBlock, " } "]); // Catch bindings are now optional thanks to bug 1380881
+    }
   }
 
   if (numCatches === 0 || rnd(2) === 1) {
@@ -907,10 +904,8 @@ var exprMakers =
   function (d, b) { return `Math.${Random.index(binaryMathFunctions)}(${makeNumber(d, b)}, ${makeNumber(d, b)})`; },
   /* eslint-enable no-multi-spaces */
 
-  // Harmony proxy creation: object, function without constructTrap, function with constructTrap
-  function (d, b) { return `${makeId(d, b)} = Proxy.create(${makeProxyHandler(d, b)}, ${makeExpr(d, b)})`; },
-  function (d, b) { return `${makeId(d, b)} = Proxy.createFunction(${makeProxyHandler(d, b)}, ${makeFunction(d, b)})`; },
-  function (d, b) { return `${makeId(d, b)} = Proxy.createFunction(${makeProxyHandler(d, b)}, ${makeFunction(d, b)}, ${makeFunction(d, b)})`; },
+  // ES6 scripted proxy creation
+  function (d, b) { return `${makeId(d, b)} = new Proxy(${makeExpr(d, b)}, ${makeProxyHandler(d, b)})`; },
 
   function (d, b) { return cat(["delete", " ", makeId(d, b), ".", makeId(d, b)]); },
 
@@ -936,7 +931,7 @@ var exprMakers =
   function (d, b) { return makeMathExpr(d + rnd(3), b); }
 ];
 
-var fuzzTestingFunctions = fuzzTestingFunctionsCtor(!jsshell, fuzzTestingFunctionArg, fuzzTestingFunctionArg);
+var fuzzTestingFunctions = fuzzTestingFunctionsCtor(fuzzTestingFunctionArg);
 
 // Ensure that even if makeExpr returns "" or "1, 2", we only pass one argument to functions like schedulegc
 // (null || (" + makeExpr(d - 2, b) + "))
@@ -1307,6 +1302,9 @@ var functionMakers = [
   // Methods with known names
   function (d, b) { return cat([makeExpr(d, b), ".", Random.index(allMethodNames)]); },
 
+  // ES6 scripted proxy function
+  function (d, b) { return `(new Proxy(${makeFunction(d, b)}, ${makeProxyHandler(d, b)}))`; },
+
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
   function (d, b) { return "eval"; }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
   function (d, b) { return "(let (e=eval) e)"; },
@@ -1321,6 +1319,8 @@ var functionMakers = [
   function (d, b) { return "createIsHTMLDDA"; }, // spidermonkey shell object like the browser's document.all
   function (d, b) { return "offThreadCompileScript"; },
   function (d, b) { return "runOffThreadScript"; },
+  function (d, b) { return "nukeAllCCWs"; },
+  function (d, b) { return "FakeDOMObject"; },
   function (d, b) { return makeProxyHandlerFactory(d, b); },
   function (d, b) { return makeShapeyConstructor(d, b); },
   function (d, b) { return Random.index(typedArrayConstructors); },
@@ -1524,25 +1524,6 @@ function makeId (d, b) { /* eslint-disable-line require-jsdoc */
 
   // eval is interesting because it cannot be called indirectly. and maybe also because it has its own opcode in jsopcode.tbl.
   // but bad things happen if you have "eval setter". so let's not put eval in this list.
-}
-
-function makeComprehension (d, b) { /* eslint-disable-line require-jsdoc */
-  if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
-
-  if (d < 0) { return ""; }
-
-  switch (rnd(7)) {
-    case 0:
-      return "";
-    case 1:
-      return cat([" for ", "(", makeForInLHS(d, b), " in ", makeExpr(d - 2, b), ")"]) + makeComprehension(d - 1, b);
-    case 2:
-      return cat([" for ", "(", makeId(d, b), " of ", makeExpr(d - 2, b), ")"]) + makeComprehension(d - 1, b);
-    case 3:
-      return cat([" for ", "(", makeId(d, b), " of ", makeIterable(d - 2, b), ")"]) + makeComprehension(d - 1, b);
-    default:
-      return cat([" if ", "(", makeExpr(d - 2, b), ")"]); // this is always last (and must be preceded by a "for", oh well)
-  }
 }
 
 // for..in LHS can be a single variable OR it can be a destructuring array of exactly two elements.
@@ -1910,9 +1891,6 @@ var iterableExprMakers = Random.weighted([
   // Arrays
   { w: 1, v: function (d, b) { return `new Array(${makeNumber(d, b)})`; } },
   { w: 8, v: makeArrayLiteral },
-
-  // Array comprehensions (JavaScript 1.7)
-  { w: 1, v: function (d, b) { return cat(["[", makeExpr(d, b), makeComprehension(d, b), "]"]); } },
 
   // A generator that yields once
   { w: 1, v: function (d, b) { return `(function() { ${directivePrologue()}yield ${makeExpr(d - 1, b)}; } })()`; } },

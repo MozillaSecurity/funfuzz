@@ -34,6 +34,7 @@ function getListOfMakers (glob) { /* eslint-disable-line require-jsdoc */
   return r;
 }
 
+// To run testEachMaker(), replace `start(this)` with `Random.init(0);` and `testEachMaker();`
 /*
 function testEachMaker()
 {

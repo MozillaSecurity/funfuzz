@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 /* exported gcIsQuiet, loopCount, loopModulo, readline, xpcshell */
-/* global console, debug, gc, print, readline:writable, rnd, uneval:writable, verifyprebarriers, wasmIsSupported */
+/* global debug, gc, print, readline:writable, rnd, uneval:writable, verifyprebarriers, wasmIsSupported */
 /* XPCNativeWrapper */
 
 // jsfunfuzz is best run in a command-line shell.  It can also run in
@@ -17,49 +17,30 @@ var ENGINE_JAVASCRIPTCORE = 4;
 var engine = ENGINE_UNKNOWN;
 var jsshell = (typeof window === "undefined"); /* eslint-disable-line no-undef */
 var xpcshell = jsshell && (typeof Components === "object"); /* eslint-disable-line no-undef */
-var dump;
 var dumpln;
 var printImportant;
-if (jsshell) {
-  dumpln = print;
-  printImportant = function (s) { dumpln("***"); dumpln(s); };
-  if (typeof verifyprebarriers === "function") {
-    // Run a diff between the help() outputs of different js shells.
-    // Make sure the function to look out for is not located only in some
-    // particular #ifdef, e.g. JS_GC_ZEAL, or controlled by --fuzzing-safe.
-    if (typeof wasmIsSupported === "function") {
-      engine = ENGINE_SPIDERMONKEY_TRUNK;
-    }
 
-    // Avoid accidentally waiting for user input that will never come.
-    readline = function () {};
-  } else if (typeof XPCNativeWrapper === "function") { /* eslint-disable-line no-undef */
-    // e.g. xpcshell or firefox
+dumpln = print;
+printImportant = function (s) { dumpln("***"); dumpln(s); };
+if (typeof verifyprebarriers === "function") {
+  // Run a diff between the help() outputs of different js shells.
+  // Make sure the function to look out for is not located only in some
+  // particular #ifdef, e.g. JS_GC_ZEAL, or controlled by --fuzzing-safe.
+  if (typeof wasmIsSupported === "function") {
     engine = ENGINE_SPIDERMONKEY_TRUNK;
-  } else if (typeof debug === "function") {
-    engine = ENGINE_JAVASCRIPTCORE;
   }
-} else {
-  if (navigator.userAgent.indexOf("WebKit") !== -1) { /* eslint-disable-line no-undef */
-    // XXX detect Google Chrome for V8
-    engine = ENGINE_JAVASCRIPTCORE;
-    // This worked in Safari 3.0, but it might not work in Safari 3.1.
-    dump = function (s) { console.log(s); };
-  } else if (navigator.userAgent.indexOf("Gecko") !== -1) { /* eslint-disable-line no-undef */
-    engine = ENGINE_SPIDERMONKEY_TRUNK;
-  } else if (typeof dump !== "function") {
-    // In other browsers, jsfunfuzz does not know how to log anything.
-    dump = function () { };
-  }
-  dumpln = function (s) { dump(s + "\n"); };
 
-  printImportant = function (s) {
-    dumpln(s);
-    var p = document.createElement("pre"); /* eslint-disable-line no-undef */
-    p.appendChild(document.createTextNode(s)); /* eslint-disable-line no-undef */
-    document.body.appendChild(p); /* eslint-disable-line no-undef */
-  };
+  // Avoid accidentally waiting for user input that will never come.
+  readline = function () {};
+} else if (typeof XPCNativeWrapper === "function") { /* eslint-disable-line no-undef */
+  // e.g. xpcshell or firefox
+  engine = ENGINE_SPIDERMONKEY_TRUNK;
+} else if (typeof debug === "function") {
+  engine = ENGINE_JAVASCRIPTCORE;
 }
+
+// If WebAssembly object doesn't exist, make it an empty function, else runtime flags like --wasm-compiler=ion throw
+if (typeof WebAssembly === "undefined") { this.WebAssembly = function () {}; }
 
 if (typeof gc === "undefined") { this.gc = function () {}; }
 var gcIsQuiet = !(gc()); // see bug 706433

@@ -19,6 +19,8 @@ import sys
 import tempfile
 import time
 
+from EC2Reporter.EC2Reporter import EC2Reporter
+
 from .js import build_options
 from .js import compile_shell
 from .js import loop
@@ -123,8 +125,21 @@ def main():  # pylint: disable=missing-docstring
         # I could guess 1 GB RAM per core, but that wanders into sketchyville.
         number_of_processes = max(number_of_processes // 2, 1)
 
+    try:
+        EC2Reporter().report(f"About to start fuzzing {number_of_processes} \n"
+                             f"  {options.build_options.build_options_str} \n"
+                             f"  with target time {options.targetTime} \n"
+                             f"  and jsfunfuzz timeout of {options.timeout} ...")
+    except RuntimeError:
+        # Ignore errors if the server is temporarily unavailable
+        print("Failed to contact server")
     fork_join.forkJoin(options.tempDir, number_of_processes, loopFuzzingAndReduction, options, build_info,
                        collector)
+    try:
+        EC2Reporter().report("Fuzzing has finished...")
+    except RuntimeError:
+        # Ignore errors if the server is temporarily unavailable
+        print("Failed to contact server")
 
     shutil.rmtree(options.tempDir)
 

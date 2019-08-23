@@ -74,7 +74,7 @@ function tryEnsureSanity () { /* eslint-disable-line require-jsdoc */
   }
 
   try {
-    if ("__defineSetter__" in this) {
+    if (typeof __defineSetter__ !== "undefined") {
       // The only way to get rid of getters/setters is to delete the property.
       if (!jsStrictMode) { delete this.eval; } /* eslint-disable-line no-eval */
       delete this.Math;

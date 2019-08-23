@@ -12,19 +12,19 @@ from setuptools import setup
 EXTRAS = {
     "test": [
         "codecov==2.0.15",
-        "coverage==4.5.3",
+        "coverage>=4.5.4,<4.6",
         "distro>=1.3.0",
-        "flake8==3.7.7",
+        "flake8==3.7.8",
         "flake8-commas==2.0.0",
         "flake8-print==3.1.0",
         "flake8-isort==2.7.0",
-        "flake8-quotes==2.0.1",
-        "isort==4.3.19",
+        "flake8-quotes==2.1.0",
+        "isort==4.3.21",
         "pylint==2.3.1",
-        "pytest==4.5.0",
-        "pytest-cov==2.7.1",
-        "pytest-flake8==1.0.4",
-        "pytest-pylint==0.14.0",
+        "pytest>=5.1.1,<5.2",
+        "pytest-cov>=2.7.1,<2.8",
+        "pytest-flake8>=1.0.4,<1.1",
+        "pytest-pylint>=0.14.0,<0.15",
     ]}
 
 

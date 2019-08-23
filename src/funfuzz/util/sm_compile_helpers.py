@@ -67,7 +67,15 @@ def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missi
     """Dump environment to a .fuzzmanagerconf file."""
     # Platform and OS detection for the spec, part of which is in:
     #   https://wiki.mozilla.org/Security/CrashSignatures
-    fmconf_platform = "x86" if shell.build_opts.enable32 else "x86-64"
+    if shell.build_opts.enable32:
+        fmconf_platform = "x86"  # Fixate to 32-bit Intel because we do not support 32-bit ARM hosts for compilation
+    elif platform.system() == "Windows":
+        if platform.machine() == "ARM64":
+            fmconf_platform = "aarch64"  # platform.machine() returns "ARM64" on Windows
+        else:
+            fmconf_platform = "x86_64"  # platform.machine() returns "AMD64" on Windows
+    else:
+        fmconf_platform = platform.machine()
 
     fmconf_os = None
     if platform.system() == "Linux":

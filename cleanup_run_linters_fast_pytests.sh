@@ -4,10 +4,12 @@
 # ./cleanup_run_linters_fast_pytests.sh
 
 # Run shellcheck and bashate first
-find . -type d \( -name venv \) -prune -o -type f -name "*.sh" -print0 |
-    xargs -n 1 -0 shellcheck
-find . -type d \( -name venv \) -prune -o -type f -name "*.sh" -print0 |
-    xargs -n 1 -0 bashate
+find . -type d \( -name venv -o -name node_modules \) -prune \
+    -o -type f -name "*.sh" -print0 |
+        xargs -n 1 -0 shellcheck
+find . -type d \( -name venv -o -name node_modules \) -prune \
+    -o -type f -name "*.sh" -print0 |
+        xargs -n 1 -0 bashate
 
 # This script runs flake8, pytest "not slow" and pylint tests if they are installed in python3
 # Define the location of python3 using the $PY3_PATH variable, else `command -v python3` is used

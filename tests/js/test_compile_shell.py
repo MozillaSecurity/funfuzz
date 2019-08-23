@@ -38,9 +38,9 @@ def test_shell_compile():
     # "-R ~/trees/mozilla-central/")
 
     default_parameters_debug = ("--enable-debug --disable-optimize --enable-more-deterministic "
-                                "--build-with-valgrind --enable-oom-breakpoint")
+                                "--enable-valgrind --enable-oom-breakpoint")
     # Remember to update the corresponding BUILD build parameters in .travis.yml as well
-    build_opts = os.environ.get("BUILD", default_parameters_debug)
+    build_opts = os.getenv("BUILD", default_parameters_debug)
 
     opts_parsed = js.build_options.parse_shell_opts(build_opts)
     hg_hash_of_default = util.hg_helpers.get_repo_hash_and_id(opts_parsed.repo_dir)[0]

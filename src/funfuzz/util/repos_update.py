@@ -22,8 +22,7 @@ from .logging_helpers import get_logger
 LOG_REPOS_UPDATE = get_logger(__name__)
 
 # Add your repository here.
-REPOS = ["gecko-dev", "octo"] + \
-    ["mozilla-" + x for x in ["inbound", "central", "beta", "release"]]
+REPOS = ["gecko-dev", "octo"] + ["mozilla-" + x for x in ["central"]]
 
 if platform.system() == "Windows":
     # pylint: disable=invalid-name
@@ -49,7 +48,7 @@ def time_cmd(cmd, cwd=None, env=None, timeout=None):
         timeout (int): Timeout for the command.
     """
     if not env:
-        env = os.environ.copy()
+        env = deepcopy(os.environ)
 
     LOG_REPOS_UPDATE.info("\nRunning `%s` now..\n", " ".join(cmd))
     cmd_start = time.time()

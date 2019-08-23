@@ -17,6 +17,7 @@ import platform
 from shlex import quote
 import shutil
 import subprocess
+import sys
 import tarfile
 import traceback
 
@@ -38,18 +39,11 @@ S3_SHELL_CACHE_DIRNAME = "shell-cache"  # Used by autobisectjs
 
 if platform.system() == "Windows":
     MAKE_BINARY = "mozmake"
-    CLANG_PARAMS = "-fallback"
-    # CLANG_ASAN_PARAMS = "-fsanitize=address -Dxmalloc=myxmalloc"
-    # Note that Windows ASan builds are still a work-in-progress
-    CLANG_ASAN_PARAMS = ""
-    CLANG_VER = "7.0.1"
-    PROGRAMW6432_DIR = os.getenv("PROGRAMW6432").replace("\\", "/")
+    CLANG_VER = "8.0.0"
+    WIN_MOZBUILD_CLANG_PATH = Path.home() / ".mozbuild" / "clang"
 else:
     MAKE_BINARY = "make"
-    CLANG_PARAMS = ""
-    CLANG_ASAN_PARAMS = "-fsanitize=address"
     SSE2_FLAGS = "-msse2 -mfpmath=sse"  # See bug 948321
-    CLANG_X86_FLAG = "-arch i386"
 
 if multiprocessing.cpu_count() > 2:
     COMPILATION_JOBS = multiprocessing.cpu_count() + 1
@@ -353,21 +347,12 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     if shell.build_opts.enable32 and platform.system() == "Linux":
         # 32-bit shell on 32/64-bit x86 Linux
         cfg_env["PKG_CONFIG_LIBDIR"] = "/usr/lib/pkgconfig"
-        if shell.build_opts.buildWithClang:
-            cfg_env["CC"] = cfg_env["HOST_CC"] = f"clang {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
-            cfg_env["CXX"] = cfg_env["HOST_CXX"] = f"clang++ {CLANG_PARAMS} {SSE2_FLAGS} {CLANG_X86_FLAG}"
-        # apt-get `lib32z1 gcc-multilib g++-multilib` first, if on 64-bit Linux. (no matter Clang or GCC)
-        else:
-            cfg_env["CC"] = f"clang -m32 {SSE2_FLAGS}"
-            cfg_env["CXX"] = f"clang++ -m32 {SSE2_FLAGS}"
-        if shell.build_opts.buildWithAsan:
-            cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
-            cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
+        # apt-get `libc6-dev-i386 g++-multilib` first, if on 64-bit Linux. (no matter Clang or GCC)
+        cfg_env["CC"] = f"clang -m32 {SSE2_FLAGS}"
+        cfg_env["CXX"] = f"clang++ -m32 {SSE2_FLAGS}"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         cfg_cmds.append("--target=i686-pc-linux")
-        if shell.build_opts.buildWithAsan:
-            cfg_cmds.append("--enable-address-sanitizer")
         if shell.build_opts.enableSimulatorArm32:
             # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
             # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
@@ -378,44 +363,36 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_cmds.append("--enable-simulator=arm")
     # 64-bit shell on Mac OS X 10.13 El Capitan and greater
     elif parse_version(platform.mac_ver()[0]) >= parse_version("10.13") and not shell.build_opts.enable32:
-        cfg_env["CC"] = f"clang {CLANG_PARAMS}"
-        cfg_env["CXX"] = f"clang++ {CLANG_PARAMS}"
-        if shell.build_opts.buildWithAsan:
-            cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
-            cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
         if shutil.which("brew"):
             cfg_env["AUTOCONF"] = "/usr/local/Cellar/autoconf213/2.13/bin/autoconf213"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         cfg_cmds.append("--target=x86_64-apple-darwin17.7.0")  # macOS 10.13.6
         cfg_cmds.append("--disable-xcode-checks")
-        if shell.build_opts.buildWithAsan:
-            cfg_cmds.append("--enable-address-sanitizer")
         if shell.build_opts.enableSimulatorArm64:
             cfg_cmds.append("--enable-simulator=arm64")
 
     elif platform.system() == "Windows":
-        win_mozbuild_path = Path.home() / ".mozbuild" / "clang" / "bin"
-        assert win_mozbuild_path.is_dir(), 'Please first run "./mach bootstrap".'
-        assert (win_mozbuild_path / "clang.exe").is_file()
-        assert (win_mozbuild_path / "llvm-config.exe").is_file()
-        cfg_env["LIBCLANG_PATH"] = str(win_mozbuild_path)
+        win_mozbuild_clang_bin_path = WIN_MOZBUILD_CLANG_PATH / "bin"
+        assert win_mozbuild_clang_bin_path.is_dir(), 'Please first run "./mach bootstrap".'
+        assert (win_mozbuild_clang_bin_path / "clang.exe").is_file()
+        assert (win_mozbuild_clang_bin_path / "llvm-config.exe").is_file()
+        cfg_env["LIBCLANG_PATH"] = str(win_mozbuild_clang_bin_path)
         cfg_env["MAKE"] = "mozmake"  # Workaround for bug 948534
-        if shell.build_opts.buildWithClang:
-            cfg_env["CC"] = f"clang-cl.exe {CLANG_PARAMS}"
-            cfg_env["CXX"] = f"clang-cl.exe {CLANG_PARAMS}"
-            cfg_env["LINKER"] = "lld-link.exe"
-        if shell.build_opts.buildWithAsan:
-            cfg_env["CFLAGS"] = CLANG_ASAN_PARAMS
-            cfg_env["CXXFLAGS"] = CLANG_ASAN_PARAMS
+        if shell.build_opts.enableAddressSanitizer:
             cfg_env["LDFLAGS"] = ("clang_rt.asan_dynamic-x86_64.lib "
                                   "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib")
-            cfg_env["CLANG_LIB_DIR"] = f"{PROGRAMW6432_DIR}/LLVM/lib/clang/{CLANG_VER}/lib/windows"
+            cfg_env["CLANG_LIB_DIR"] = str(WIN_MOZBUILD_CLANG_PATH / "lib" / "clang" / CLANG_VER / "lib" / "windows")
+            # Not sure if the following line works. One seems to need to first copy a .dll to ~/.mozbuild/clang/bin
+            #   cp ~/.mozbuild/clang/lib/clang/*/lib/windows/clang_rt.asan_dynamic-x86_64.dll ~/.mozbuild/clang/bin/
             cfg_env["MOZ_CLANG_RT_ASAN_LIB_PATH"] = f'{cfg_env["CLANG_LIB_DIR"]}/clang_rt.asan_dynamic-x86_64.dll'
+            assert Path(cfg_env["MOZ_CLANG_RT_ASAN_LIB_PATH"]).is_file()
             cfg_env["LIB"] = cfg_env.get("LIB", "") + cfg_env["CLANG_LIB_DIR"]
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         if shell.build_opts.enable32:
+            cfg_cmds.append("--host=x86_64-pc-mingw32")
+            cfg_cmds.append("--target=i686-pc-mingw32")
             if shell.build_opts.enableSimulatorArm32:
                 # --enable-arm-simulator became --enable-simulator=arm in rev 25e99bc12482
                 # but unknown flags are ignored, so we compile using both till Fx38 ESR is deprecated
@@ -429,31 +406,11 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
             cfg_cmds.append("--target=x86_64-pc-mingw32")
             if shell.build_opts.enableSimulatorArm64:
                 cfg_cmds.append("--enable-simulator=arm64")
-        if shell.build_opts.buildWithAsan:
-            cfg_cmds.append("--enable-address-sanitizer")
     else:
-        # We might still be using GCC on Linux 64-bit, so do not use clang unless Asan is specified
-        if shell.build_opts.buildWithClang:
-            cfg_env["CC"] = f"clang {CLANG_PARAMS}"
-            cfg_env["CXX"] = f"clang++ {CLANG_PARAMS}"
-            if shell.build_opts.buildWithAsan:
-                cfg_env["CC"] += f" {CLANG_ASAN_PARAMS}"
-                cfg_env["CXX"] += f" {CLANG_ASAN_PARAMS}"
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
-        if shell.build_opts.buildWithAsan:
-            cfg_cmds.append("--enable-address-sanitizer")
         if shell.build_opts.enableSimulatorArm64:
             cfg_cmds.append("--enable-simulator=arm64")
-
-    if shell.build_opts.buildWithClang:
-        if platform.system() == "Windows":
-            assert "clang-cl" in cfg_env["CC"]
-            assert "clang-cl" in cfg_env["CXX"]
-        else:
-            assert "clang" in cfg_env["CC"]
-            assert "clang++" in cfg_env["CXX"]
-        cfg_cmds.append("--disable-jemalloc")  # See bug 1146895
 
     if shell.build_opts.enableDbg:
         cfg_cmds.append("--enable-debug")
@@ -462,11 +419,9 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
 
     if shell.build_opts.enableOpt:
         # pylint complains if this line uses an f-string with nested if-else, see https://git.io/fxfSo
-        cfg_cmds.append("--enable-optimize" + ("=-O1" if shell.build_opts.buildWithVg else ""))
+        cfg_cmds.append("--enable-optimize" + ("=-O1" if shell.build_opts.enableValgrind else ""))
     elif shell.build_opts.disableOpt:
         cfg_cmds.append("--disable-optimize")
-    if shell.build_opts.enableProfiling:  # Now obsolete, retained for backward compatibility
-        cfg_cmds.append("--enable-profiling")
     if shell.build_opts.disableProfiling:
         cfg_cmds.append("--disable-profiling")
 
@@ -478,7 +433,10 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     if shell.build_opts.enableWithoutIntlApi:  # Speeds up compilation but is non-default
         cfg_cmds.append("--without-intl-api")
 
-    if shell.build_opts.buildWithVg:
+    if shell.build_opts.enableAddressSanitizer:
+        cfg_cmds.append("--enable-address-sanitizer")
+        cfg_cmds.append("--disable-jemalloc")
+    if shell.build_opts.enableValgrind:
         cfg_cmds.append("--enable-valgrind")
         cfg_cmds.append("--disable-jemalloc")
 
@@ -489,8 +447,29 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     cfg_cmds.append("--enable-debug-symbols")  # gets debug symbols on opt shells
     cfg_cmds.append("--disable-tests")
 
-    # Disable cranelift if repository revision is after m-c rev 428135:6fcf54117a3b, fx63
-    if not hg_helpers.existsAndIsAncestor(shell.get_repo_dir(), shell.get_hg_hash(), "parents(6fcf54117a3b)"):
+    if (
+            (
+                shell.build_opts.enableAddressSanitizer and
+                # Disable cranelift on ASan builds if repository revision is on/after:
+                #   m-c rev 428135:6fcf54117a3b21164e6e769343416d2262991f6e, fx63
+                #   and before m-c rev 479295:9e7c1e1a993d51d611558244049a97599511e965, fx69
+                hg_helpers.existsAndIsAncestor(shell.get_repo_dir(),
+                                               shell.get_hg_hash(),
+                                               "9e7c1e1a993d51d611558244049a97599511e965") and not
+                hg_helpers.existsAndIsAncestor(shell.get_repo_dir(),
+                                               shell.get_hg_hash(),
+                                               "parents(6fcf54117a3b21164e6e769343416d2262991f6e)")
+            ) or (
+                # Disable cranelift if repository revision is on/after:
+                #   m-c rev 438680:4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0, fx64
+                #   and before m-c rev 479295:9e7c1e1a993d51d611558244049a97599511e965, fx69
+                hg_helpers.existsAndIsAncestor(shell.get_repo_dir(),
+                                               shell.get_hg_hash(),
+                                               "9e7c1e1a993d51d611558244049a97599511e965") and not
+                hg_helpers.existsAndIsAncestor(shell.get_repo_dir(),
+                                               shell.get_hg_hash(),
+                                               "parents(4d9500ca5761edd678a109b6b5a4ac3f4aa5edb0)")
+            )):
         cfg_cmds.append("--disable-cranelift")
 
     if platform.system() == "Windows":
@@ -580,17 +559,12 @@ def sm_compile(shell):
         for run_lib in shell.get_shell_compiled_runlibs_path():
             if run_lib.is_file():
                 shutil.copy2(str(run_lib), str(shell.get_shell_cache_dir()))
-        if platform.system() == "Windows" and shell.build_opts.buildWithAsan:
-            shutil.copy2(str(f"{PROGRAMW6432_DIR}/LLVM/lib/clang/{CLANG_VER}/lib/windows/"
-                             f"clang_rt.asan_dynamic-x86_64.dll"),
+        if platform.system() == "Windows" and shell.build_opts.enableAddressSanitizer:
+            shutil.copy2(str(WIN_MOZBUILD_CLANG_PATH / "lib" / "clang" / CLANG_VER / "lib" / "windows" /
+                             "clang_rt.asan_dynamic-x86_64.dll"),
                          str(shell.get_shell_cache_dir()))
 
         shell.set_version(sm_compile_helpers.extract_vers(shell.get_js_objdir()))
-
-        if platform.system() == "Linux":
-            # Restrict this to only Linux for now. At least Mac OS X needs some (possibly *.a)
-            # files in the objdir or else the stacks from failing testcases will lack symbols.
-            shutil.rmtree(str(shell.get_shell_cache_dir() / "objdir-js"))
     else:
         if ((platform.system() == "Linux" or platform.system() == "Darwin") and
                 ("internal compiler error: Killed (program cc1plus)" in out or  # GCC running out of memory
@@ -722,7 +696,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
 
 def main():
     """Execute main() function in CompiledShell class."""
-    exit(CompiledShell.main())
+    sys.exit(CompiledShell.main())
 
 
 if __name__ == "__main__":

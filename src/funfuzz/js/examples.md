@@ -16,13 +16,13 @@ By default, js should compile an optimized shell even without --enable-optimize 
 
 * To compile a debug 64-bit shell with AddressSanitizer (ASan) support, do:
 
-`<python executable> -m funfuzz.js.compile_shell -b "--enable-debug --build-with-asan -R ~/trees/mozilla-central"`
+`<python executable> -m funfuzz.js.compile_shell -b "--enable-debug --enable-address-sanitizer -R ~/trees/mozilla-central"`
 
 Note that this uses git to clone a specific known working revision of LLVM into `~/llvm`, compiles it, then uses this specific revision to compile SpiderMonkey.
 
 * To compile an optimized 64-bit shell with Valgrind support, do:
 
-`<python executable> -m funfuzz.js.compile_shell -b "--enable-optimize --build-with-valgrind -R ~/trees/mozilla-central"`
+`<python executable> -m funfuzz.js.compile_shell -b "--enable-optimize --enable-valgrind -R ~/trees/mozilla-central"`
 
 * To test a patch with a debug 64-bit deterministic shell, do:
 
