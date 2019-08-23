@@ -132,14 +132,14 @@ def main():  # pylint: disable=missing-docstring
                              f"  and jsfunfuzz timeout of {options.timeout} ...")
     except RuntimeError:
         # Ignore errors if the server is temporarily unavailable
-        print("Failed to contact server")
+        LOG_BOT.info("Failed to contact server")
     fork_join.forkJoin(options.tempDir, number_of_processes, loopFuzzingAndReduction, options, build_info,
                        collector)
     try:
         EC2Reporter().report("Fuzzing has finished...")
     except RuntimeError:
         # Ignore errors if the server is temporarily unavailable
-        print("Failed to contact server")
+        LOG_BOT.info("Failed to contact server")
 
     shutil.rmtree(options.tempDir)
 
