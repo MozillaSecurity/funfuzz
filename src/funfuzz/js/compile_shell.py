@@ -563,6 +563,11 @@ def sm_compile(shell):
                          str(shell.get_shell_cache_dir()))
 
         shell.set_version(sm_compile_helpers.extract_vers(shell.get_js_objdir()))
+
+        if platform.system() == "Linux":
+            # Restrict this to only Linux for now. At least Mac OS X needs some (possibly *.a)
+            # files in the objdir or else the stacks from failing testcases will lack symbols.
+            shutil.rmtree(str(shell.get_shell_cache_dir() / "objdir-js"))
     else:
         if ((platform.system() == "Linux" or platform.system() == "Darwin") and
                 ("internal compiler error: Killed (program cc1plus)" in out or  # GCC running out of memory
