@@ -564,9 +564,10 @@ def sm_compile(shell):
 
         shell.set_version(sm_compile_helpers.extract_vers(shell.get_js_objdir()))
 
-        if platform.system() == "Linux":
-            # Restrict this to only Linux for now. At least Mac OS X needs some (possibly *.a)
+        if platform.system() == "Linux" and platform.machine() == "aarch64":
+            # Restrict this to only Linux aarch64. At least Mac OS X needs some (possibly *.a)
             # files in the objdir or else the stacks from failing testcases will lack symbols.
+            # objdir files are only needed for rr which only currently runs on x86-64 Linux.
             shutil.rmtree(str(shell.get_shell_cache_dir() / "objdir-js"))
     else:
         if ((platform.system() == "Linux" or platform.system() == "Darwin") and
