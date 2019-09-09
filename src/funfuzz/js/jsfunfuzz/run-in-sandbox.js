@@ -57,7 +57,8 @@ function fillShellSandbox (sandbox) { /* eslint-disable-line require-jsdoc */
     "createIsHTMLDDA",
     "gcparam",
     "nukeAllCCWs", "FakeDOMObject",
-    "isAsmJSCompilationAvailable"
+    "isAsmJSCompilationAvailable",
+    "markObjectPropertiesUnknown"
   ];
 
   for (var i = 0; i < safeFuns.length; ++i) {

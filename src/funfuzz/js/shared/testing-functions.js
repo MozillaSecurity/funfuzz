@@ -106,6 +106,9 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
     // Schedule a GC for after N allocations.
     { w: 10, v: function (d, b) { return `void schedulegc(${numberOfAllocs()});`; } },
 
+    // Mark all objects in obj's object group as having unknown properties.
+    { w: 10, v: function (d, b) { return `markObjectPropertiesUnknown(${fGlobal(d, b)});`; } },
+
     // Change a GC parameter.
     { w: 10, v: setGcparam },
 

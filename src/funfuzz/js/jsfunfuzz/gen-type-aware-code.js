@@ -370,6 +370,7 @@ var makeEvilCallback;
     { w: 3, v: function (d, b) { return `${m("g")}.offThreadCompileScript(${strToEval(d, b)}, ${evaluateFlags(d, b)});`; } },
     { w: 5, v: function (d, b) { return assign(d, b, "v", `${m("g")}.runOffThreadScript()`); } },
     { w: 3, v: function (d, b) { return `(void schedulezone(${m("g")}));`; } },
+    { w: 5, v: function (d, b) { return `markObjectPropertiesUnknown(${m("g")});`; } },
 
     // Mix builtins between globals
     { w: 3, v: function (d, b) { return `/*MXX1*/${assign(d, b, "o", m("g") + "." + Random.index(builtinProperties))}`; } },
