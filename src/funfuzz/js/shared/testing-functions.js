@@ -101,7 +101,7 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
     { w: 10, v: function (d, b) { return `selectforgc(${fGlobal(d, b)});`; } },
 
     // Add a compartment to the next garbage collection.
-    { w: 10, v: function (d, b) { return `void schedulegc(${fGlobal(d, b)});`; } },
+    { w: 10, v: function (d, b) { return `void schedulezone(${fGlobal(d, b)});`; } },
 
     // Schedule a GC for after N allocations.
     { w: 10, v: function (d, b) { return `void schedulegc(${numberOfAllocs()});`; } },

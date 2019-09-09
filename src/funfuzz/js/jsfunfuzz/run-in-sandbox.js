@@ -30,7 +30,7 @@ if (xpcshell) { // Adapted from ternary operator - this longer form helps reduce
 function fillShellSandbox (sandbox) { /* eslint-disable-line require-jsdoc */
   var safeFuns = [
     "print",
-    "schedulegc", "selectforgc", "gczeal", "gc", "gcslice",
+    "schedulegc", "schedulezone", "selectforgc", "gczeal", "gc", "gcslice",
     "verifyprebarriers", "gcPreserveCode",
     "minorgc", "abortgc",
     "evalcx", "newGlobal", "evaluate", "evalInWorker",
