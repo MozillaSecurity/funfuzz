@@ -113,8 +113,8 @@ function makeMathyFunAndTest (d, b) { /* eslint-disable-line require-jsdoc */
     switch (rnd(8)) {
       /* eslint-disable no-multi-spaces */
       case 0:  inputsStr = makeMixedTypeArray(d - 1, b); break;
-      case 1:  inputsStr = `[${Random.shuffled(confusableVals).join(", ")}]`; break;
-      default: inputsStr = `[${Random.shuffled(numericVals).join(", ")}]`; break;
+      case 1:  inputsStr = `[${Random.subset(confusableVals).join(", ")}]`; break;
+      default: inputsStr = `[${Random.subset(numericVals).join(", ")}]`; break;
       /* eslint-enable no-multi-spaces */
     }
 
