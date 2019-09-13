@@ -405,15 +405,15 @@ var makeEvilCallback;
     { w: 5, v: function (d, b) { return `${m()}.valueOf = ${makeEvilCallback(d, b)};`; } },
     { w: 1, v: function (d, b) { return `${m()} = ${m()};`; } },
     { w: 1, v: function (d, b) { return `${m()} = ${m("g")}.createIsHTMLDDA();`; } },
-    { w: 10, v: function (d, b) { return `${m("o")} = ${m()}.__proto__;`; } },
-    { w: 20, v: function (d, b) { return `${m()}.__proto__ = {};`; } },
-    { w: 20, v: function (d, b) { return `${m()}.__proto__ = ${m()};`; } },
-    { w: 10, v: function (d, b) { return `for (var p in ${m()}) { ${makeBuilderStatements(d, b)} }`; } },
-    { w: 10, v: function (d, b) { return `for (var v of ${m()}) { ${makeBuilderStatements(d, b)} }`; } },
-    { w: 10, v: function (d, b) { return `${m()} + ${m()};`; } }, // valueOf
-    { w: 10, v: function (d, b) { return `${m()} + '';`; } }, // toString
-    { w: 10, v: function (d, b) { return `${m("v")} = (${m()} instanceof ${m()});`; } },
-    { w: 10, v: function (d, b) { return `${m("v")} = Object.prototype.isPrototypeOf.call(${m()}, ${m()});`; } },
+    { w: 3, v: function (d, b) { return `${m("o")} = ${m()}.__proto__;`; } },
+    { w: 5, v: function (d, b) { return `${m()}.__proto__ = {};`; } },
+    { w: 5, v: function (d, b) { return `${m()}.__proto__ = ${m()};`; } },
+    { w: 1, v: function (d, b) { return `for (var p in ${m()}) { ${makeBuilderStatements(d, b)} }`; } },
+    { w: 1, v: function (d, b) { return `for (var v of ${m()}) { ${makeBuilderStatements(d, b)} }`; } },
+    { w: 1, v: function (d, b) { return `${m()} + ${m()};`; } }, // valueOf
+    { w: 1, v: function (d, b) { return `${m()} + '';`; } }, // toString
+    { w: 1, v: function (d, b) { return `${m("v")} = (${m()} instanceof ${m()});`; } },
+    { w: 1, v: function (d, b) { return `${m("v")} = Object.prototype.isPrototypeOf.call(${m()}, ${m()});`; } },
     { w: 2, v: function (d, b) { return `Object.${Random.index(["preventExtensions", "seal", "freeze"])}(${m()});`; } },
 
     // Be promiscuous with the rest of jsfunfuzz
