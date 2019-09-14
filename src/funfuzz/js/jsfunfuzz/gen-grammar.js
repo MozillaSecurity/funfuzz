@@ -411,6 +411,17 @@ function regressionTestDependencies (maintest) { /* eslint-disable-line require-
       files.push(`${libdir}prologue.js`);
     }
 
+    // Include whitelisted shell.js for some tests, e.g. non262/test262 ones
+    if (maintest.indexOf("non262") !== -1) {
+      files.push(`${js_src_tests_dir}shell.js`); /* eslint-disable-line camelcase,no-undef */
+      files.push(`${non262_tests_dir}shell.js`); /* eslint-disable-line camelcase,no-undef */
+    }
+
+    if (maintest.indexOf("test262") !== -1) {
+      files.push(`${js_src_tests_dir}shell.js`); /* eslint-disable-line camelcase,no-undef */
+      files.push(`${test262_tests_dir}shell.js`); /* eslint-disable-line camelcase,no-undef */
+    }
+
     // Include web-platform-test-shims.js and testharness.js for streams tests
     if (maintest.indexOf("web-platform") !== -1) {
       files.push(`${js_src_tests_dir}web-platform-test-shims.js`); /* eslint-disable-line camelcase */

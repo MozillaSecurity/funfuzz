@@ -98,11 +98,15 @@ def makeRegressionTestPrologue(repo):  # pylint: disable=invalid-name,missing-pa
     """Generate a JS string to tell jsfunfuzz where to find SpiderMonkey's regression tests."""
     libdir = Path("js") / "src" / "jit-test" / "lib"
     js_src_tests_dir = Path("js") / "src" / "tests"
+    non262_tests_dir = js_src_tests_dir / "non262"
+    test262_tests_dir = js_src_tests_dir / "test262"
     w_pltfrm_res_dir = Path("testing") / "web-platform" / "tests" / "resources"
     return dedent(f"""
         const regressionTestsRoot = {json.dumps(str(repo) + os.sep)};
         const libdir = regressionTestsRoot + {json.dumps(str(libdir) + os.sep)}; // needed by jit-tests
         const js_src_tests_dir = regressionTestsRoot + {json.dumps(str(js_src_tests_dir) + os.sep)}; // streams tests
+        const non262_tests_dir = regressionTestsRoot + {json.dumps(str(non262_tests_dir) + os.sep)}; // non262 tests
+        const test262_tests_dir = regressionTestsRoot + {json.dumps(str(test262_tests_dir) + os.sep)}; // test262 tests
         const w_pltfrm_res_dir = regressionTestsRoot + {json.dumps(str(w_pltfrm_res_dir) + os.sep)}; // streams tests
         const regressionTestList = {json.dumps(inTreeRegressionTests(repo))};
     """)
