@@ -199,7 +199,7 @@ def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-
     assert queryBuildConfiguration(binary, "more-deterministic") == sh.build_opts.enableMoreDeterministic
     assert queryBuildConfiguration(binary, "asan") == sh.build_opts.enableAddressSanitizer
     assert queryBuildConfiguration(binary, "profiling") != sh.build_opts.disableProfiling
-    assert (queryBuildConfiguration(binary, "arm-simulator") and
-            sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm32
-    assert (queryBuildConfiguration(binary, "arm64-simulator") and not
-            sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm64
+    assert platform.machine() != "aarch64" and (queryBuildConfiguration(binary, "arm-simulator") and
+                                                sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm32
+    assert platform.machine() != "aarch64" and (queryBuildConfiguration(binary, "arm64-simulator") and not
+                                                sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm64
