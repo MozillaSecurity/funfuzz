@@ -44,16 +44,16 @@ def add_random_arch_flags(shell_path, input_list=False):
     """
     # m-c rev 330353:bb868860dfc3 is the earliest known working revision, so stop testing prior existence of flag
 
-    if (platform.machine() != "aarch64" and inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and
+    if (platform.machine() == "x86_64" and inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and
             chance(.7)):
         # m-c rev 165993:c450eb3abde4, see bug 965247
         input_list.append("--arm-sim-icache-checks")
-    if (platform.machine() != "aarch64" and inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and
+    if (platform.machine() == "x86_64" and inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and
             chance(.7)):
         # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
         # m-c rev 192164:f1bacafe789c, see bug 1020834
         input_list.append("--arm-asm-nop-fill=1")
-    if (platform.machine() != "aarch64" and inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and
+    if (platform.machine() == "x86_64" and inspect_shell.queryBuildConfiguration(shell_path, "arm-simulator") and
             chance(.7)):
         # Added due to fuzz-flags.txt addition: m-c rev 418682:5bba65880a66, see bug 1461689
         # m-c rev 190582:5399dc155c3b, see bug 1028008

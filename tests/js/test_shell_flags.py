@@ -33,13 +33,13 @@ def test_add_random_arch_flags(monkeypatch):
     all_flags = js.shell_flags.add_random_arch_flags(test_shell_compile(), [])
     assert "--enable-avx" in all_flags
     assert "--no-sse3" in all_flags
-    if (platform.machine() != "aarch64" and
+    if (platform.machine() == "x86_64" and
             js.inspect_shell.queryBuildConfiguration(test_shell_compile(), "arm-simulator")):
         assert "--arm-sim-icache-checks" in all_flags
-    if (platform.machine() != "aarch64" and
+    if (platform.machine() == "x86_64" and
             js.inspect_shell.queryBuildConfiguration(test_shell_compile(), "arm-simulator")):
         assert "--arm-asm-nop-fill=1" in all_flags
-    if (platform.machine() != "aarch64" and
+    if (platform.machine() == "x86_64" and
             js.inspect_shell.queryBuildConfiguration(test_shell_compile(), "arm-simulator")):
         assert "--arm-hwcap=vfp" in all_flags
 
