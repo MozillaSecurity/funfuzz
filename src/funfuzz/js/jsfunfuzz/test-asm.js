@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 /* exported startAsmDifferential */
-/* global ArrayBuffer, asmJSInterior, binaryMathFunctions, dumpln, foundABug, gc, Int32Array, isAsmJSModule */
+/* global asmJSInterior, binaryMathFunctions, dumpln, foundABug, gc, isAsmJSModule */
 /* global makeRegisterStompFunction, print, Random, rnd, unaryMathFunctions, uneval */
 
 /* *********************** *

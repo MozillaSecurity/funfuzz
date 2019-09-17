@@ -189,6 +189,7 @@ script:
     if [ $TRAVIS_OS_NAME == "linux" ] ; then
       pushd src/funfuzz/js/
       npm install || travis_terminate 1
+      npm run lint:version || travis_terminate 1
       npm run lint || travis_terminate 1
       popd
     fi
