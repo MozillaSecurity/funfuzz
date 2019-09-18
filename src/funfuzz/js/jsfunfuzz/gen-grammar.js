@@ -599,7 +599,6 @@ var exceptionyStatementMakers = [
   function (d, b) { return cat(["yield ", makeExpr(d, b), ";"]); },
   function (d, b) { return cat(["await ", makeExpr(d, b), ";"]); },
   function (d, b) { return cat(["throw ", makeId(d, b), ";"]); },
-  function (d, b) { return "this.zzz.zzz;"; }, // throws; also tests js_DecompileValueGenerator in various locations
   function (d, b) { return `${b[b.length - 1]}.${Random.index(exceptionProperties)};`; },
   function (d, b) { return `${makeId(d, b)}.${Random.index(exceptionProperties)};`; },
   function (d, b) { return cat([makeId(d, b), " = ", makeId(d, b), ";"]); },
@@ -1581,9 +1580,6 @@ var lvalueMakers = [
   function (d, b) { return cat([makeExpr(d, b), ".", makeId(d, b)]); },
   function (d, b) { return cat([makeExpr(d, b), ".", "__proto__"]); },
   function (d, b) { return cat([makeExpr(d, b), "[", makePropertyName(d, b), "]"]); },
-
-  // Throws, but more importantly, tests js_DecompileValueGenerator in various contexts.
-  function (d, b) { return "this.zzz.zzz"; },
 
   // Intentionally bogus, but not quite garbage.
   function (d, b) { return makeExpr(d, b); }
