@@ -234,12 +234,6 @@ var statementMakers = Random.weighted([
   // Switch statement
   { w: 3, v: function (d, b) { return cat([maybeLabel(), "switch", "(", makeExpr(d, b), ")", " { ", makeSwitchBody(d, b), " }"]); } },
 
-  // "let" blocks, with bound variable used inside the block
-  { w: 2, v: function (d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v, ")", " { ", makeStatement(d, b.concat([v])), " }"]); } },
-
-  // "let" blocks, with and without multiple bindings, with and without initial values
-  { w: 2, v: function (d, b) { return cat(["let ", "(", makeLetHead(d, b), ")", " { ", makeStatement(d, b), " }"]); } },
-
   // Conditionals, perhaps with 'else if' / 'else'
   { w: 1, v: function (d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d, b)]); } },
   { w: 1, v: function (d, b) { return cat([maybeLabel(), "if(", makeBoolean(d, b), ") ", makeStatementOrBlock(d - 1, b), " else ", makeStatementOrBlock(d - 1, b)]); } },
@@ -561,7 +555,6 @@ var littleStatementMakers =
 ];
 
 // makeStatementOrBlock exists because often, things have different behaviors depending on where there are braces.
-// for example, if braces are added or removed, the meaning of "let" can change.
 function makeStatementOrBlock (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(TOTALLY_RANDOM) === 2) return totallyRandom(d, b);
 
@@ -610,16 +603,9 @@ var exceptionyStatementMakers = [
   function (d, b) { var v = makeNewId(d, b); return `for(let ${v} of ${makeIterable(d, b)}) ${makeExceptionyStatement(d, b.concat([v]))}`; },
   function (d, b) { var v = makeNewId(d, b); return `for await(let ${v} of ${makeIterable(d, b)}) ${makeExceptionyStatement(d, b.concat([v]))}`; },
 
-  /* eslint-disable no-multi-spaces */
-  // Brendan says these are scary places to throw: with, let block, lambda called immediately in let expr.
-  // And I think he was right.
+  // Scary place to throw: with
   function (d, b) { return `with({}) ${makeExceptionyStatement(d, b)}`;         },
   function (d, b) { return `with({}) { ${makeExceptionyStatement(d, b)} } `; },
-  function (d, b) { var v = makeNewId(d, b); return `let(${v}) { ${makeExceptionyStatement(d, b.concat([v]))}}`; },
-  function (d, b) { var v = makeNewId(d, b); return `let(${v}) ((function(){${makeExceptionyStatement(d, b.concat([v]))}})());`; },
-  function (d, b) { return `let(${makeLetHead(d, b)}) { ${makeExceptionyStatement(d, b)}}`; },
-  function (d, b) { return `let(${makeLetHead(d, b)}) ((function(){${makeExceptionyStatement(d, b)}})());`; }
-  /* eslint-enable no-multi-spaces */
 
   // Commented out due to causing too much noise on stderr and causing a nonzero exit code :/
 /*
@@ -822,13 +808,6 @@ var exprMakers =
   // Sometimes we do crazy stuff, like putting a statement where an expression should go.  This frequently causes a syntax error.
   function (d, b) { return stripSemicolon(makeLittleStatement(d, b)); },
   function (d, b) { return ""; },
-
-  /* eslint-disable no-multi-spaces */
-  // Let expressions -- note the lack of curly braces.
-  function (d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v,                            ") ", makeExpr(d - 1, b.concat([v]))]); },
-  function (d, b) { var v = makeNewId(d, b); return cat(["let ", "(", v, " = ", makeExpr(d - 1, b), ") ", makeExpr(d - 1, b.concat([v]))]); },
-  function (d, b) {                          return cat(["let ", "(", makeLetHead(d, b),            ") ", makeExpr(d, b)]); },
-  /* eslint-enable no-multi-spaces */
 
   // Comments and whitespace
   function (d, b) { return cat([" /* Comment */", makeExpr(d, b)]); },
@@ -1317,7 +1296,6 @@ var functionMakers = [
 
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
   function (d, b) { return "eval"; }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented in spidermonkey (a special bytecode).
-  function (d, b) { return "(let (e=eval) e)"; },
   function (d, b) { return "new Function"; }, // this won't be interpreted the same way for each caller of makeFunction, but that's ok
   function (d, b) { return `(new Function(${uneval(makeStatement(d, b))}))`; },
   function (d, b) { return "Function"; }, // without "new"
