@@ -625,7 +625,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
             sm_compile_helpers.verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
 
         if os.getenv("RETAIN_SRC"):
-            print("RETAIN_SRC is set, so recompiling with sources retained...")
+            print("RETAIN_SRC is set to True, so recompiling with sources retained...")
             file_system_helpers.rm_tree_incl_readonly_files(shell.get_shell_cache_dir())
         else:
             return
@@ -641,7 +641,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     s3cache_obj = s3cache.S3Cache(S3_SHELL_CACHE_DIRNAME)
     use_s3cache = s3cache_obj.connect()
 
-    if use_s3cache:
+    if use_s3cache and not os.getenv("RETAIN_SRC"):
         if s3cache_obj.downloadFile(f"{shell.get_shell_name_without_ext()}.busted",
                                     f"{shell.get_shell_cache_js_bin_path()}.busted"):
             raise OSError(f"Found a .busted file for rev {shell.get_hg_hash()}")
