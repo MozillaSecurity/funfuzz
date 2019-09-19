@@ -94,8 +94,8 @@ def wasmopt_run(seed):
                                     "--disable-simd",
                                     "--output", seed_wasm_output,
                                     f"--emit-js-wrapper={seed_wrapper_output}"], check=True)
-                except subprocess.CalledProcessError:
-                    print("wasm-opt aborted with a CalledProcessError")
+                except (subprocess.CalledProcessError, OSError):
+                    print("wasm-opt aborted with a CalledProcessError or OSError")
                 break
             sleep(sleep_time)
             sleep_time *= 2
