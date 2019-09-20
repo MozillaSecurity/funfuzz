@@ -604,8 +604,8 @@ var exceptionyStatementMakers = [
   function (d, b) { var v = makeNewId(d, b); return `for await(let ${v} of ${makeIterable(d, b)}) ${makeExceptionyStatement(d, b.concat([v]))}`; },
 
   // Scary place to throw: with
-  function (d, b) { return `with({}) ${makeExceptionyStatement(d, b)}`;         },
-  function (d, b) { return `with({}) { ${makeExceptionyStatement(d, b)} } `; },
+  function (d, b) { return `with({}) ${makeExceptionyStatement(d, b)}`; },
+  function (d, b) { return `with({}) { ${makeExceptionyStatement(d, b)} } `; }
 
   // Commented out due to causing too much noise on stderr and causing a nonzero exit code :/
 /*
