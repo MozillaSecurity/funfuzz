@@ -549,10 +549,26 @@ def sm_compile(shell):
     # for example when compiling a shell. A non-zero exit code can appear even though a shell compiled successfully.
     # Thus, we should *not* use check=True here.
     out = subprocess.run(cmd_list,
+                         check=False,
                          cwd=str(shell.get_js_objdir()),
                          env=shell.get_env_full(),
                          stderr=subprocess.STDOUT,
                          stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+
+    if not shell.get_shell_compiled_path().is_file():
+        if ((platform.system() == "Linux" or platform.system() == "Darwin") and
+                ("internal compiler error: Killed (program cc1plus)" in out or  # GCC running out of memory
+                 "error: unable to execute command: Killed" in out)):  # Clang running out of memory
+            LOG_COMPILE_SHELL.info("Trying once more due to the compiler running out of memory...")
+            out = subprocess.run(cmd_list,
+                                 check=False,
+                                 cwd=str(shell.get_js_objdir()),
+                                 env=shell.get_env_full(),
+                                 stderr=subprocess.STDOUT,
+                                 stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
+        # A non-zero error can be returned during make, but eventually a shell still gets compiled.
+        if shell.get_shell_compiled_path().is_file():
+            LOG_COMPILE_SHELL.debug("A shell was compiled even though there was a non-zero exit code. Continuing...")
 
     if shell.get_shell_compiled_path().is_file():
         shutil.copy2(str(shell.get_shell_compiled_path()), str(shell.get_shell_cache_js_bin_path()))
@@ -565,27 +581,20 @@ def sm_compile(shell):
                          str(shell.get_shell_cache_dir()))
 
         shell.set_version(sm_compile_helpers.extract_vers(shell.get_js_objdir()))
+
+        if platform.system() == "Linux" and not os.getenv("RETAIN_SRC"):
+            # At least Mac OS X needs some (possibly *.a)
+            # files in the objdir or else the stacks from failing testcases will lack symbols.
+            # objdir files are only needed for rr which only currently runs on x86-64 Linux.
+            shutil.rmtree(str(shell.get_shell_cache_dir() / "objdir-js"))
     else:
-        if ((platform.system() == "Linux" or platform.system() == "Darwin") and
-                ("internal compiler error: Killed (program cc1plus)" in out or  # GCC running out of memory
-                 "error: unable to execute command: Killed" in out)):  # Clang running out of memory
-            LOG_COMPILE_SHELL.info("Trying once more due to the compiler running out of memory...")
-            out = subprocess.run(cmd_list,
-                                 cwd=str(shell.get_js_objdir()),
-                                 env=shell.get_env_full(),
-                                 stderr=subprocess.STDOUT,
-                                 stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
-        # A non-zero error can be returned during make, but eventually a shell still gets compiled.
-        if shell.get_shell_compiled_path().is_file():
-            LOG_COMPILE_SHELL.debug("A shell was compiled even though there was a non-zero exit code. Continuing...")
-        else:
-            LOG_COMPILE_SHELL.error("%s did not result in a js shell:", MAKE_BINARY)
-            with io.open(str(shell.get_shell_cache_dir() / f"{shell.get_shell_name_without_ext()}.busted"), "a",
-                         encoding="utf-8", errors="replace") as f:
-                f.write(f"Compilation of {shell.get_repo_name()} rev {shell.get_hg_hash()} "
-                        f"failed with the following output:\n")
-                f.write(out)
-            raise OSError(f"{MAKE_BINARY} did not result in a js shell.")
+        LOG_COMPILE_SHELL.error("%s did not result in a js shell:", MAKE_BINARY)
+        with io.open(str(shell.get_shell_cache_dir() / f"{shell.get_shell_name_without_ext()}.busted"), "a",
+                     encoding="utf-8", errors="replace") as f:
+            f.write(f"Compilation of {shell.get_repo_name()} rev {shell.get_hg_hash()} "
+                    f"failed with the following output:\n")
+            f.write(out)
+        raise OSError(f"{MAKE_BINARY} did not result in a js shell.")
 
     return shell.get_shell_compiled_path()
 
@@ -618,7 +627,12 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         # Assuming that since the binary is present, everything else (e.g. symbols) is also present
         if platform.system() == "Windows":
             sm_compile_helpers.verify_full_win_pageheap(shell.get_shell_cache_js_bin_path())
-        return
+
+        if os.getenv("RETAIN_SRC"):
+            print("RETAIN_SRC is set to True, so recompiling with sources retained...")
+            file_system_helpers.rm_tree_incl_readonly_files(shell.get_shell_cache_dir())
+        else:
+            return
     elif cached_no_shell.is_file():
         raise OSError("Found a cached shell that failed compilation...")
     elif shell.get_shell_cache_dir().is_dir():
@@ -631,7 +645,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
     s3cache_obj = s3cache.S3Cache(S3_SHELL_CACHE_DIRNAME)
     use_s3cache = s3cache_obj.connect()
 
-    if use_s3cache:
+    if use_s3cache and not os.getenv("RETAIN_SRC"):
         if s3cache_obj.downloadFile(f"{shell.get_shell_name_without_ext()}.busted",
                                     f"{shell.get_shell_cache_js_bin_path()}.busted"):
             raise OSError(f"Found a .busted file for rev {shell.get_hg_hash()}")
@@ -683,7 +697,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if shell.build_opts.patch_file:
             hg_helpers.qpop_qrm_applied_patch(shell.build_opts.patch_file, shell.get_repo_dir())
 
-    if use_s3cache:
+    if use_s3cache and not os.getenv("RETAIN_SRC"):
         s3cache_obj.compressAndUploadDirTarball(str(shell.get_shell_cache_dir()),
                                                 str(shell.get_s3_tar_with_ext_full_path()))
         if updateLatestTxt:

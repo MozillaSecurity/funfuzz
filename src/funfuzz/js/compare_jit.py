@@ -263,6 +263,7 @@ def diffFiles(f1, f2):  # pylint: disable=invalid-name,missing-param-doc,missing
     diffcmd = ["diff", "-u", str(f1), str(f2)]
     s = f'{" ".join(diffcmd)}\n\n'  # pylint: disable=invalid-name
     diff = subprocess.run(diffcmd,
+                          check=True,
                           cwd=os.getcwd(),
                           stdout=subprocess.PIPE,
                           timeout=99).stdout.decode("utf-8", errors="replace")

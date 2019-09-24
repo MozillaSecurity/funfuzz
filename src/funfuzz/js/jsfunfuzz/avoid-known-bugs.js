@@ -35,6 +35,7 @@ function whatToTestSpidermonkeyTrunk (code) { /* eslint-disable-line require-jsd
        && code.indexOf("drainAllocationsLog") === -1       // drainAllocationsLog returns an object with a timestamp, see bug 1066313
        && code.indexOf("dumpObject") === -1                // shows heap addresses
        && code.indexOf("dumpHeap") === -1                  // shows heap addresses
+       && code.indexOf("dumpScopeChain") === -1            // shows scope chain of an interpreted function or a module
        && code.indexOf("dumpStringRepresentation") === -1  // shows memory addresses
        && code.indexOf("evalInCooperativeThread") === -1   // causes diffs especially in --no-threads
        && code.indexOf("evalInWorker") === -1              // causes diffs in --no-threads vs --ion-offthread-compile=off

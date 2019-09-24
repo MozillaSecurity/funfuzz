@@ -64,7 +64,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
         LOG_LITHIUM_HELPERS.info(" ".join(quote(str(x)) for x in autobisectCmd))
         autobisect_log = (logPrefix.parent / f"{logPrefix.stem}-autobisect").with_suffix(".txt")
         with io.open(str(autobisect_log), "w", encoding="utf-8", errors="replace") as f:
-            subprocess.run(autobisectCmd, stderr=subprocess.STDOUT, stdout=f)
+            subprocess.run(autobisectCmd, check=False, stderr=subprocess.STDOUT, stdout=f)
         LOG_LITHIUM_HELPERS.info("Done running autobisectjs. Log: %s", autobisect_log)
 
         with io.open(str(autobisect_log), "r", encoding="utf-8", errors="replace") as f:
@@ -96,7 +96,7 @@ def run_lithium(lithArgs, logPrefix, targetTime):  # pylint: disable=invalid-nam
     LOG_LITHIUM_HELPERS.info("Preparing to run Lithium, log file %s", lithlogfn)
     LOG_LITHIUM_HELPERS.info(" ".join(quote(str(x)) for x in runlithiumpy + lithArgs))
     with io.open(str(lithlogfn), "w", encoding="utf-8", errors="replace") as f:
-        subprocess.run(runlithiumpy + lithArgs, stderr=subprocess.STDOUT, stdout=f)
+        subprocess.run(runlithiumpy + lithArgs, check=False, stderr=subprocess.STDOUT, stdout=f)
     LOG_LITHIUM_HELPERS.info("Done running Lithium")
     if deletableLithTemp:
         shutil.rmtree(deletableLithTemp)

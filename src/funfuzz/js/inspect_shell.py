@@ -92,6 +92,7 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
     # We can possibly use the python-magic-bin PyPI library in the future
     unsplit_file_type = subprocess.run(
         ["file", str(binary)],
+        check=True,
         cwd=os.getcwd(),
         stdout=subprocess.PIPE,
         timeout=99).stdout.decode("utf-8", errors="replace")
@@ -165,6 +166,7 @@ def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylin
 
     test_cmd_result = subprocess.run(
         test_cmd,
+        check=False,
         cwd=os.getcwd(),
         env=test_env,
         stderr=stderr,
@@ -201,7 +203,8 @@ def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-
     assert queryBuildConfiguration(binary, "more-deterministic") == sh.build_opts.enableMoreDeterministic
     assert queryBuildConfiguration(binary, "asan") == sh.build_opts.enableAddressSanitizer
     assert queryBuildConfiguration(binary, "profiling") != sh.build_opts.disableProfiling
-    assert (queryBuildConfiguration(binary, "arm-simulator") and
-            sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm32
-    assert (queryBuildConfiguration(binary, "arm64-simulator") and not
-            sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm64
+    if platform.machine() == "x86_64":
+        assert (queryBuildConfiguration(binary, "arm-simulator") and
+                sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm32
+        assert (queryBuildConfiguration(binary, "arm64-simulator") and not
+                sh.build_opts.enable32) == sh.build_opts.enableSimulatorArm64

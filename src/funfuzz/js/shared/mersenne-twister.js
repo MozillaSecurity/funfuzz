@@ -15,7 +15,6 @@
 // before using this version, create at least one instance of MersenneTwister19937 class, and initialize the each state, given below in c comments, of all the instances.
 
 /* exported MersenneTwister19937 */
-/* global Int32Array */
 
 /*
    A C-program for MT19937, with initialization improved 2002/1/26.

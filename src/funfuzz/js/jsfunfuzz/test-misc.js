@@ -5,7 +5,7 @@
 
 /* exported optionalTests */
 /* global count, disassemble, dumpln, engine, ENGINE_SPIDERMONKEY_TRUNK, foundABug, getBuildConfiguration */
-/* global nestingConsistencyTest, Reflect, tryEnsureSanity, verbose */
+/* global nestingConsistencyTest, tryEnsureSanity, verbose */
 
 function optionalTests (f, code, wtt) { /* eslint-disable-line require-jsdoc */
   if (count % 100 === 1) {

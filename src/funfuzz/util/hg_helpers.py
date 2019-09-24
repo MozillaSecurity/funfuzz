@@ -80,6 +80,7 @@ def existsAndIsAncestor(repo_dir, a, b):  # pylint: disable=invalid-name,missing
     # Takes advantage of "id(badhash)" being the empty set, in contrast to just "badhash", which is an error
     out = subprocess.run(
         ["hg", "-R", str(repo_dir), "log", "-r", f"{a} and ancestor({a},{b})", "--template={node|short}"],
+        check=False,
         cwd=os.getcwd(),
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
@@ -197,6 +198,7 @@ def patch_hg_repo_with_mq(patch_file, repo_dir=None):
     pname = patch_abs_path.name
     qimport_result = subprocess.run(
         ["hg", "-R", str(repo_dir), "qimport", str(patch_abs_path)],
+        check=False,
         cwd=os.getcwd(),
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
@@ -244,6 +246,7 @@ def qpop_qrm_applied_patch(patch_file, repo_dir):
     """
     qpop_result = subprocess.run(
         ["hg", "-R", str(repo_dir), "qpop"],
+        check=False,
         cwd=os.getcwd(),
         stderr=subprocess.STDOUT,
         stdout=subprocess.PIPE,
