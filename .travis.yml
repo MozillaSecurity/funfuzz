@@ -178,7 +178,7 @@ script:
   - |
     if [[ ($TRAVIS_OS_NAME == "linux") && ($TRAVIS_PYTHON_VERSION == "nightly") ]] ; then
       # Work around astroid failing in Python nightly
-      python -m pip uninstall -y pylint astroid
+      python -m pip uninstall -y pylint astroid pytest-pylint
       # Work around flake8 failing in Python nightly
       python -m pytest -s -p no:flake8 -m "not slow" --cov --cov-report term-missing
       # python -m pytest -s --flake8 -p no:pylint,cov -m "not slow"
