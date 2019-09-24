@@ -272,7 +272,7 @@ def truncateFile(fn, maxSize):  # pylint: disable=invalid-name,missing-docstring
 def set_ulimit():
     """Sets appropriate resource limits for the JS shell when on POSIX."""
     try:
-        import resource  # pylint: disable=import-error
+        import resource
 
         # log.debug("Limit address space to 4GB")
         # This has to be twice the 2GB figure in:
@@ -282,11 +282,11 @@ def set_ulimit():
         # JS_Init failed: js::jit::InitProcessExecutableMemory() failed
         # We cannot set a limit for RLIMIT_AS for ASan binaries
         giga_byte = 2**30
-        resource.setrlimit(resource.RLIMIT_AS, (4 * giga_byte, 4 * giga_byte))  # pylint: disable=no-member
+        resource.setrlimit(resource.RLIMIT_AS, (4 * giga_byte, 4 * giga_byte))
 
         # log.debug("Limit corefiles to 0.5 GB")
         half_giga_byte = int(giga_byte // 2)
-        resource.setrlimit(resource.RLIMIT_CORE, (half_giga_byte, half_giga_byte))  # pylint: disable=no-member
+        resource.setrlimit(resource.RLIMIT_CORE, (half_giga_byte, half_giga_byte))
     except ImportError:
         # log.debug("Skipping resource import as a non-POSIX platform was detected: %s", platform.system())
         return

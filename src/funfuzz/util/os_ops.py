@@ -125,8 +125,11 @@ def make_gdb_cmd(prog_full_path, crashed_pid):
 
 def disable_corefile():
     """When called as a preexec_fn, sets appropriate resource limits for the JS shell. Must only be called on POSIX."""
-    import resource  # module only available on POSIX  pylint: disable=import-error
-    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))  # pylint: disable=no-member
+    try:
+        import resource
+        resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+    except ImportError:
+        return
 
 
 def get_core_limit():
@@ -135,8 +138,11 @@ def get_core_limit():
     Returns:
         int: Maximum size (in bytes) of a core file that the current process can create.
     """
-    import resource  # module only available on POSIX  pylint: disable=import-error
-    return resource.getrlimit(resource.RLIMIT_CORE)  # pylint: disable=no-member
+    try:
+        import resource
+        return resource.getrlimit(resource.RLIMIT_CORE)
+    except ImportError:
+        return None
 
 
 # pylint: disable=inconsistent-return-statements
@@ -176,7 +182,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     else:
         dbggr_cmd = None
 
-    if dbggr_cmd:  # pylint: disable=no-else-return
+    if dbggr_cmd:
         LOG_OS_OPS.info(" ".join([str(x) for x in dbggr_cmd]))
         core_file = Path(dbggr_cmd[-1])
         assert core_file.is_file()

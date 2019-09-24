@@ -52,7 +52,6 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
                                                               "--strategy=check-only"] + lithArgs))
     LOG_LITHIUM_HELPERS.info("")
 
-    # pylint: disable=literal-comparison
     if (bisectRepo != "none" and targetTime >= 3 * 60 * 60 and
             build_options_str is not None and testJsShellOrXpcshell(jsEngine) != "xpcshell"):
         autobisectCmd = (  # pylint: disable=invalid-name

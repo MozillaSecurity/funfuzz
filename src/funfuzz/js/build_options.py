@@ -38,7 +38,7 @@ class Randomizer:  # pylint: disable=missing-docstring
     def __init__(self):
         self.options = []
 
-    def add(self, name, weight):  # pylint: disable=invalid-name,missing-docstring
+    def add(self, name, weight):  # pylint: disable=missing-docstring
         self.options.append({
             "name": name,
             "weight": weight,
@@ -154,7 +154,7 @@ def addParserOptions():  # pylint: disable=invalid-name,missing-return-doc,missi
     return parser, randomizer
 
 
-def parse_shell_opts(args):  # pylint: disable=too-complex,too-many-branches
+def parse_shell_opts(args):
     """Parses shell options into a build_options object.
 
     Args:

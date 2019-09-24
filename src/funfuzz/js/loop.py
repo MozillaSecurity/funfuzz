@@ -174,14 +174,14 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
         js_interesting_args.append(str(options.knownPath))
         js_interesting_args.append(str(options.jsEngine))
         if options.randomFlags:
-            options.engineFlags = shell_flags.random_flag_set(options.jsEngine)  # pylint: disable=invalid-name
+            options.engineFlags = shell_flags.random_flag_set(options.jsEngine)
             js_interesting_args.extend(options.engineFlags)
         js_interesting_args.extend(["-e", f"maxRunTime={options.timeout * (1000 // 2)}"])
         js_interesting_args.extend(["-f", fuzzjs])
         js_interesting_opts = js_interesting.parseOptions(js_interesting_args)
 
         iteration += 1
-        log_prefix = wtmp_dir / f"w{iteration}"  # pylint: disable=invalid-name
+        log_prefix = wtmp_dir / f"w{iteration}"
 
         env = {}  # default environment will be used
         if ccoverage:
@@ -245,7 +245,6 @@ def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccovera
     """
     # pylint: disable=too-many-arguments,too-many-locals
     res = js_interesting.ShellResult(js_interesting_opts,
-                                     # pylint: disable=no-member
                                      js_interesting_opts.jsengineWithArgs, log_prefix, False, env=env)
 
     out_log = (log_prefix.parent / f"{log_prefix.stem}-out").with_suffix(".txt")
@@ -283,7 +282,6 @@ def run_to_report(options, js_interesting_opts, env, log_prefix, fuzzjs, ccovera
 
             # Upload with final output
             if lith_result == lithium_helpers.LITH_FINISHED:
-                # pylint: disable=no-member
                 fargs = js_interesting_opts.jsengineWithArgs[:-1] + [reduced_log]
                 retest_result = js_interesting.ShellResult(js_interesting_opts,
                                                            fargs,
@@ -333,7 +331,6 @@ def run_to_report_wasm(_options, js_interesting_opts, env, log_prefix, out_log, 
 
     # Use the generated out_log as the seed for binaryen
     wrapper_file, wasm_file = with_binaryen.wasmopt_run(out_log)
-    # pylint: disable=no-member
     # We remove the last two entries of jsengineWithArgs (-f and the original filename)
     # wasm files need to have -f absent
     js_interesting_opts.jsengineWithArgs = js_interesting_opts.jsengineWithArgs[:-2] + [str(wrapper_file),
@@ -347,7 +344,6 @@ def run_to_report_wasm(_options, js_interesting_opts, env, log_prefix, out_log, 
 
     if not execute_ion_flags_in_shell:
         res = js_interesting.ShellResult(js_interesting_opts,
-                                         # pylint: disable=no-member
                                          js_interesting_opts.jsengineWithArgs, log_prefix, False, env=env)
 
         if res.lev >= js_interesting.JS_OVERALL_MISMATCH:
