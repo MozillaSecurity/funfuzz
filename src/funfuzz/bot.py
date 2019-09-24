@@ -152,6 +152,7 @@ def print_machine_info():
 
     if shutil.which("gdb"):
         gdb_version = subprocess.run(["gdb", "--version"],
+                                     check=True,
                                      stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace").split("\n")[0]
         print(f"gdb info: {gdb_version}")
     if shutil.which("git"):

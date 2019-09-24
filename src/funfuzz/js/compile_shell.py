@@ -547,6 +547,7 @@ def sm_compile(shell):
     # for example when compiling a shell. A non-zero exit code can appear even though a shell compiled successfully.
     # Thus, we should *not* use check=True here.
     out = subprocess.run(cmd_list,
+                         check=False,
                          cwd=str(shell.get_js_objdir()),
                          env=shell.get_env_full(),
                          stderr=subprocess.STDOUT,
@@ -558,6 +559,7 @@ def sm_compile(shell):
                  "error: unable to execute command: Killed" in out)):  # Clang running out of memory
             print("Trying once more due to the compiler running out of memory...")
             out = subprocess.run(cmd_list,
+                                 check=False,
                                  cwd=str(shell.get_js_objdir()),
                                  env=shell.get_env_full(),
                                  stderr=subprocess.STDOUT,

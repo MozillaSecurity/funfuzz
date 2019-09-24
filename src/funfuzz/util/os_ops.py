@@ -178,18 +178,20 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
         sps.vdump(" ".join([str(x) for x in dbggr_cmd]))
         core_file = Path(dbggr_cmd[-1])
         assert core_file.is_file()
-        dbbgr_exit_code = subprocess.run(
-            [str(x) for x in dbggr_cmd],
-            stdin=None,
-            stderr=subprocess.STDOUT,
-            stdout=io.open(str(crash_log), "w", encoding="utf-8", errors="replace") if use_logfiles else None,
-            # It would be nice to use this everywhere, but it seems to be broken on Windows
-            # (http://docs.python.org/library/subprocess.html)
-            close_fds=(os.name == "posix"),
-            # Do not generate a core_file if gdb crashes in Linux
-            preexec_fn=(disable_corefile if platform.system() == "Linux" else None),
-        ).returncode
-        if dbbgr_exit_code != 0:
+        try:
+            dbbgr_exit_code = subprocess.run(
+                [str(x) for x in dbggr_cmd],
+                check=True,
+                stdin=None,
+                stderr=subprocess.STDOUT,
+                stdout=io.open(str(crash_log), "w", encoding="utf-8", errors="replace") if use_logfiles else None,
+                # It would be nice to use this everywhere, but it seems to be broken on Windows
+                # (http://docs.python.org/library/subprocess.html)
+                close_fds=(os.name == "posix"),
+                # Do not generate a core_file if gdb crashes in Linux
+                preexec_fn=(disable_corefile if platform.system() == "Linux" else None),
+            )
+        except subprocess.CalledProcessError:
             print(f'Debugger exited with code {dbbgr_exit_code} : {" ".join(quote(str(x)) for x in dbggr_cmd)}')
         if use_logfiles:  # pylint: disable=no-else-return
             if core_file.is_file():

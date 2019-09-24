@@ -90,6 +90,7 @@ def archOfBinary(binary):  # pylint: disable=inconsistent-return-statements,inva
     # We can possibly use the python-magic-bin PyPI library in the future
     unsplit_file_type = subprocess.run(
         ["file", str(binary)],
+        check=True,
         cwd=os.getcwd(),
         stdout=subprocess.PIPE,
         timeout=99).stdout.decode("utf-8", errors="replace")
@@ -163,6 +164,7 @@ def testBinary(shellPath, args, useValgrind, stderr=subprocess.STDOUT):  # pylin
 
     test_cmd_result = subprocess.run(
         test_cmd,
+        check=False,
         cwd=os.getcwd(),
         env=test_env,
         stderr=stderr,

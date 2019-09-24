@@ -53,7 +53,7 @@ def time_cmd(cmd, cwd=None, env=None, timeout=None):
     logger.info("\nRunning `%s` now..\n", " ".join(cmd))
     cmd_start = time.time()
 
-    cmd = subprocess.run(cmd, cwd=cwd, env=env, timeout=timeout)
+    cmd = subprocess.run(cmd, check=False, cwd=cwd, env=env, timeout=timeout)
 
     cmd_end = time.time()
     logger.info("\n`%s` took %.3f seconds.\n", subprocess.list2cmdline(cmd.args), cmd_end - cmd_start)
