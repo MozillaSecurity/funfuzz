@@ -629,8 +629,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
         if os.getenv("RETAIN_SRC"):
             print("RETAIN_SRC is set to True, so recompiling with sources retained...")
             file_system_helpers.rm_tree_incl_readonly_files(shell.get_shell_cache_dir())
-        else:
-            return
+        return
     elif cached_no_shell.is_file():
         raise OSError("Found a cached shell that failed compilation...")
     elif shell.get_shell_cache_dir().is_dir():
