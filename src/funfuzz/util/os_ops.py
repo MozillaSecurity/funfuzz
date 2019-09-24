@@ -255,7 +255,7 @@ def grab_mac_crash_log(crash_pid, log_prefix, use_log_files):
         # Find a crash log for the right process name and pid, preferring
         # newer crash logs (which sort last).
         if reports_dir.is_dir():
-            crash_logs = sorted([x for x in reports_dir.iterdir()], reverse=True)
+            crash_logs = sorted(list(reports_dir.iterdir()), reverse=True)
         else:
             crash_logs = []
 
