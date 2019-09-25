@@ -8,6 +8,11 @@ good-names=i,j,k,ex,Run,_,f,g
 # Maximum number of characters on a single line.
 max-line-length=120
 
+[IMPORTS]
+# List of modules that can be imported at any level, not just the top level
+# one.
+allow-any-import-level=resource,winreg
+
 [MASTER]
 
 # Use multiple processes to speed up Pylint.
