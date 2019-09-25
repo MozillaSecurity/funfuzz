@@ -17,6 +17,7 @@ OR this file should subprocess-run ITSELF rather than using a while loop.
 import subprocess
 import sys
 import time
+from traceback import format_exc
 
 
 def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-type-doc
@@ -32,8 +33,7 @@ def loop_seq(cmd_seq, wait_time):  # pylint: disable=missing-param-doc,missing-t
             except subprocess.CalledProcessError as ex:
                 print(f"Something went wrong when calling: {cmd!r}")
                 print(f"{ex!r}")
-                import traceback
-                print(traceback.format_exc())
+                print(format_exc())
                 print(f"Waiting {wait_time} seconds...")
                 time.sleep(wait_time)
                 break
