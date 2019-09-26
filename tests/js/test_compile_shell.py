@@ -64,7 +64,7 @@ def test_shell_compile():
 
     js_bin_path = SHELL_CACHE / file_name / file_name
     if platform.system() == "Windows":
-        js_bin_path.with_suffix(".exe")
+        js_bin_path = js_bin_path.with_suffix(".exe")
     assert js_bin_path.is_file()
 
     return js_bin_path
