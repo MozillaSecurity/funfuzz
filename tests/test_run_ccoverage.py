@@ -22,7 +22,8 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("flake8").setLevel(logging.ERROR)
 
 
-@pytest.mark.skipif(platform.system() != "Linux", reason="Only Linux code coverage binary is obtained for now")
+@pytest.mark.skipif(platform.system() != "Linux", reason="Only 64-bit Linux code coverage binary is obtained for now")
+@pytest.mark.skipif(platform.machine() != "x86_64", reason="Only 64-bit Linux code coverage binary is obtained for now")
 @pytest.mark.skipif(distro.linux_distribution()[0] == "Ubuntu" and
                     parse_version(distro.linux_distribution()[1]) < parse_version("16.04"),
                     reason="Code coverage binary crashes in 14.04 Trusty but works in 16.04 Xenial and up")
