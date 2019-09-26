@@ -31,6 +31,9 @@ SHELL_CACHE = Path.home() / "shell-cache"
 def test_shell_compile():
     """Test compilation of shells depending on the specified environment variable.
 
+    Raises:
+        ValueError: If default_parameters_debug is not in build_opts
+
     Returns:
         Path: Path to the compiled shell.
     """
@@ -60,7 +63,10 @@ def test_shell_compile():
     elif "--disable-debug --disable-profiling --without-intl-api" in build_opts:
         # Test compilation of an opt shell with both profiling and Intl support disabled.
         # This set of builds should also have the following: 32-bit with ARM, with asan, and with clang
-        file_name = f"js-64-profDisabled-intlDisabled-linux-x86_64-{hg_hash_of_default}"
+        file_name = (f"js-64-profDisabled-intlDisabled-{platform.system().lower()}-{platform.machine().lower()}-"
+                     f"{hg_hash_of_default}")
+    else:
+        raise ValueError(f'default_parameters_debug "{default_parameters_debug}" is not in build_opts "{build_opts}"')
 
     js_bin_path = SHELL_CACHE / file_name / file_name
     if platform.system() == "Windows":
