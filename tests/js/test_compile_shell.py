@@ -55,7 +55,8 @@ def test_shell_compile():
         valgrind_name_param += "-vg"
     if default_parameters_debug in build_opts:
         # Test compilation of a debug shell with determinism and OOM breakpoint support. (Valgrind only on Linux)
-        file_name = f"js-dbg-optDisabled-64-dm{valgrind_name_param}-oombp-linux-x86_64-{hg_hash_of_default}"
+        file_name = (f"js-dbg-optDisabled-64-dm{valgrind_name_param}-oombp-"
+                     f"{platform.system().lower()}-{platform.machine().lower()}-{hg_hash_of_default}")
     elif "--disable-debug --disable-profiling --without-intl-api" in build_opts:
         # Test compilation of an opt shell with both profiling and Intl support disabled.
         # This set of builds should also have the following: 32-bit with ARM, with asan, and with clang
