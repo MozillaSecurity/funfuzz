@@ -47,8 +47,15 @@ def ensure_binaryen(url, version):
         Path: Path of the extracted wasm-opt binary
     """
     shell_cache = sm_compile_helpers.ensure_cache_dir(Path.home())
-    wasmopt_path = Path(shell_cache / f"binaryen-version_{version}" /
-                        ("wasm-opt" + (".exe" if platform.system() == "Windows" else ""))).resolve()
+    binaryen_path = shell_cache / f"binaryen-version_{version}"
+    wasmopt_path = binaryen_path / ("wasm-opt" + (".exe" if platform.system() == "Windows" else ""))
+    if wasmopt_path.is_file():
+        return wasmopt_path
+
+    # binaryen archives get extracted to a different name on Windows
+    binaryen_path = shell_cache / (f"binaryen-version_{version}" +
+                                   ("-x86_64-windows" if platform.system() == "Windows" else ""))
+    wasmopt_path = binaryen_path / ("wasm-opt" + (".exe" if platform.system() == "Windows" else ""))
 
     sleep_time = 2
     t_lock = threading.Lock()
@@ -64,6 +71,16 @@ def ensure_binaryen(url, version):
                     break
             sleep(sleep_time)
             sleep_time *= 2
+
+    if platform.system() == "Windows":
+        assert binaryen_path.is_dir()
+        new_win_binaryen_path = shell_cache / f"binaryen-version_{version}"
+        binaryen_path.rename(new_win_binaryen_path)
+        # Refresh binaryen_path and wasmopt_path
+        binaryen_path = new_win_binaryen_path
+        wasmopt_path = binaryen_path / ("wasm-opt" + (".exe" if platform.system() == "Windows" else ""))
+    assert binaryen_path.is_dir()
+    assert wasmopt_path.is_file()
     return wasmopt_path
 
 
@@ -88,11 +105,13 @@ def wasmopt_run(seed):
         while True:
             if gotten:
                 try:
-                    subprocess.run([ensure_binaryen(BINARYEN_URL, BINARYEN_VERSION),
-                                    seed,
+                    # Wrapping this in str() seems necessary for Python 3.7.x and lower.
+                    # See Python issue 31961
+                    subprocess.run([str(ensure_binaryen(BINARYEN_URL, BINARYEN_VERSION)),
+                                    str(seed),
                                     "--translate-to-fuzz",
                                     "--disable-simd",
-                                    "--output", seed_wasm_output,
+                                    "--output", str(seed_wasm_output),
                                     f"--emit-js-wrapper={seed_wrapper_output}"], check=True)
                 except (subprocess.CalledProcessError, OSError):
                     print("wasm-opt aborted with a CalledProcessError or OSError")

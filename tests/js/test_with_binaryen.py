@@ -58,7 +58,8 @@ def test_run_binaryen_generated(test_wasmopt_run):  # pylint: disable=redefined-
     Args:
         test_wasmopt_run (class): Custom pytest fixture from this module
     """
-    subprocess.run([test_shell_compile(), WRAPPER_FILE, WASM_FILE], check=True)
+    # Wrapping this in str() seems necessary for Python 3.7.x and lower. See Python issue 31961
+    subprocess.run([str(test_shell_compile()), str(WRAPPER_FILE), str(WASM_FILE)], check=True)
 
 
 @pytest.mark.skipif(platform.system() != "Linux", reason="Only Linux binaryen binary is obtained for now")
