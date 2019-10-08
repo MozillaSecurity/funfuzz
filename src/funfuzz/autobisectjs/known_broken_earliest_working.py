@@ -121,6 +121,8 @@ def earliest_known_working_rev(_options, flags, skip_revs):  # pylint: disable=m
         required.append("450b8f0cbb4e494b399ebcf23a33b8d9cb883245")  # m-c 453627 Fx66
     if "--no-streams" in flags:  # 1st w/ working --no-streams, see bug 1501734
         required.append("c6a8b4d451afa922c4838bd202749c7e131cf05e")  # m-c 442977 Fx65
+    if platform.system() == "Darwin":  # 1st w/ successful Xcode 10.3 builds, see bug 1270217
+        required.append("6b7ace4745e30ba914ea8350bfc7fa12f2980c54")  # m-c 420996 Fx62
     if "--wasm-gc" in flags:  # 1st w/--wasm-gc, see bug 1445272
         required.append("302befe7689abad94a75f66ded82d5e71b558dc4")  # m-c 413255 Fx61
     if "--nursery-strings=on" in flags or \
@@ -131,8 +133,6 @@ def earliest_known_working_rev(_options, flags, skip_revs):  # pylint: disable=m
         required.append("a98f615965d73f6462924188fc2b1f2a620337bb")  # m-c 399868 Fx59
     if "--test-wasm-await-tier2" in flags:  # 1st w/--test-wasm-await-tier2, see bug 1388785
         required.append("b1dc87a94262c1bf2747d2bf560e21af5deb3174")  # m-c 387188 Fx58
-    if platform.system() == "Darwin":  # 1st w/ successful Xcode 9 builds, see bug 1366564
-        required.append("e2ecf684f49e9a6f6d072c289df68ef679968c4c")  # m-c 383101 Fx58
     if cpu_count_flag:  # 1st w/--cpu-count=<NUM>, see bug 1206770
         required.append("1b55231e6628e70f0c2ee2b2cb40a1e9861ac4b4")  # m-c 380023 Fx57
     # 1st w/ revised template literals, see bug 1317375
