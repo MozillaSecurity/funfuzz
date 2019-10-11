@@ -80,10 +80,14 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
         timed_run_kw = {"env": (env or deepcopy(os.environ))}
 
         # Enable LSan which is enabled with non-ARM64 simulator ASan, only on Linux
-        if (platform.system() == "Linux" and inspect_shell.queryBuildConfiguration(options.jsengine, "asan") and not
-                inspect_shell.queryBuildConfiguration(options.jsengine, "arm64-simulator")):
-            timed_run_kw["env"].update({"ASAN_OPTIONS": "detect_leaks=1,"})
-            timed_run_kw["env"].update({"LSAN_OPTIONS": "max_leaks=1,"})
+        if platform.system() == "Linux" and inspect_shell.queryBuildConfiguration(options.jsengine, "asan"):
+            env_asan_options = "detect_leaks=1,"
+            env_lsan_options = "max_leaks=1,"
+            if inspect_shell.queryBuildConfiguration(options.jsengine, "arm64-simulator"):
+                env_asan_options = ""
+                env_lsan_options = ""
+            timed_run_kw["env"].update({"ASAN_OPTIONS": env_asan_options})
+            timed_run_kw["env"].update({"LSAN_OPTIONS": env_lsan_options})
         elif not platform.system() == "Windows":
             timed_run_kw["preexec_fn"] = set_ulimit
 
