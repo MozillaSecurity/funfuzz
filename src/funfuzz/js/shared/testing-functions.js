@@ -106,6 +106,7 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
     { w: 20, v: function (d, b) { return tryCatch(`startgc(${gcSliceSize()}${maybeCommaShrinking()});`); } },
     { w: 20, v: function (d, b) { return `gcslice(${gcSliceSize()});`; } },
     { w: 10, v: function (d, b) { return `abortgc();`; } },
+    { w: 2, v: function (d, b) { return `finishgc();`; } },
 
     // Schedule the given objects to be marked in the next GC slice.
     { w: 10, v: function (d, b) { return `selectforgc(${fGlobal(d, b)});`; } },
