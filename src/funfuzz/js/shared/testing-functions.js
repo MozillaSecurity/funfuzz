@@ -17,6 +17,16 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
   function gcSliceSize () { return Math.floor(Random.ludOneTo(0x100000000)); } /* eslint-disable-line require-jsdoc */
   function maybeCommaShrinking () { return rnd(5) ? "" : ", 'shrinking'"; } /* eslint-disable-line require-jsdoc */
 
+  function maybeShrinkingLastDitch () { /* eslint-disable-line require-jsdoc */
+    switch (rnd(3)) {
+      /* eslint-disable no-multi-spaces */
+      case 0:  return ", 'shrinking'";
+      case 1:  return ", 'last-ditch'";
+      default: return "";
+      /* eslint-enable no-multi-spaces */
+    }
+  }
+
   function enableGCZeal () { /* eslint-disable-line require-jsdoc */
     // As of m-c 451466:79cf24341024 2018-12-19
     // https://hg.mozilla.org/mozilla-central/file/79cf24341024/js/src/gc/GC.cpp#l1000
@@ -83,8 +93,8 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
     /* eslint-disable no-multi-spaces */
     // Force garbage collection (global or specific compartment)
     { w: 10, v: function (d, b) { return `void gc();`; } },
-    { w: 10, v: function (d, b) { return `void gc('compartment'${maybeCommaShrinking()});`; } },
-    { w: 5,  v: function (d, b) { return `void gc(${fGlobal(d, b)}${maybeCommaShrinking()});`; } },
+    { w: 10, v: function (d, b) { return `void gc('compartment'${maybeShrinkingLastDitch()});`; } },
+    { w: 5,  v: function (d, b) { return `void gc(${fGlobal(d, b)}${maybeShrinkingLastDitch()});`; } },
     /* eslint-enable no-multi-spaces */
 
     // Run a minor garbage collection on the nursery.
