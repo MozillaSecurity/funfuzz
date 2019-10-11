@@ -114,7 +114,16 @@ def wasmopt_run(seed):
                                     "--output", str(seed_wasm_output),
                                     f"--emit-js-wrapper={seed_wrapper_output}"], check=True)
                 except (subprocess.CalledProcessError, OSError):
-                    print("wasm-opt aborted with a CalledProcessError or OSError")
+                    print("wasm-opt aborted with a CalledProcessError or OSError. Trying again after 1 minute...")
+                    sleep(60)
+                    # Wrapping this in str() seems necessary for Python 3.7.x and lower.
+                    # See Python issue 31961
+                    subprocess.run([str(ensure_binaryen(BINARYEN_URL, BINARYEN_VERSION)),
+                                    str(seed),
+                                    "--translate-to-fuzz",
+                                    "--disable-simd",
+                                    "--output", str(seed_wasm_output),
+                                    f"--emit-js-wrapper={seed_wrapper_output}"], check=True)
                 break
             sleep(sleep_time)
             sleep_time *= 2
