@@ -92,7 +92,8 @@ matrix:
       os: windows
       language: sh
       before_install:
-        - travis_retry choco install hg python3 shellcheck
+        - travis_retry choco install hg shellcheck
+        - travis_retry choco install python3 --version 3.7.5
         - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
         - travis_retry python -m pip install --upgrade pip wheel
     # Sanity checks, so only run debug builds
