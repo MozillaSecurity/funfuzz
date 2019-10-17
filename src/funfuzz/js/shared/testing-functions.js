@@ -101,12 +101,14 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
     { w: 20, v: function (d, b) { return `minorgc(false);`; } },
     { w: 20, v: function (d, b) { return `minorgc(true);`; } },
 
+    /* eslint-disable no-multi-spaces */
     // Start, continue, or abort incremental garbage collection.
     // startgc can throw: "Incremental GC already in progress"
     { w: 20, v: function (d, b) { return tryCatch(`startgc(${gcSliceSize()}${maybeCommaShrinking()});`); } },
     { w: 20, v: function (d, b) { return `gcslice(${gcSliceSize()});`; } },
     { w: 10, v: function (d, b) { return `abortgc();`; } },
     { w: 2,  v: function (d, b) { return `finishgc();`; } },
+    /* eslint-enable no-multi-spaces */
 
     // Schedule the given objects to be marked in the next GC slice.
     { w: 10, v: function (d, b) { return `selectforgc(${fGlobal(d, b)});`; } },
