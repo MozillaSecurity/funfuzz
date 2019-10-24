@@ -46,6 +46,7 @@ if platform.system() == "Windows":
     WIN_ICU_VERS.append(62)  # prior version
     WIN_ICU_VERS.append(63)  # m-c 443997 Fx65, 1st w/ ICU 63.1, see bug 1499026
     WIN_ICU_VERS.append(64)  # m-c 467933 Fx68, 1st w/ ICU 64.1, see bug 1533481
+    WIN_ICU_VERS.append(65)  # m-c 498522 Fx72, 1st w/ ICU 65.1, see bug 1583269
 
     # Update if the following changes:
     # https://dxr.mozilla.org/mozilla-central/search?q=%3C%2FOutputFile%3E+.dll+path%3Aintl%2Ficu%2Fsource%2F&case=true
