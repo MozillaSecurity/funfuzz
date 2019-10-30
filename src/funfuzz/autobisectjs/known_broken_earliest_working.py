@@ -8,6 +8,7 @@
 """
 
 import platform
+import subprocess
 
 from pkg_resources import parse_version
 
@@ -65,6 +66,16 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
             skips.extend([
                 # Fx54-55, to bypass the following month-long breakage, use "--disable-profiling", see bug 1339190
                 hgrange("aa1da5ed8a0719e0ab424e672d2f477b70ef593c", "5a03382283ae0a020b2a2d84bbbc91ff13cb2130"),
+            ])
+        glibc_version = subprocess.run(["ldd", "--version"],
+                                       check=True,
+                                       encoding="utf-8",
+                                       stdout=subprocess.PIPE).stdout.splitlines()[0].split()[-1]
+        if parse_version(glibc_version) >= parse_version("2.28"):
+            skips.extend([
+                # Fx62-67, to bypass this 9-month-long breakage, use Ubuntu 18.04 or glibc < 2.28, see bug 1533969
+                # Or try and construct a one line patch to be applied during each compile
+                hgrange("e8d4a24e47a943db327206a4680fb75c156f9086", "7b85bf9c5210e5679fa6cfad92466a6e2ba30232"),
             ])
 
     if not options.enableDbg:
