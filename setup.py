@@ -14,7 +14,7 @@ EXTRAS = {
         "codecov==2.0.15",
         "coverage>=4.5.4,<4.6",
         "distro>=1.3.0",
-        "flake8==3.7.8",
+        "flake8==3.7.9",
         "flake8-commas==2.0.0",
         "flake8-isort==2.7.0",
         "flake8-quotes==2.1.0",
