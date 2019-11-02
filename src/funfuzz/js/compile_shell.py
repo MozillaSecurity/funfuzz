@@ -367,7 +367,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
         cfg_cmds.append("sh")
         cfg_cmds.append(str(shell.get_js_cfg_path()))
         cfg_cmds.append("--target=x86_64-apple-darwin17.7.0")  # macOS 10.13.6
-        cfg_cmds.append("--disable-xcode-checks")
         if shell.build_opts.enableSimulatorArm64:
             cfg_cmds.append("--enable-simulator=arm64")
 
