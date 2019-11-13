@@ -44,6 +44,10 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
         hgrange("aae4f349fa588aa844cfb14fae278b776aed6cb7", "c5fbbf959e23a4f33d450cb6c64ef739e09fbe13"),
         # Fx66, broken spidermonkey
         hgrange("f611bc50d11cae1f48cc44d1468f2c34ec46e287", "39d0c50a2209e0f0c982b1d121765c9dc950e161"),
+        # Fx69, broken spidermonkey
+        hgrange("1e4c1b283ba3e4260e1f52bd3b4cba8805bc28b9", "7fd7b5ac5743c0b219fc823441e09d84143f306a"),
+        # Fx69, broken spidermonkey
+        hgrange("36ceb8f15cb9fd797cced7f4f37c2691916b72d5", "25663e783e96b0c1a879685c295955fa2eaaf8d8"),
     ]
 
     if platform.system() == "Darwin":
