@@ -45,7 +45,7 @@ if __name__ == "__main__":
           packages=find_packages(where="src"),
           install_requires=[
               "boto>=2.49.0",
-              "fasteners>=0.14.1,<0.15",
+              "fasteners>=0.15",
               # https://www.mercurial-scm.org/wiki/SupportedPythonVersions#Python_3.x_support
               # "mercurial>=4.7.2",  # Mercurial does not support Python 3 yet
               "requests>=2.20.1",
