@@ -120,12 +120,12 @@ def earliest_known_working_rev(_options, flags, skip_revs):  # pylint: disable=m
     required = []
 
     # These should be in descending order, or bisection will break at earlier changesets.
+    if platform.system() == "Windows":  # 1st w/ working Windows builds w/a recent Win10 SDK and Rust 1.38+
+        required.append("fbcb7dcd82acfc9196c0dfd60e28248c25a4583b")  # m-c 497927 Fx71
     # Note that m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3 is the first with blinterp in-tree test fixes
     if set(["--blinterp-eager", "--no-blinterp",
             "--blinterp"]).intersection(flags):  # 1st w/--blinterp-eager,--no-blinterp,--blinterp, see bug 1562129
         required.append("2e490776b07e35013ae07a47798a983f482ffaa3")  # m-c 481620 Fx69
-    if platform.system() == "Windows":  # 1st w/ working Windows builds w/a recent Win10 SDK and Win-specific shell fix
-        required.append("e996920037965b669fe3fd6306d6f8bee0ebc8bf")  # m-c 480164 Fx69
     if "--enable-experimental-fields" in flags:  # 1st w/--enable-experimental-fields, see bug 1529758
         required.append("7a1ad6647c22bd34a6c70e67dc26e5b83f71cea4")  # m-c 463705 Fx67
     # Note that m-c rev 457581:4b74d76e55a819852c8fa925efd25c57fdf35c9d is the first with BigInt on by default
