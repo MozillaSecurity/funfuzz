@@ -245,6 +245,10 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         args.append("--no-ion")
 
     # Other flags
+    if shell_supports_flag(shell_path, "--enable-weak-refs") and chance(.2):
+        # m-c rev 500139:f273ec2ec0aecce1938a78f01925764d02af2ad2, see bug 1587098
+        args.append("--enable-weak-refs")
+
     if shell_supports_flag(shell_path, "--blinterp") and chance(.8):
         # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
         args.append("--blinterp")
