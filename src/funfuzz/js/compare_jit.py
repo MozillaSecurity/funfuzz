@@ -115,6 +115,7 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
     # Remove any of the following flags from being used in compare_jit
     flags = list(set(flags) - {
         "--arm-hwcap=vfp",
+        "--enable-weak-refs",  # As of 2019-12-06, the FinalizationGroup object is only defined with this enabled
         "--more-compartments",
         "--wasm-compiler=baseline+ion",
         "--wasm-compiler=baseline",
