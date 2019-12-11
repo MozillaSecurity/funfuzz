@@ -16,7 +16,7 @@ EXTRAS = {
         "distro>=1.3.0",
         "flake8==3.7.9",
         "flake8-commas==2.0.0",
-        "flake8-isort==2.7.0",
+        "flake8-isort==2.8.0",
         "flake8-quotes>=2.1.1,<2.2",
         "isort==4.3.21",
         "pylint>=2.4.3,<2.5",
