@@ -34,8 +34,6 @@ def test_main(monkeypatch):
     Args:
         monkeypatch (class): Fixture from pytest for monkeypatching some variables/functions
     """
-    build_url = "https://build.fuzzing.mozilla.org/builds/jsshell-mc-64-opt-gcov.zip"
-
     monkeypatch.setattr(gatherer, "RUN_COV_TIME", 3)
     assert gatherer.RUN_COV_TIME == 3
     monkeypatch.setattr(reporter, "report_coverage", lambda _: "hit")
@@ -43,4 +41,4 @@ def test_main(monkeypatch):
     monkeypatch.setattr(reporter, "disable_pool", lambda: "hit")
     assert reporter.disable_pool() == "hit"
 
-    run_ccoverage.main(argparse_args=["--url", build_url, "--report"])
+    run_ccoverage.main(argparse_args=["--report"])

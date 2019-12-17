@@ -12,8 +12,8 @@ import logging
 from pathlib import Path
 import platform
 import tarfile
-import zipfile
 
+import fuzzfetch
 import requests
 
 from ..js.inspect_shell import queryBuildConfiguration
@@ -21,26 +21,27 @@ from ..js.inspect_shell import queryBuildConfiguration
 RUN_COV_LOG = logging.getLogger("funfuzz")
 
 
-def get_coverage_build(dirpath, args):
+def get_coverage_build(dirpath, _args):
     """Gets a coverage build from a specified server.
 
     Args:
         dirpath (Path): Directory in which build is to be downloaded in.
-        args (class): Command line arguments.
+        _args (class): Command line arguments.
 
     Returns:
         Path: Path to the js coverage build
     """
-    RUN_COV_LOG.info("Downloading coverage build zip file into %s from %s", str(dirpath), args.url)
-    with requests.get(args.url, stream=True) as f:
-        build_request_data = io.BytesIO(f.content)
+    RUN_COV_LOG.info("Obtaining coverage build zip file from TaskCluster, into %s", str(dirpath))
 
-    RUN_COV_LOG.info("Extracting coverage build zip file...")
-    build_zip = zipfile.ZipFile(build_request_data)
     extract_folder = dirpath / "cov-build"
     extract_folder.mkdir(parents=True, exist_ok=True)  # Ensure this dir has been created
-    # In 3.5 <= Python < 3.6, .extractall does not automatically create intermediate folders that do not exist
-    build_zip.extractall(str(extract_folder.resolve()))
+
+    # Use fuzzfetch to obtain build instead of wget
+    build_flags = fuzzfetch.BuildFlags(asan=False, debug=False, fuzzing=True, coverage=True, valgrind=False)
+    platf = fuzzfetch.fetch.Platform()
+    obtained_build = fuzzfetch.Fetcher("js", "central", "latest", build_flags, platf)
+    obtained_build.extract_build(str(extract_folder))
+
     RUN_COV_LOG.info("Coverage build zip file extracted to this folder: %s", extract_folder.resolve())
 
     js_cov_bin_name = f'js{".exe" if platform.system() == "Windows" else ""}'

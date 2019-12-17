@@ -37,7 +37,6 @@ def parse_args(args=None):
                             default="0.5.5",
                             help='Set the version of grcov to use. Defaults to "%(default)s".')
     arg_parser.add_argument("--url",
-                            required=True,
                             help="URL to the downloadable js binary with coverage support")
     arg_parser.add_argument("-v", "--verbose", action="store_true", help="Show more information for debugging")
     return arg_parser.parse_args(args)
@@ -48,10 +47,15 @@ def main(argparse_args=None):
 
     Args:
         argparse_args (None): Argument parameters, defaults to None.
+
+    Raises:
+        ValueError: Raises if --url value is specified. Retained for backward compatibility purposes
     """
     if platform.system() != "Linux":
         sys.exit("Coverage mode must be run on Linux.")
     args = parse_args(argparse_args)
+    if args.url:
+        raise ValueError("Now using fuzzfetch so the --url value is no longer relevant")
     logging.basicConfig(datefmt="%Y-%m-%d %H:%M:%S",
                         format="%(asctime)s %(levelname)-8s %(message)s",
                         level=logging.DEBUG if args.verbose else logging.INFO)
