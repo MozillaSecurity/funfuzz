@@ -189,6 +189,10 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
     // Allow ShellAllocationMetadataBuilder to supply metadata for all newly created objects.
     { w: 1, v: function (d, b) { return `enableShellAllocationMetadataBuilder();`; } },
 
+    // Enable/disable deferred allocation on the parser
+    { w: 5, v: function (d, b) { return `setDeferredParserAlloc(true);`; } },
+    { w: 1, v: function (d, b) { return `setDeferredParserAlloc(false);`; } },
+
     // Test monitorType(fun, index, val) as per bug 1560070
     // fun: function/null/undefined
     // index: a number [0-999]? (the larger the number, the larger the function/memory used so 999 may be reasonable?)

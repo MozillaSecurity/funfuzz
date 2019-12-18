@@ -130,6 +130,8 @@ def earliest_known_working_rev(_options, flags, skip_revs):  # pylint: disable=m
         required.append("f273ec2ec0aecce1938a78f01925764d02af2ad2")  # m-c 500139 Fx72
     if platform.system() == "Windows":  # 1st w/ working Windows builds w/a recent Win10 SDK and Rust 1.38+
         required.append("fbcb7dcd82acfc9196c0dfd60e28248c25a4583b")  # m-c 497927 Fx71
+    if "--parser-deferred-alloc" in flags:  # 1st w/--parser-deferred-alloc, see bug 1580378
+        required.append("d84743fd31a19e9fed54722203ad3222af993fa8")  # m-c 494269 Fx71
     # Note that m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3 is the first with blinterp in-tree test fixes
     if set(["--blinterp-eager", "--no-blinterp",
             "--blinterp"]).intersection(flags):  # 1st w/--blinterp-eager,--no-blinterp,--blinterp, see bug 1562129

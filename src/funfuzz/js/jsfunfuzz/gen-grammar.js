@@ -995,6 +995,7 @@ function makeNewGlobalArg (d, b) { /* eslint-disable-line require-jsdoc */
   if (rnd(2)) { propStrs.push(`cloneSingletons: ${makeBoolean(d - 1, b)}`); }
   if (rnd(2)) { propStrs.push(`disableLazyParsing: ${makeBoolean(d - 1, b)}`); }
   if (rnd(2)) { propStrs.push(`invisibleToDebugger: ${makeBoolean(d - 1, b)}`); }
+  if (rnd(2)) { propStrs.push(`deferredParserAlloc: ${makeBoolean(d - 1, b)}`); }
   return `{ ${propStrs.join(", ")} }`;
 }
 

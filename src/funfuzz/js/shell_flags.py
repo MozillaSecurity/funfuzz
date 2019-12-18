@@ -248,6 +248,9 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
     if shell_supports_flag(shell_path, "--enable-weak-refs") and chance(.2):
         # m-c rev 500139:f273ec2ec0aecce1938a78f01925764d02af2ad2, see bug 1587098
         args.append("--enable-weak-refs")
+    if shell_supports_flag(shell_path, "--parser-deferred-alloc") and chance(.2):
+        # m-c rev 494269:d84743fd31a19e9fed54722203ad3222af993fa8, see bug 1580378
+        args.append("--parser-deferred-alloc")
 
     if shell_supports_flag(shell_path, "--blinterp") and chance(.8):
         # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
