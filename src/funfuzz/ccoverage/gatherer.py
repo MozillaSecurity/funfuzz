@@ -18,7 +18,7 @@ from ..js.loop import many_timed_runs
 from ..util import create_collector
 
 RUN_COV_LOG = logging.getLogger("funfuzz")
-RUN_COV_TIME = 85000  # 85,000 seconds is just under a day
+RUN_COV_TIME = 18000  # 85,000 seconds is just under a day
 
 
 def gather_coverage(dirpath):
