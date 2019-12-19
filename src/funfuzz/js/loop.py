@@ -182,7 +182,7 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
 
         env = {}  # default environment will be used
         if ccoverage:
-            env["GCOV_PREFIX_STRIP"] = "13"  # Assumes ccoverage build from b.f.m.o
+            env["GCOV_PREFIX_STRIP"] = "6"  # Assumes ccoverage build from Taskcluster via fuzzfetch
             cov_build_path = Path(args[-2]).parent.parent.parent
             assert "cov-build" in str(cov_build_path)
             env["GCOV_PREFIX"] = str(cov_build_path)

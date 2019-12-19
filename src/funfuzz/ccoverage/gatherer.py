@@ -49,7 +49,7 @@ def gather_coverage(dirpath):
                                  "--commit-sha", fm_conf.get("Main", "product_version"),
                                  "--token", "NONE",
                                  "--guess-directory-when-missing",
-                                 "-p", "/srv/jenkins/jobs/coverage-clone-mozilla-central/workspace/"],
+                                 "-p", "/builds/worker/workspace/build/src/"],
                                 check=True,
                                 stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
     RUN_COV_LOG.info("Finished generating grcov data")
