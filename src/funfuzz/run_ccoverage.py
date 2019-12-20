@@ -15,6 +15,8 @@ import platform
 import sys
 import tempfile
 
+import requests
+
 from .ccoverage import gatherer
 from .ccoverage import get_build
 from .ccoverage import reporter
@@ -64,9 +66,12 @@ def main(argparse_args=None):
     with tempfile.TemporaryDirectory(suffix="funfuzzcov") as dirpath:
         dirpath = Path(dirpath)
 
-        get_build.get_coverage_build(dirpath, args)
+        cov_revision_request = requests.get("https://build.fuzzing.mozilla.org/builds/coverage-revision.txt")
+        cov_revision_str = cov_revision_request.content.rstrip().decode("utf-8", errors="replace")
+
+        get_build.get_coverage_build(dirpath, cov_revision_str)
         get_build.get_grcov(dirpath, args)
-        cov_result_file = gatherer.gather_coverage(dirpath)
+        cov_result_file = gatherer.gather_coverage(dirpath, cov_revision_str)
         if args.report:
             reporter.report_coverage(cov_result_file)
         reporter.disable_pool()

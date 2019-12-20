@@ -7,7 +7,6 @@
 """Gathers coverage data.
 """
 
-import configparser
 import io
 import logging
 import platform
@@ -21,11 +20,12 @@ RUN_COV_LOG = logging.getLogger("funfuzz")
 RUN_COV_TIME = 85000  # 85,000 seconds is just under a day
 
 
-def gather_coverage(dirpath):
+def gather_coverage(dirpath, rev):
     """Gathers coverage data.
 
     Args:
         dirpath (Path): Directory in which build is to be downloaded in.
+        rev (str): Mercurial hash of the required revision
 
     Returns:
         Path: Path to the coverage results file
@@ -41,12 +41,10 @@ def gather_coverage(dirpath):
     many_timed_runs(RUN_COV_TIME, dirpath, loop_args, create_collector.make_collector(), True)
     RUN_COV_LOG.info("Finished fuzzing the coverage build")
 
-    fm_conf = configparser.ConfigParser()
-    fm_conf.read(str(dirpath / "cov-build" / "dist" / "bin" / "js.fuzzmanagerconf"))
     RUN_COV_LOG.info("Generating grcov data...")
     cov_output = subprocess.run([str(dirpath / "grcov-bin" / "grcov"), str(dirpath),
                                  "-t", "coveralls+",
-                                 "--commit-sha", fm_conf.get("Main", "product_version"),
+                                 "--commit-sha", rev,
                                  "--token", "NONE",
                                  "--guess-directory-when-missing",
                                  "-p", "/builds/worker/workspace/build/src/"],
