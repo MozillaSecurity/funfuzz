@@ -38,8 +38,8 @@ def get_coverage_build(dirpath, _args):
 
     # Use fuzzfetch to obtain build instead of wget
     build_flags = fuzzfetch.BuildFlags(asan=False, debug=False, fuzzing=True, coverage=True, valgrind=False)
-    platf = fuzzfetch.fetch.Platform()
-    obtained_build = fuzzfetch.Fetcher("js", "central", "latest", build_flags, platf)
+    platform_ = fuzzfetch.fetch.Platform()
+    obtained_build = fuzzfetch.Fetcher("js", "central", "latest", build_flags, platform_)
     obtained_build.extract_build(str(extract_folder))
 
     RUN_COV_LOG.info("Coverage build zip file extracted to this folder: %s", extract_folder.resolve())
