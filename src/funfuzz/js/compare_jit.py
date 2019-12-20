@@ -117,7 +117,6 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         "--arm-hwcap=vfp",
         "--enable-weak-refs",  # As of 2019-12-06, the FinalizationGroup object is only defined with this enabled
         "--more-compartments",
-        "--parser-deferred-alloc",  # As of 2019-12-17, there seems to be a fuzzblocker with compare_jit and ASan builds
         "--wasm-compiler=baseline+ion",
         "--wasm-compiler=baseline",
         "--wasm-compiler=ion",
