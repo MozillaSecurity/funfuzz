@@ -39,7 +39,11 @@ def get_coverage_build(dirpath, _args):
     # Use fuzzfetch to obtain build instead of wget
     build_flags = fuzzfetch.BuildFlags(asan=False, debug=False, fuzzing=True, coverage=True, valgrind=False)
     platform_ = fuzzfetch.fetch.Platform()
-    obtained_build = fuzzfetch.Fetcher("js", "central", "latest", build_flags, platform_)
+
+    cov_revision_request = requests.get("https://build.fuzzing.mozilla.org/builds/coverage-revision.txt")
+    cov_revision_str = cov_revision_request.content.rstrip().decode("utf-8", errors="replace")
+
+    obtained_build = fuzzfetch.Fetcher("js", "central", cov_revision_str, build_flags, platform_)
     obtained_build.extract_build(str(extract_folder))
 
     RUN_COV_LOG.info("Coverage build zip file extracted to this folder: %s", extract_folder.resolve())
