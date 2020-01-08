@@ -358,9 +358,9 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         # m-c rev 183413:43acd23f5a98, see bug 976446
         args.append("--no-native-regexp")
 
-    if shell_supports_flag(shell_path, "--no-ggc") and chance(.2):
-        # m-c rev 129273:3297733a2661, see bug 706885
-        args.append("--no-ggc")
+    # if shell_supports_flag(shell_path, "--no-ggc") and chance(.2):
+    #     # m-c rev 129273:3297733a2661, see bug 706885
+    #     args.append("--no-ggc")
 
     # --baseline-eager landed after --no-baseline on the IonMonkey branch prior to landing on m-c.
     if shell_supports_flag(shell_path, "--baseline-eager"):

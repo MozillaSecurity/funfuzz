@@ -127,7 +127,7 @@ def test_random_flag_set(monkeypatch):
     assert "--baseline-warmup-threshold=0" in all_flags
     assert "--no-threads" in all_flags
     assert "--no-native-regexp" in all_flags
-    assert "--no-ggc" in all_flags
+    # assert "--no-ggc" in all_flags
     assert "--no-baseline" in all_flags
 
 
