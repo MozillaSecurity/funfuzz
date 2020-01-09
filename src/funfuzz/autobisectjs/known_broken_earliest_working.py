@@ -126,6 +126,9 @@ def earliest_known_working_rev(_options, flags, skip_revs):  # pylint: disable=m
     required = []
 
     # These should be in descending order, or bisection will break at earlier changesets.
+    if "--nursery-bigints=on" in flags or \
+            "--nursery-bigints=off" in flags:  # 1st w/--nursery-bigints=on, see bug 1530372
+        required.append("a0d1fb0a86b04c74a8809c35230382f90cdfe779")  # m-c 509086 Fx74
     if "--enable-weak-refs" in flags:  # 1st w/--enable-weak-refs, see bug 1587098
         required.append("f273ec2ec0aecce1938a78f01925764d02af2ad2")  # m-c 500139 Fx72
     if platform.system() == "Windows":  # 1st w/ working Windows builds w/a recent Win10 SDK and Rust 1.38+

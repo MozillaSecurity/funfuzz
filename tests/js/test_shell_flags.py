@@ -110,6 +110,7 @@ def test_random_flag_set(monkeypatch):
 
     all_flags = js.shell_flags.random_flag_set(test_shell_compile())
     assert "--fuzzing-safe" in all_flags
+    assert "--nursery-bigints=on" in all_flags
     assert "--enable-weak-refs" in all_flags
     assert "--parser-deferred-alloc" in all_flags
     assert "--blinterp" in all_flags

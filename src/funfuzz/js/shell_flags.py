@@ -245,6 +245,9 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         args.append("--no-ion")
 
     # Other flags
+    if shell_supports_flag(shell_path, "--nursery-bigints=on") and chance(.2):
+        # m-c rev 509086:a0d1fb0a86b04c74a8809c35230382f90cdfe779, see bug 1530372
+        args.append("--nursery-bigints=" + ("on" if chance(.1) else "off"))
     if shell_supports_flag(shell_path, "--enable-weak-refs") and chance(.2):
         # m-c rev 500139:f273ec2ec0aecce1938a78f01925764d02af2ad2, see bug 1587098
         args.append("--enable-weak-refs")
