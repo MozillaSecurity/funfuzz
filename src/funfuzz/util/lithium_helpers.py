@@ -49,7 +49,7 @@ def pinpoint(itest, logPrefix, jsEngine, engineFlags, infilename,  # pylint: dis
     print(" ".join(quote(str(x)) for x in [sys.executable, "-u", "-m", "lithium", "--strategy=check-only"] + lithArgs))
     print()
 
-    if (bisectRepo != "none" and targetTime >= 3 * 60 * 60 and
+    if (bisectRepo != Path("none") and targetTime >= 3 * 60 * 60 and
             build_options_str is not None and testJsShellOrXpcshell(jsEngine) != "xpcshell"):
         autobisectCmd = (  # pylint: disable=invalid-name
             [sys.executable, "-u", "-m", "funfuzz.autobisectjs"] +
