@@ -105,6 +105,7 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
             **timed_run_kw)
 
         lev = JS_FINE
+        is_oom = False
         issues = []
         auxCrashData = []  # pylint: disable=invalid-name
 
@@ -126,7 +127,20 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
                 if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                     issues.append(line.rstrip())
         elif runinfo.sta == timedrun.CRASHED:
-            if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
+            for line in reversed(err):
+                if "[unhandlable oom]" in line:
+                    print("Ignoring unhandlable oom...")
+                    is_oom = True
+                    break
+            if is_oom:
+                lev = JS_FINE
+                crash_log = (logPrefix.parent / f"{logPrefix.stem}-crash").with_suffix(".txt")
+                core_file = logPrefix.parent / f"{logPrefix.stem}-core"
+                if crash_log.is_file():
+                    crash_log.unlink()
+                if core_file.is_file():
+                    core_file.unlink()
+            elif os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
                 crash_log = (logPrefix.parent / f"{logPrefix.stem}-crash").with_suffix(".txt")
                 with io.open(str(crash_log), "r", encoding="utf-8", errors="replace") as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
@@ -177,10 +191,10 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
         create_collector.printCrashInfo(crashInfo)
         # We only care about crashes and assertion failures on shells with no symbols
         # Note that looking out for the Assertion failure message is highly SpiderMonkey-specific
-        if not isinstance(crashInfo, Crash_Info.NoCrashInfo) or \
-                "Assertion failure: " in str(crashInfo.rawStderr) or \
-                "Segmentation fault" in str(crashInfo.rawStderr) or \
-                "Bus error" in str(crashInfo.rawStderr):
+        if not is_oom and (not isinstance(crashInfo, Crash_Info.NoCrashInfo) or
+                           "Assertion failure: " in str(crashInfo.rawStderr) or
+                           "Segmentation fault" in str(crashInfo.rawStderr) or
+                           "Bus error" in str(crashInfo.rawStderr)):
             lev = max(lev, JS_NEW_ASSERT_OR_CRASH)
 
         try:
