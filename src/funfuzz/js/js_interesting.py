@@ -201,7 +201,9 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
             match = options.collector.search(crashInfo)
             if match[0] is not None:
                 create_collector.printMatchingSignature(match)
-                lev = JS_FINE
+                if match[1].get("frequent"):
+                    print("Ignoring frequent bucket")
+                    lev = JS_FINE
         except UnicodeDecodeError:  # Sometimes FM throws due to unicode issues
             print("Note: FuzzManager is throwing a UnicodeDecodeError, signature matching skipped")
             match = False
