@@ -192,21 +192,6 @@ function fuzzTestingFunctionsCtor (fGlobal) { /* eslint-disable-line require-jsd
     // Enable/disable deferred allocation on the parser
     { w: 5, v: function (d, b) { return `setDeferredParserAlloc(true);`; } },
     { w: 1, v: function (d, b) { return `setDeferredParserAlloc(false);`; } },
-
-    // Test monitorType(fun, index, val) as per bug 1560070
-    // fun: function/null/undefined
-    // index: a number [0-999]? (the larger the number, the larger the function/memory used so 999 may be reasonable?)
-    // val: any value, string or null object or even createIsHTMLDDA, but especially test "unknown" and "unknownObject"
-    { w: 10,
-      v: function (d, b) {
-        return (
-          `monitorType(` +
-          `${rnd(2) ? makeFunction(d, b) : undefined}, ` +
-          `${rnd(2) ? (rnd(2) ? 0 : 1) : rnd(1000)}, ` +
-          `${rnd(2) ? (rnd(2) ? "'unknown'" : "'unknownObject'") : makeId(d, b)});`
-        );
-      }
-    }
   ];
 
   // Functions only in the SpiderMonkey shell
