@@ -88,6 +88,7 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     if shell_supports_flag(shell_path, "--ion-optimization-levels=on") and chance(.2):
         # m-c rev 467738:3134740d831c, see bug 1382650
         input_list.append("--ion-optimization-levels=" + ("on" if chance(.1) else "off"))
+
     if shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
         # m-c rev 466417:a812f6daf98e, see bug 1382650
         input_list.append("--ion-full-warmup-threshold=0")
@@ -97,15 +98,6 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
         # m-c rev 466417:a812f6daf98e, see bug 1382650
         input_list.append("--ion-full-warmup-threshold=100")
-    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
-        # m-c rev 466417:a812f6daf98e, see bug 1382650
-        input_list.append("--ion-full-warmup-threshold=1000")
-    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
-        # m-c rev 466417:a812f6daf98e, see bug 1382650
-        input_list.append("--ion-full-warmup-threshold=1500")
-    elif shell_supports_flag(shell_path, "--ion-full-warmup-threshold=0") and chance(.2):
-        # m-c rev 466417:a812f6daf98e, see bug 1382650
-        input_list.append("--ion-full-warmup-threshold=5000")
 
     # m-c rev 330353:bb868860dfc3 is the earliest known working revision, so stop testing prior existence of flag
 
@@ -201,7 +193,7 @@ def add_random_wasm_flags(shell_path, input_list=False):
     # if shell_supports_flag(shell_path, "--wasm-gc") and chance(.8):
     #     # m-c rev 413255:302befe7689a, see bug 1445272
     #     input_list.append("--wasm-gc")
-    if shell_supports_flag(shell_path, "--test-wasm-await-tier2") and chance(.8):
+    if shell_supports_flag(shell_path, "--test-wasm-await-tier2") and chance(.5):
         # m-c rev 387188:b1dc87a94262, see bug 1388785
         input_list.append("--test-wasm-await-tier2")
 
@@ -244,30 +236,36 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         # m-c rev 106120:300ac3d58291, see bug 724751
         args.append("--no-ion")
 
+    if shell_supports_flag(shell_path, "--warp") and chance(.8):
+        args.append("--warp")
+
+    if shell_supports_flag(shell_path, "--fast-warmup") and chance(.5):
+        args.append("--fast-warmup")
+
     # Other flags
-    if shell_supports_flag(shell_path, "--nursery-bigints=on") and chance(.2):
+
+    # Nursery strings and bigints are on by default
+    if shell_supports_flag(shell_path, "--nursery-bigints=on") and chance(.1):
         # m-c rev 509086:a0d1fb0a86b04c74a8809c35230382f90cdfe779, see bug 1530372
         args.append("--nursery-bigints=" + ("on" if chance(.1) else "off"))
-    if shell_supports_flag(shell_path, "--enable-weak-refs") and chance(.2):
-        # m-c rev 500139:f273ec2ec0aecce1938a78f01925764d02af2ad2, see bug 1587098
-        args.append("--enable-weak-refs")
-    if shell_supports_flag(shell_path, "--parser-deferred-alloc") and chance(.2):
-        # m-c rev 494269:d84743fd31a19e9fed54722203ad3222af993fa8, see bug 1580378
-        args.append("--parser-deferred-alloc")
+
+    if shell_supports_flag(shell_path, "--nursery-strings=on") and chance(.1):
+        # m-c rev 406115:321c29f48508, see bug 903519
+        args.append("--nursery-strings=" + ("on" if chance(.1) else "off"))
 
     if shell_supports_flag(shell_path, "--blinterp") and chance(.8):
         # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
         args.append("--blinterp")
-        if shell_supports_flag(shell_path, "--blinterp-eager") and chance(.5):
+        if shell_supports_flag(shell_path, "--blinterp-eager") and chance(.3):
             # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
             args.append("--blinterp-eager")
-        if shell_supports_flag(shell_path, "--blinterp-warmup-threshold=0") and chance(.2):
+        elif shell_supports_flag(shell_path, "--blinterp-warmup-threshold=0") and chance(.2):
             # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
             args.append("--blinterp-warmup-threshold=0")  # Default value is 10
-        elif shell_supports_flag(shell_path, "--blinterp-warmup-threshold=0") and chance(.3):
+        elif shell_supports_flag(shell_path, "--blinterp-warmup-threshold=0") and chance(.4):
             # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
             args.append("--blinterp-warmup-threshold=1")  # Default value is 10
-        elif shell_supports_flag(shell_path, "--blinterp-warmup-threshold=0") and chance(.4):
+        elif shell_supports_flag(shell_path, "--blinterp-warmup-threshold=0") and chance(.2):
             # m-c rev 481620:2e490776b07e35013ae07a47798a983f482ffaa3, see bug 1562129
             args.append("--blinterp-warmup-threshold=100")  # Default value is 10
     elif shell_supports_flag(shell_path, "--no-blinterp") and chance(.2):
@@ -281,10 +279,6 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
     if shell_supports_flag(shell_path, "--no-streams") and chance(.2):
         # m-c rev 442977:c6a8b4d451af, see bug 1501734
         args.append("--no-streams")
-
-    if shell_supports_flag(shell_path, "--nursery-strings=on") and chance(.2):
-        # m-c rev 406115:321c29f48508, see bug 903519
-        args.append("--nursery-strings=" + ("on" if chance(.1) else "off"))
 
     if shell_supports_flag(shell_path, "--spectre-mitigations=on") and chance(.2):
         # m-c rev 399868:a98f615965d7, see bug 1430053
@@ -301,11 +295,10 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
             # Adjusts default number of threads for offthread compilation (turned on by default)
             args.append(f"--cpu-count={random.randint(2, (multiprocessing.cpu_count() * 2))}")
 
-    if shell_supports_flag(shell_path, "--no-unboxed-objects") and chance(.2):
-        # m-c rev 244297:322487136b28, see bug 1162199
-        args.append("--no-unboxed-objects")
+    if shell_supports_flag(shell_path, "--no-off-thread-parse-global") and chance(.5):
+        args.append("--no-off-thread-parse-global")
 
-    if shell_supports_flag(shell_path, "--no-cgc") and chance(.2):
+    if shell_supports_flag(shell_path, "--no-cgc") and chance(.1):
         # m-c rev 226540:ade5e0300605, see bug 1126769
         args.append("--no-cgc")
 
@@ -389,19 +382,20 @@ def basic_flag_sets():
         # https://hg.mozilla.org/mozilla-central/file/b641b61da234/js/src/tests/lib/tests.py#l10
         # compare_jit uses the following first flag set as the sole baseline when fuzzing
         # --more-compartments should not be here, see https://bugzilla.mozilla.org/show_bug.cgi?id=1521338#c7
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--warp", '--fast-warmup'],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off"],
         ["--fuzzing-safe"],
         ["--fuzzing-safe", "--no-threads", "--ion-eager"],
         ["--fuzzing-safe", "--no-threads"],  # Some IonMonkey issues happen without any Baseline/Ion flags
-        ["--fuzzing-safe", "--ion-offthread-compile=off"],
-        ["--fuzzing-safe", "--baseline-eager"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--warp"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--baseline-eager"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--baseline-eager", "--no-ion"],  # May find > w/o --no-ion
-        ["--fuzzing-safe", "--no-blinterp", "--no-baseline", "--no-ion"],
-        ["--fuzzing-safe", "--blinterp", "--blinterp-eager"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--no-blinterp", "--no-baseline", "--no-ion"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--blinterp", "--blinterp-eager"],
         # --wasm-compiler=none was removed for compare_jit
-        ["--fuzzing-safe", "--no-baseline", "--no-asmjs", "--no-native-regexp"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--no-baseline", "--no-asmjs", "--no-native-regexp"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--ion-check-range-analysis",
          "--ion-extra-checks", "--no-sse3"],
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--test-wasm-await-tier2",
-         "--spectre-mitigations=on", "--nursery-strings=on"],
+        ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--test-wasm-await-tier2"],
     ]
