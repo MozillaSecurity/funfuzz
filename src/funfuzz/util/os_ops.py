@@ -201,12 +201,18 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
             print(f'Debugger exited with code {dbbgr_exit_code} : {" ".join(quote(str(x)) for x in dbggr_cmd)}')
         if use_logfiles:  # pylint: disable=no-else-return
             if core_file.is_file():
-                shutil.move(str(core_file), str(core_file))
-                subprocess.run(["gzip", "-f", str(core_file)], check=True)
-                # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
-                gzipped_core = Path(f"{core_file}.gz")
-                # Ensure gzipped file can be read by all
-                Path.chmod(gzipped_core, Path.stat(gzipped_core).st_mode | 0o444)
+                if False:
+                    # This can be enabled for debugging purposes, but otherwise, we really
+                    # would want to dispose of our core dumps, as they fill up all disk space
+                    # on the workers eventually.
+                    shutil.move(str(core_file), str(core_file))
+                    subprocess.run(["gzip", "-f", str(core_file)], check=True)
+                    # chmod here, else the uploaded -core.gz files do not have sufficient permissions.
+                    gzipped_core = Path(f"{core_file}.gz")
+                    # Ensure gzipped file can be read by all
+                    Path.chmod(gzipped_core, Path.stat(gzipped_core).st_mode | 0o444)
+                else:
+                    core_file.unlink()
             return str(crash_log)
         else:
             print("I don't know what to do with a core file when log_prefix is null")
