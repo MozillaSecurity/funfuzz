@@ -119,7 +119,21 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
         with io.open(str(err_log), "r", encoding="utf-8", errors="replace") as f:
             err = [line.rstrip() for line in f]
 
-        if options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
+        for line in reversed(err):
+            if "[unhandlable oom]" in line:
+                print("Ignoring unhandlable oom...")
+                is_oom = True
+                break
+
+        if is_oom:
+            lev = JS_FINE
+            crash_log = (logPrefix.parent / f"{logPrefix.stem}-crash").with_suffix(".txt")
+            core_file = logPrefix.parent / f"{logPrefix.stem}-core"
+            if crash_log.is_file():
+                crash_log.unlink()
+            if core_file.is_file():
+                core_file.unlink()
+        elif options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
             issues.append("valgrind reported an error")
             lev = max(lev, JS_VG_AMISS)
             valgrindErrorPrefix = f"=={runinfo.pid}=="
@@ -127,20 +141,7 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
                 if valgrindErrorPrefix and line.startswith(valgrindErrorPrefix):
                     issues.append(line.rstrip())
         elif runinfo.sta == timedrun.CRASHED:
-            for line in reversed(err):
-                if "[unhandlable oom]" in line:
-                    print("Ignoring unhandlable oom...")
-                    is_oom = True
-                    break
-            if is_oom:
-                lev = JS_FINE
-                crash_log = (logPrefix.parent / f"{logPrefix.stem}-crash").with_suffix(".txt")
-                core_file = logPrefix.parent / f"{logPrefix.stem}-core"
-                if crash_log.is_file():
-                    crash_log.unlink()
-                if core_file.is_file():
-                    core_file.unlink()
-            elif os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
+            if os_ops.grab_crash_log(runthis[0], runinfo.pid, logPrefix, True):
                 crash_log = (logPrefix.parent / f"{logPrefix.stem}-crash").with_suffix(".txt")
                 with io.open(str(crash_log), "r", encoding="utf-8", errors="replace") as f:
                     auxCrashData = [line.strip() for line in f.readlines()]
