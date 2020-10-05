@@ -133,6 +133,12 @@ class ShellResult:  # pylint: disable=missing-docstring,too-many-instance-attrib
                 crash_log.unlink()
             if core_file.is_file():
                 core_file.unlink()
+
+            dbggr_cmd = os_ops.make_dbg_cmd(runthis[0], runinfo.pid)
+            if dbggr_cmd:
+                core_file = Path(dbggr_cmd[-1])
+                if core_file.is_file():
+                    core_file.unlink()
         elif options.valgrind and runinfo.return_code == VALGRIND_ERROR_EXIT_CODE:
             issues.append("valgrind reported an error")
             lev = max(lev, JS_VG_AMISS)

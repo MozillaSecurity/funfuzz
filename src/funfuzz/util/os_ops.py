@@ -143,6 +143,17 @@ def get_core_limit():
         return None
 
 
+def make_dbg_cmd(prog_full_path, crashed_pid):
+    # This has only been tested on 64-bit Windows 7 and higher
+    if platform.system() == "Windows":
+        dbggr_cmd = make_cdb_cmd(prog_full_path, crashed_pid)
+    elif os.name == "posix":
+        dbggr_cmd = make_gdb_cmd(prog_full_path, crashed_pid)
+    else:
+        dbggr_cmd = None
+    return dbggr_cmd
+
+
 # pylint: disable=inconsistent-return-statements
 def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     # pylint: disable=too-complex,too-many-branches
@@ -172,13 +183,7 @@ def grab_crash_log(prog_full_path, crashed_pid, log_prefix, want_stack):
     if not want_stack or progname == "valgrind":
         return ""
 
-    # This has only been tested on 64-bit Windows 7 and higher
-    if platform.system() == "Windows":
-        dbggr_cmd = make_cdb_cmd(prog_full_path, crashed_pid)
-    elif os.name == "posix":
-        dbggr_cmd = make_gdb_cmd(prog_full_path, crashed_pid)
-    else:
-        dbggr_cmd = None
+    dbggr_cmd = make_dbg_cmd(prog_full_path, crashed_pid)
 
     if dbggr_cmd:
         sps.vdump(" ".join([str(x) for x in dbggr_cmd]))
