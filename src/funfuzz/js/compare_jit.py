@@ -117,11 +117,9 @@ def compareLevel(jsEngine, flags, infilename, logPrefix, options, showDetailedDi
         "--arm-hwcap=vfp",
         "--enable-weak-refs",  # As of 2019-12-06, the FinalizationGroup object is only defined with this enabled
         "--more-compartments",
-        "--wasm-compiler=baseline+ion",
         "--wasm-compiler=baseline",
-        "--wasm-compiler=ion",
-        "--wasm-compiler=cranelift",
-        "--wasm-compiler=baseline+cranelift",
+        "--wasm-compiler=optimizing",
+        "--wasm-compiler=baseline+optimizing",
         "--wasm-compiler=none",
     })
     if flags:

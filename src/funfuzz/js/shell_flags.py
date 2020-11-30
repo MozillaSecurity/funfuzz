@@ -173,20 +173,15 @@ def add_random_wasm_flags(shell_path, input_list=False):
         list: List of flags to be tested, with probable wasm flags added.
     """
     if shell_supports_flag(shell_path, "--wasm-compiler=none") and chance(.9):
-        if chance(.2):
-            wasm_compiler_option = "baseline+ion"
+        random_value = random.random()
+        if 0 < random_value <= 0.3:  # pragma: no cover
+            wasm_compiler_option = "optimizing"
+        elif 0.3 < random_value <= 0.6:  # pragma: no cover
+            wasm_compiler_option = "baseline+optimizing"
+        elif 0.6 < random_value <= 0.7:  # pragma: no cover
+            wasm_compiler_option = "none"
         else:  # pragma: no cover
-            random_value = random.random()
-            if 0 < random_value <= 0.2:  # pragma: no cover
-                wasm_compiler_option = "ion"
-            elif 0.2 < random_value <= 0.4:  # pragma: no cover
-                wasm_compiler_option = "baseline+cranelift"
-            elif 0.4 < random_value <= 0.6:  # pragma: no cover
-                wasm_compiler_option = "cranelift"
-            elif 0.6 < random_value <= 0.8:  # pragma: no cover
-                wasm_compiler_option = "none"
-            else:  # pragma: no cover
-                wasm_compiler_option = "baseline"
+            wasm_compiler_option = "baseline"
         # m-c rev 455252:48dc14f79fb0, see bug 1509441
         input_list.append("--wasm-compiler=" + wasm_compiler_option)
     # --wasm-gc is now unstable as of bug 1488205
@@ -236,10 +231,7 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         # m-c rev 106120:300ac3d58291, see bug 724751
         args.append("--no-ion")
 
-    if shell_supports_flag(shell_path, "--warp") and chance(.8):
-        args.append("--warp")
-
-    if shell_supports_flag(shell_path, "--fast-warmup") and chance(.5):
+    if shell_supports_flag(shell_path, "--fast-warmup") and chance(.7):
         args.append("--fast-warmup")
 
     # Other flags
@@ -382,13 +374,12 @@ def basic_flag_sets():
         # https://hg.mozilla.org/mozilla-central/file/b641b61da234/js/src/tests/lib/tests.py#l10
         # compare_jit uses the following first flag set as the sole baseline when fuzzing
         # --more-compartments should not be here, see https://bugzilla.mozilla.org/show_bug.cgi?id=1521338#c7
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--warp", '--fast-warmup'],
+        ["--fuzzing-safe", "--ion-offthread-compile=off", '--fast-warmup'],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"],
         ["--fuzzing-safe", "--ion-offthread-compile=off"],
         ["--fuzzing-safe"],
         ["--fuzzing-safe", "--no-threads", "--ion-eager"],
         ["--fuzzing-safe", "--no-threads"],  # Some IonMonkey issues happen without any Baseline/Ion flags
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--warp"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--baseline-eager"],
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--baseline-eager", "--no-ion"],  # May find > w/o --no-ion
         ["--fuzzing-safe", "--ion-offthread-compile=off", "--no-blinterp", "--no-baseline", "--no-ion"],
