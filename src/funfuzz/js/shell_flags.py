@@ -59,13 +59,6 @@ def add_random_arch_flags(shell_path, input_list=False):
         # m-c rev 190582:5399dc155c3b, see bug 1028008
         input_list.append("--arm-hwcap=vfp")
 
-    if chance(.2):
-        # m-c rev 223959:5e6e959f0043, see bug 1118235
-        input_list.append("--enable-avx")
-    elif chance(.2):
-        # m-c rev 223959:5e6e959f0043, see bug 1118235
-        input_list.append("--no-avx")
-
     if chance(.2):  # m-c rev 154600:526ba3ace37a, see bug 935791
         input_list.append("--no-sse" + ("3" if chance(.5) else "4"))
 
