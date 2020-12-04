@@ -240,10 +240,7 @@ def mtrArgsCreation(options, cshell):  # pylint: disable=invalid-name,missing-pa
     manyTimedRunArgs.append(f"--build={options.build_options.build_options_str}")
     if options.build_options.runWithVg:
         manyTimedRunArgs.append("--valgrind")
-    if options.build_options.enableMoreDeterministic:
-        # Treeherder shells not using compare_jit:
-        #   They are not built with --enable-more-deterministic - bug 751700
-        manyTimedRunArgs.append("--compare-jit")
+    manyTimedRunArgs.append("--compare-jit")
     manyTimedRunArgs.append("--random-flags")
 
     # Ordering of elements in manyTimedRunArgs is important.

@@ -423,9 +423,6 @@ def cfgBin(shell):  # pylint: disable=invalid-name,missing-param-doc,missing-rai
     if shell.build_opts.disableProfiling:
         cfg_cmds.append("--disable-profiling")
 
-    if shell.build_opts.enableMoreDeterministic:
-        # Fuzzing tweaks for more useful output, implemented in bug 706433
-        cfg_cmds.append("--enable-more-deterministic")
     if shell.build_opts.enableOomBreakpoint:  # Extra debugging help for OOM assertions
         cfg_cmds.append("--enable-oom-breakpoint")
     if shell.build_opts.enableWithoutIntlApi:  # Speeds up compilation but is non-default

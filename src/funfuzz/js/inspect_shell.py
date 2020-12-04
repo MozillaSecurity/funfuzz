@@ -199,7 +199,6 @@ def verifyBinary(sh):  # pylint: disable=invalid-name,missing-param-doc,missing-
     # Testing for debug or opt builds are different because there can be hybrid debug-opt builds.
     assert queryBuildConfiguration(binary, "debug") == sh.build_opts.enableDbg
 
-    assert queryBuildConfiguration(binary, "more-deterministic") == sh.build_opts.enableMoreDeterministic
     assert queryBuildConfiguration(binary, "asan") == sh.build_opts.enableAddressSanitizer
     assert queryBuildConfiguration(binary, "profiling") != sh.build_opts.disableProfiling
     if platform.machine() == "x86_64":

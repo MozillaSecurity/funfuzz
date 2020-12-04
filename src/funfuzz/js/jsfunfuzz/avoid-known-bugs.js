@@ -6,6 +6,15 @@
 /* exported whatToTest */
 /* global engine, ENGINE_JAVASCRIPTCORE, ENGINE_SPIDERMONKEY_TRUNK, gcIsQuiet, jsshell */
 
+function runningWithDiffTesting() {
+  try {
+    parse("");
+    return false;
+  } catch(exc) {
+    return true;
+  }
+}
+
 /* eslint-disable complexity, no-multi-spaces */
 function whatToTestSpidermonkeyTrunk (code) { /* eslint-disable-line require-jsdoc */
   // regexps can't match across lines, so replace whitespace with spaces.
@@ -19,7 +28,7 @@ function whatToTestSpidermonkeyTrunk (code) { /* eslint-disable-line require-jsd
       && (jsshell || code.indexOf("nogeckoex") === -1)
     ,
 
-    // Ideally we'd detect whether the shell was compiled with --enable-more-deterministic
+    // Ideally we'd detect whether the shell is running with --differential-testing
     // Ignore both within-process & across-process, e.g. nestTest mismatch & compare_jit
     expectConsistentOutput: true
        && (gcIsQuiet || code.indexOf("gc") === -1)
@@ -72,6 +81,9 @@ function whatToTestSpidermonkeyTrunk (code) { /* eslint-disable-line require-jsd
        /* eslint-disable no-control-regex */
        && !(codeL.match(/\/.*[\u0000\u0080-\uffff]/))       // doesn't stay valid utf-8 after going through python (?)
        /* eslint-enable no-control-regex */
+    ,
+
+    isDiffTesting: runningWithDiffTesting()
 
   };
 }
