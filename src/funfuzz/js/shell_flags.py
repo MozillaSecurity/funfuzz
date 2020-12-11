@@ -208,6 +208,9 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
         # m-c rev 135892:0a9314155404, see bug 885361
         args.append("--fuzzing-safe")
 
+    if shell_supports_flag(shell_path, "--differential-testing"): # For now, always enable this
+        args.append("--differential-testing")
+
     # Add other groups of flags randomly
     if shell_supports_flag(shell_path, "--wasm-compiler=none"):
         # m-c rev 321230:e9b561d60697, see bug 1313180
@@ -367,19 +370,21 @@ def basic_flag_sets():
         # https://hg.mozilla.org/mozilla-central/file/b641b61da234/js/src/tests/lib/tests.py#l10
         # compare_jit uses the following first flag set as the sole baseline when fuzzing
         # --more-compartments should not be here, see https://bugzilla.mozilla.org/show_bug.cgi?id=1521338#c7
-        ["--fuzzing-safe", "--ion-offthread-compile=off", '--fast-warmup'],
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager"],
-        ["--fuzzing-safe", "--ion-offthread-compile=off"],
-        ["--fuzzing-safe"],
-        ["--fuzzing-safe", "--no-threads", "--ion-eager"],
-        ["--fuzzing-safe", "--no-threads"],  # Some IonMonkey issues happen without any Baseline/Ion flags
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--baseline-eager"],
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--baseline-eager", "--no-ion"],  # May find > w/o --no-ion
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--no-blinterp", "--no-baseline", "--no-ion"],
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--blinterp", "--blinterp-eager"],
-        # --wasm-compiler=none was removed for compare_jit
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--no-baseline", "--no-asmjs", "--no-native-regexp"],
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--ion-check-range-analysis",
-         "--ion-extra-checks", "--no-sse3"],
-        ["--fuzzing-safe", "--ion-offthread-compile=off", "--ion-eager", "--test-wasm-await-tier2"],
+        ["--fuzzing-safe", "--differential-testing", "--ion-offthread-compile=off", '--fast-warmup'],
+        ["--fuzzing-safe", "--differential-testing", "--ion-offthread-compile=off", "--ion-eager"],
+        ["--fuzzing-safe", "--differential-testing", "--ion-offthread-compile=off"],
+        ["--fuzzing-safe", "--differential-testing"],
+        ["--fuzzing-safe", "--differential-testing", "--no-threads", "--ion-eager"],
+        ["--fuzzing-safe", "--differential-testing", "--no-threads"],
+        ["--fuzzing-safe", "--differential-testing", "--ion-offthread-compile=off", "--baseline-eager"],
+        ["--fuzzing-safe", "--differential-testing", "--ion-offthread-compile=off", "--baseline-eager", "--no-ion"],
+        ["--fuzzing-safe", "--differential-testing", "--ion-offthread-compile=off", "--no-blinterp", "--no-baseline",
+         "--no-ion"],
+        ["--fuzzing-safe", "--differential-testing", "--ion-offthread-compile=off", "--blinterp", "--blinterp-eager"],
+        ["--fuzzing-safe", "--differential-testing", "--ion-offthread-compile=off", "--no-baseline",
+         "--no-native-regexp"],
+        ["--fuzzing-safe", "--differential-testing", "--ion-offthread-compile=off", "--ion-eager",
+         "--ion-check-range-analysis", "--ion-extra-checks", "--no-sse3"],
+        ["--fuzzing-safe", "--differential-testing", "--ion-offthread-compile=off", "--ion-eager",
+         "--test-wasm-await-tier2"],
     ]

@@ -31,7 +31,7 @@ function optionalTests (f, code, wtt) { /* eslint-disable-line require-jsdoc */
   }
 
   if (count % 100 === 6 && f && wtt.allowExec && wtt.expectConsistentOutput && wtt.expectConsistentOutputAcrossIter
-    && engine === ENGINE_SPIDERMONKEY_TRUNK && getBuildConfiguration()["more-deterministic"]) {
+    && engine === ENGINE_SPIDERMONKEY_TRUNK && wtt.isDiffTesting) {
     nestingConsistencyTest(code);
   }
 }

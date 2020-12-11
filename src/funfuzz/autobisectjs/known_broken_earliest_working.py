@@ -96,12 +96,6 @@ def known_broken_ranges(options):  # pylint: disable=missing-param-doc,missing-r
             hgrange("247e265373eb26566e94303fa42b1237b80295d9", "e4aa68e2a85b027c5498bf8d8f379b06d07df6c2"),
         ])
 
-    if options.enableMoreDeterministic:
-        skips.extend([
-            # Fx68, see bug 1542980
-            hgrange("427b854cdb1c47ce6a643f83245914d66dca4382", "4c4e45853808229f832e32f6bcdbd4c92a72b13b"),
-        ])
-
     if options.enableSimulatorArm32:
         skips.extend([
             # Fx57-61, broken 32-bit ARM-simulator builds
@@ -163,6 +157,8 @@ def earliest_known_working_rev(_options, flags, skip_revs):  # pylint: disable=m
         required.append("b1dc87a94262c1bf2747d2bf560e21af5deb3174")  # m-c 387188 Fx58
     if cpu_count_flag:  # 1st w/--cpu-count=<NUM>, see bug 1206770
         required.append("1b55231e6628e70f0c2ee2b2cb40a1e9861ac4b4")  # m-c 380023 Fx57
+    if "--differential-testing" in flags:  # 1st w/--differential-testing, see bug 1677045
+        required.append("c51fbde2f22668e8d134890184b0db01201b0779")  # m-c, Fx85
     # 1st w/ revised template literals, see bug 1317375
     required.append("bb868860dfc35876d2d9c421c037c75a4fb9b3d2")  # m-c 330353 Fx53
 

@@ -1,8 +1,8 @@
 ### Examples:
 
-* To compile a debug 64-bit deterministic shell, do:
+* To compile a debug 64-bit shell, do:
 
-`<python executable> -m funfuzz.js.compile_shell -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-central"`
+`<python executable> -m funfuzz.js.compile_shell -b "--enable-debug -R ~/trees/mozilla-central"`
 
 * To compile an optimized 32-bit shell, do:
 
@@ -24,13 +24,13 @@ Note that this uses git to clone a specific known working revision of LLVM into 
 
 `<python executable> -m funfuzz.js.compile_shell -b "--enable-optimize --enable-valgrind -R ~/trees/mozilla-central"`
 
-* To test a patch with a debug 64-bit deterministic shell, do:
+* To test a patch with a debug 64-bit shell, do:
 
-`<python executable> -m funfuzz.js.compile_shell -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-central -P <path to patch>"`
+`<python executable> -m funfuzz.js.compile_shell -b "--enable-debug -R ~/trees/mozilla-central -P <path to patch>"`
 
 Note that this **requires mq to be activated** in Mercurial and assumes that there are **no patches** in the patch queue.
 
-* To compile a debug 64-bit deterministic shell from a specific mozilla-central revision, do:
+* To compile a debug 64-bit shell from a specific mozilla-central revision, do:
 
-`<python executable> -m funfuzz.js.compile_shell -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-central" -r <mercurial revision hash>`
+`<python executable> -m funfuzz.js.compile_shell -b "--enable-debug -R ~/trees/mozilla-central" -r <mercurial revision hash>`
 

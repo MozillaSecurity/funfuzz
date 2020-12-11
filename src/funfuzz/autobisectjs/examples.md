@@ -10,38 +10,38 @@ However, this only works effectively if the bug was recent, because builds are o
 
 * The equivalent command using **local compiled builds** is:
 
-```<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager 1188586.js" -b "--enable-debug --enable-more-deterministic"```
+```<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager 1188586.js" -b "--enable-debug"```
 
 * To **test branches**, e.g. on mozilla-inbound instead (or any other release branch including ESR), assuming the *Mercurial* repository is cloned to "~/trees/mozilla-inbound":
 
-```<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager 1188586.js" -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound"```
+```<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager 1188586.js" -b "--enable-debug -R ~/trees/mozilla-inbound"```
 
 * During bisection, perhaps the testcase used to crash in the past; however we are only interested in the assertion failure. You can make autobisectjs look out for the **assertion failure message**:
 
-```<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager 1188586.js" -b "--enable-debug --enable-more-deterministic" -o "Assertion failure"```
+```<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager 1188586.js" -b "--enable-debug" -o "Assertion failure"```
 
 * To look out for a particular **exit code**, use "-w":
 
-```<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager 1189137.js" -b "--enable-debug --enable-more-deterministic" -w 3```
+```<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager 1189137.js" -b "--enable-debug" -w 3```
 
 * To specify **starting and ending revisions**, use "-s" and "-e":
 
-```<python executable> -m funfuzz.autobisectjs -s 7820fd141998 -e 'parents(322487136b28)' -p "--no-threads --ion-eager --unboxed-objects 1189137.js" -b "--enable-debug --enable-more-deterministic" -o "Assertion failed"```
+```<python executable> -m funfuzz.autobisectjs -s 7820fd141998 -e 'parents(322487136b28)' -p "--no-threads --ion-eager --unboxed-objects 1189137.js" -b "--enable-debug" -o "Assertion failed"```
 
 This method can be used to find when a regression was introduced as well as when a bug got fixed.
 
 * Or, the testcase is **intermittent** and only reproduces once every 5 tries. autobisectjs can be set to use the "range" interestingness test to retest 50 times before concluding if it is interesting or not:
 
-```<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager 1188586.js" -b "--enable-debug --enable-more-deterministic" -i range 1 50 crashes --timeout=3```
+```<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager 1188586.js" -b "--enable-debug" -i range 1 50 crashes --timeout=3```
 
 Note that this requires the [lithium repository](https://github.com/MozillaSecurity/lithium) to be cloned adjacent to the funfuzz repository.
 
 You could specify the assertion message this way too:
 
-```<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager 1188586.js" -b "--enable-debug --enable-more-deterministic" -i range 1 50 outputs --timeout=3 'Assertion failure'```
+```<python executable> -m funfuzz.autobisectjs -p "--fuzzing-safe --no-threads --ion-eager 1188586.js" -b "--enable-debug" -i range 1 50 outputs --timeout=3 'Assertion failure'```
 
 "-i" should be the last argument on the command line.
 
 * To bisect **bugs found by compare_jit**:
 
-```<python executable> -m funfuzz.autobisectjs -s 6ec4eb9786d8 -p 1183423.js -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-central" -i funfuzz.js.compare_jit --minlevel=6 mozilla-central```
+```<python executable> -m funfuzz.autobisectjs -s 6ec4eb9786d8 -p 1183423.js -b "--enable-debug -R ~/trees/mozilla-central" -i funfuzz.js.compare_jit --minlevel=6 mozilla-central```

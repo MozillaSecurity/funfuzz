@@ -258,10 +258,10 @@ def hitMemoryLimit(err):  # pylint: disable=invalid-name,missing-param-doc,missi
     # pylint: disable=missing-type-doc
     """Return True iff stderr text indicates that the shell hit a memory limit."""
     if "ReportOverRecursed called" in err:  # pylint: disable=no-else-return
-        # --enable-more-deterministic
+        # --differential-testing
         return "ReportOverRecursed called"
     elif "ReportOutOfMemory called" in err:
-        # --enable-more-deterministic
+        # --differential-testing
         return "ReportOutOfMemory called"
     elif "failed to allocate" in err:
         # ASan
@@ -274,7 +274,7 @@ def hitMemoryLimit(err):  # pylint: disable=invalid-name,missing-param-doc,missi
 
 
 def oomed(err):  # pylint: disable=missing-docstring,missing-return-doc,missing-return-type-doc
-    # spidermonkey shells compiled with --enable-more-deterministic will tell us on stderr if they run out of memory
+    # spidermonkey shells running with --differential-testing will tell us on stderr if they run out of memory
     for line in err:
         if hitMemoryLimit(line):
             return True
@@ -344,8 +344,7 @@ def parseOptions(args):  # pylint: disable=invalid-name,missing-docstring,missin
     assert options.jsengine.is_file()  # js shell
     assert options.jsengineWithArgs[-1].is_file()  # testcase
     options.collector = create_collector.make_collector()
-    options.shellIsDeterministic = inspect_shell.queryBuildConfiguration(
-        options.jsengine, "more-deterministic")
+    options.shellIsDeterministic = any([arg == "--differential-testing" for arg in options.jsengineWithArgs])
 
     return options
 
