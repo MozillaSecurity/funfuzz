@@ -41,7 +41,7 @@ def test_shell_compile():
     # Change the repository location by uncommenting this line and specifying the right one
     # "-R ~/trees/mozilla-central/")
 
-    default_parameters_debug = "--enable-debug --disable-optimize --enable-more-deterministic --enable-oom-breakpoint"
+    default_parameters_debug = "--enable-debug --disable-optimize --enable-oom-breakpoint"
     if platform.system() == "Linux":
         default_parameters_debug += " --enable-valgrind"
     # Remember to update the corresponding BUILD build parameters in .travis.yml as well
@@ -57,8 +57,8 @@ def test_shell_compile():
     if platform.system() == "Linux":
         valgrind_name_param += "-vg"
     if default_parameters_debug in build_opts:
-        # Test compilation of a debug shell with determinism and OOM breakpoint support. (Valgrind only on Linux)
-        file_name = (f"js-dbg-optDisabled-64-dm{valgrind_name_param}-oombp-"
+        # Test compilation of a debug shell with OOM breakpoint support. (Valgrind only on Linux)
+        file_name = (f"js-dbg-optDisabled-64{valgrind_name_param}-oombp-"
                      f"{platform.system().lower()}-{platform.machine().lower()}-{hg_hash_of_default}")
     elif "--disable-debug --disable-profiling --without-intl-api" in build_opts:
         # Test compilation of an opt shell with both profiling and Intl support disabled.

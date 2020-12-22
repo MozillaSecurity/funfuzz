@@ -37,7 +37,7 @@ def get_coverage_build(dirpath, rev):
     extract_folder.mkdir(parents=True, exist_ok=True)  # Ensure this dir has been created
 
     # Use fuzzfetch to obtain build instead of wget
-    build_flags = fuzzfetch.BuildFlags(asan=False, debug=False, fuzzing=True, coverage=True, valgrind=False)
+    build_flags = fuzzfetch.BuildFlags(asan=False, debug=False, fuzzing=True, coverage=True, valgrind=False, tsan=False)
     platform_ = fuzzfetch.fetch.Platform()
 
     obtained_build = fuzzfetch.Fetcher("js", "central", rev, build_flags, platform_)

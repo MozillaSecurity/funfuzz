@@ -70,7 +70,7 @@ To run **only the js fuzzers** which compiles shells with random configurations 
 
 To test **a patch** (assuming patch is in `~/patch.diff`) against a specific branch (assuming **Mercurial** mozilla-inbound is in `~/trees/mozilla-inbound`), using a debug 64-bit deterministic shell configuration, every 8 hours:
 
-`<python executable> -u funfuzz.loop_bot -b "--enable-debug --enable-more-deterministic -R ~/trees/mozilla-inbound -P ~/patch.diff" --target-time 28800 | tee ~/log-loop_botPy.txt`
+`<python executable> -u funfuzz.loop_bot -b "--enable-debug -R ~/trees/mozilla-inbound -P ~/patch.diff" --target-time 28800 | tee ~/log-loop_botPy.txt`
 
 In js mode, loop_bot makes use of:
 

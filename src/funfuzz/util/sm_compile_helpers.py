@@ -54,9 +54,13 @@ def autoconf_run(working_dir):
             subprocess.run(["autoconf-2.13"], check=True, cwd=str(working_dir))
         elif shutil.which("autoconf213"):
             subprocess.run(["autoconf213"], check=True, cwd=str(working_dir))
+        else:
+            raise RuntimeError("autoconf 2.13 not found.")
     elif platform.system() == "Windows":
         # Windows needs to call sh to be able to find autoconf.
         subprocess.run(["sh", "autoconf-2.13"], check=True, cwd=str(working_dir))
+    else:
+        raise RuntimeError("Unsupported platform")
 
 
 def envDump(shell, log):  # pylint: disable=invalid-name,missing-param-doc,missing-type-doc
