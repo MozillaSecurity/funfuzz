@@ -7,9 +7,9 @@
 """Allows the funfuzz harness to run continuously.
 """
 
+import argparse
 import io
 import json
-from optparse import OptionParser  # pylint: disable=deprecated-module
 import os
 from pathlib import Path
 import platform
@@ -32,50 +32,38 @@ from ..util import os_ops
 
 
 def parseOpts(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
-    parser = OptionParser()
-    parser.disable_interspersed_args()
-    parser.add_option("--compare-jit",
-                      action="store_true", dest="use_compare_jit",
-                      default=False,
-                      help="After running the fuzzer, run the FCM lines against the engine "
-                           "in two configurations and compare the output.")
-    parser.add_option("--random-flags",
-                      action="store_true", dest="randomFlags",
-                      default=False,
-                      help="Pass a random set of flags (e.g. --ion-eager) to the js engine")
-    parser.add_option("--repo",
-                      action="store",
-                      dest="repo",
-                      help="The hg repository (e.g. ~/trees/mozilla-central/), for bisection")
-    parser.add_option("--build",
-                      action="store", dest="build_options_str",
-                      help="The build options, for bisection",
-                      default=None)  # if you run loop directly w/o --build, lithium_helpers.pinpoint will try to guess
-    parser.add_option("--valgrind",
-                      action="store_true", dest="valgrind",
-                      default=False,
-                      help="use valgrind with a reasonable set of options")
-    options, args = parser.parse_args(args)
-
-    # optparse does not recognize pathlib - we will need to move to argparse
-    if options.repo:
-        options.repo = Path(options.repo)
-    else:
-        options.repo = Path.home() / "trees" / "mozilla-central"
-
-    if options.valgrind and options.use_compare_jit:
-        print("Note: When running compare_jit, the --valgrind option will be ignored")
-
-    # kill js shell if it runs this long.
-    # jsfunfuzz will quit after half this time if it's not ilooping.
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--compare-jit",
+                        action="store_true", dest="use_compare_jit",
+                        help="After running the fuzzer, run the FCM lines against the engine "
+                             "in two configurations and compare the output.")
+    parser.add_argument("--random-flags",
+                        action="store_true", dest="randomFlags",
+                        help="Pass a random set of flags (e.g. --ion-eager) to the js engine")
+    parser.add_argument("--repo", type=Path, default=Path.home() / "trees" / "mozilla-central",
+                        help="The hg repository (e.g. ~/trees/mozilla-central/), for bisection")
+    # if you run loop directly w/o --build, lithium_helpers.pinpoint will try to guess
+    parser.add_argument("--build",
+                        dest="build_options_str",
+                        help="The build options, for bisection")
+    parser.add_argument("--valgrind",
+                        action="store_true",
+                        help="use valgrind with a reasonable set of options")
+    parser.add_argument("--no-fuzz-wasm", action="store_false", dest="fuzz_wasm",
+                        help="Don't run the fuzzer against wasm")
+    # jsfunfuzz will quit after half this time if it's not looping.
     # higher = more complex mixing, especially with regression tests.
     # lower = less time wasted in timeouts and in compare_jit testcases that are thrown away due to OOMs.
-    options.timeout = int(args[0])
-
+    parser.add_argument("timeout", type=int, help="kill js shell if it runs this long")
     # FIXME: We can probably remove args[1]  # pylint: disable=fixme
-    options.knownPath = "mozilla-central"
-    options.jsEngine = Path(args[2])
-    options.engineFlags = args[3:]
+    parser.add_argument("unused", help="Legacy option (value ignored)")
+    parser.add_argument("jsEngine", type=Path)
+    parser.add_argument("engineFlags", nargs=argparse.REMAINDER)
+    parser.set_defaults(knownPath="mozilla-central")
+    options = parser.parse_args(args)
+
+    if options.valgrind and options.use_compare_jit:
+        print("Note: When running compare_jit, the --valgrind option will be ignored", file=sys.stderr)
 
     return options
 
@@ -194,7 +182,8 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
         # (aarch64 got activated as we now first compile our own binaryen aarch64 Linux builds)
         # For binaryen Linux x86, first wait for https://github.com/WebAssembly/binaryen/issues/1615 to be fixed
         # I do not believe binaryen x86 builds are needed since all our host OS'es are 64-bit
-        if platform.system() == "Linux" and "64" in platform.machine() and out_log.is_file() and not options.valgrind:
+        if options.fuzz_wasm and platform.system() == "Linux" and "64" in platform.machine() \
+                and out_log.is_file() and not options.valgrind:
             run_to_report_wasm(options, js_interesting_opts, env, log_prefix,
                                out_log, ccoverage, collector, target_time)
 
