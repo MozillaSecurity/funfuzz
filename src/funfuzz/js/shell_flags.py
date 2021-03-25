@@ -97,9 +97,9 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
     if chance(.2):
         # m-c rev 308931:1c5b92144e1e, see bug 1292659
         input_list.append("--cache-ir-stubs=" + ("on" if chance(.1) else "off"))
-    if chance(.2):
+    if chance(.9):
         # m-c rev 272274:b0a0ff5fa705, see bug 1209515
-        input_list.append("--ion-pgo=" + ("on" if chance(.1) else "off"))
+        input_list.append("--ion-pruning=" + ("on" if chance(.9) else "off"))
     if chance(.2):
         # m-c rev 259672:59d2f2e62420, see bug 1195545
         input_list.append("--ion-instruction-reordering=" + ("on" if chance(.9) else "off"))
