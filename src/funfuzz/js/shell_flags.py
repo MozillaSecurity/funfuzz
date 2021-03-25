@@ -230,6 +230,9 @@ def random_flag_set(shell_path):  # pylint: disable=too-complex,too-many-branche
     if shell_supports_flag(shell_path, "--fast-warmup") and chance(.7):
         args.append("--fast-warmup")
 
+    if shell_supports_flag(shell_path, "--scalar-replace-arguments") and chance(.7):
+        args.append("--scalar-replace-arguments")
+
     # Other flags
 
     # Nursery strings and bigints are on by default
