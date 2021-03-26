@@ -129,7 +129,7 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
         ccoverage (bool): Whether we are running in coverage gathering mode
     """
     # pylint: disable=too-complex,too-many-branches,too-many-locals,too-many-statements
-    options = parseOpts(args)
+    options = parseOpts([str(arg) for arg in args])
     startTime = time.time()  # pylint: disable=invalid-name
 
     if options.repo.is_dir():
