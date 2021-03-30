@@ -1,4 +1,4 @@
-git+https://github.com/MozillaSecurity/fuzzfetch@master
-git+https://github.com/MozillaSecurity/FuzzManager@master
-git+https://github.com/MozillaSecurity/lithium@0.3.4
+fuzzfetch
+FuzzManager
+lithium-reducer<0.4
 .
