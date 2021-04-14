@@ -36,7 +36,7 @@ def parse_args(args=None):
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("--report", action="store_true", help="Report results to FuzzManager")
     arg_parser.add_argument("--grcov_ver",
-                            default="0.5.5",
+                            default="system",
                             help='Set the version of grcov to use. Defaults to "%(default)s".')
     arg_parser.add_argument("--url",
                             help="URL to the downloadable js binary with coverage support")
@@ -71,8 +71,9 @@ def main(argparse_args=None):
         cov_revision_str = cov_revision_request.content.rstrip().decode("utf-8", errors="replace")
 
         get_build.get_coverage_build(dirpath, cov_revision_str)
-        get_build.get_grcov(dirpath, args)
-        cov_result_file = gatherer.gather_coverage(dirpath, cov_revision_str, args.target_time)
+        if args.grcov_ver != "system":
+            get_build.get_grcov(dirpath, args)
+        cov_result_file = gatherer.gather_coverage(dirpath, cov_revision_str, args.target_time, args.grcov_ver == "system")
         if args.report:
             reporter.report_coverage(cov_result_file)
         reporter.disable_pool()

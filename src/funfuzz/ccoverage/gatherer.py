@@ -19,7 +19,7 @@ from ..util import create_collector
 RUN_COV_LOG = logging.getLogger("funfuzz")
 
 
-def gather_coverage(dirpath, rev, run_cov_time):
+def gather_coverage(dirpath, rev, run_cov_time, system_grcov=False):
     """Gathers coverage data.
 
     Args:
@@ -41,7 +41,11 @@ def gather_coverage(dirpath, rev, run_cov_time):
     RUN_COV_LOG.info("Finished fuzzing the coverage build")
 
     RUN_COV_LOG.info("Generating grcov data...")
-    cov_output = subprocess.run([str(dirpath / "grcov-bin" / "grcov"), str(dirpath),
+    if system_grcov:
+        grcov = "grcov"
+    else:
+        grcov = str(dirpath / "grcov-bin" / "grcov")
+    cov_output = subprocess.run([grcov, str(dirpath),
                                  "-t", "coveralls+",
                                  "--commit-sha", rev,
                                  "--token", "NONE",
