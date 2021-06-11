@@ -118,6 +118,31 @@ def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-doc
             if filename.endswith(".js")]
 
 
+def get_gcov_prefix_strip(shell):
+    """Get GCOV_PREFIX_STRIP value for the jsshell binary.
+
+     GCOV_PREFIX_STRIP should be the # of path components in
+       js.fuzzmanagerconf "pathprefix"
+
+    Args:
+        shell (Path/str): path to jsshell binary downloaded by fuzzfetch
+
+    Returns:
+        int: GCOV_PREFIX_STRIP value
+    """
+    cfg = Path(str(shell) + ".fuzzmanagerconf")
+    prefix = None
+    with cfg.open() as cfg_fp:
+        for line in cfg_fp:
+            if line.startswith("pathprefix = "):
+                prefix = Path(line.split(" = ", 1)[1].strip())
+                break
+    assert prefix is not None, "Path prefix not found in %s" % (str(cfg),)
+
+    # Path.parts is a tuple of path components. Subtract 1 because it includes / or C:\
+    return len(prefix.parts) - 1
+
+
 def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
     """As long as the run length duration is less than target_time, the harness will run the fuzzers in a loop.
 
@@ -170,7 +195,8 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
 
         env = {}  # default environment will be used
         if ccoverage:
-            env["GCOV_PREFIX_STRIP"] = "4"  # Assumes ccoverage build from Taskcluster via fuzzfetch
+            # Assumes ccoverage build from Taskcluster via fuzzfetch
+            env["GCOV_PREFIX_STRIP"] = str(get_gcov_prefix_strip(args[-2]))
             cov_build_path = Path(args[-2]).parent.parent.parent
             assert "cov-build" in str(cov_build_path)
             env["GCOV_PREFIX"] = str(cov_build_path)
