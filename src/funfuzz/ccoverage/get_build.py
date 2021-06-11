@@ -34,14 +34,22 @@ def get_coverage_build(dirpath, rev):
     RUN_COV_LOG.info("Obtaining coverage build zip file from TaskCluster, into %s", str(dirpath))
 
     extract_folder = dirpath / "cov-build"
-    extract_folder.mkdir(parents=True, exist_ok=True)  # Ensure this dir has been created
+    dirpath.mkdir(parents=True, exist_ok=True)  # Ensure this dir has been created
 
     # Use fuzzfetch to obtain build instead of wget
-    build_flags = fuzzfetch.BuildFlags(asan=False, debug=False, fuzzing=True, coverage=True, valgrind=False, tsan=False)
-    platform_ = fuzzfetch.fetch.Platform()
-
-    obtained_build = fuzzfetch.Fetcher("js", "central", rev, build_flags, platform_)
-    obtained_build.extract_build(str(extract_folder))
+    fetcher, fetch_opts = fuzzfetch.Fetcher.from_args(
+        [
+            "--fuzzing",
+            "--coverage",
+            "--build", rev,
+            "--name", "cov-build",
+            "--out", str(dirpath),
+            "--targets", "js",
+        ],
+        skip_dir_check=True,
+    )
+    extract_folder = Path(fetch_opts["out"])
+    fetcher.extract_build(fetch_opts["targets"], extract_folder)
 
     RUN_COV_LOG.info("Coverage build zip file extracted to this folder: %s", extract_folder.resolve())
 
