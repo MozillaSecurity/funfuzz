@@ -44,7 +44,7 @@ def get_coverage_build(dirpath, rev):
             "--build", rev,
             "--name", "cov-build",
             "--out", str(dirpath),
-            "--targets", "js",
+            "--target", "js",
         ],
         skip_dir_check=True,
     )
