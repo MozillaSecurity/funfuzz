@@ -10,8 +10,10 @@
 
 import argparse
 import logging
+import os
 from pathlib import Path
 import platform
+import shutil
 import sys
 import tempfile
 
@@ -76,6 +78,12 @@ def main(argparse_args=None):
         cov_result_file = gatherer.gather_coverage(dirpath, cov_revision_str, args.target_time, args.grcov_ver == "system")
         if args.report:
             reporter.report_coverage(cov_result_file)
+        if "COVERAGE_ARTIFACT_PATH" in os.environ:
+            coverage_artifact_path = Path(os.environ["COVERAGE_ARTIFACT_PATH"])
+            if coverage_artifact_path.is_dir():
+                shutil.copy2(str(cov_result_file), str(coverage_artifact_path / cov_result_file.name))
+            else:
+                RUN_COV_LOG.warning("COVERAGE_ARTIFACT_PATH=%s given, but is not a directory!", coverage_artifact_path)
         reporter.disable_pool()
 
 

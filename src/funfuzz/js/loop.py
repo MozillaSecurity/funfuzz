@@ -10,6 +10,7 @@
 import argparse
 import io
 import json
+import logging
 import os
 from pathlib import Path
 import platform
@@ -29,6 +30,9 @@ from ..util import file_manipulation
 from ..util import file_system_helpers
 from ..util import lithium_helpers
 from ..util import os_ops
+
+
+LOG = logging.getLogger("funfuzz")
 
 
 def parseOpts(args):  # pylint: disable=invalid-name,missing-docstring,missing-return-doc,missing-return-type-doc
@@ -118,6 +122,26 @@ def jsFilesIn(repoPathLength, root):  # pylint: disable=invalid-name,missing-doc
             if filename.endswith(".js")]
 
 
+def get_path_prefix(shell):
+    """Get build path prefix for the jsshell binary.
+
+    Args:
+        shell (Path/str): path to jsshell binary downloaded by fuzzfetch
+
+    Returns:
+        Path: pathprefix from js.fuzzmanagerconf
+    """
+    cfg = Path(str(shell) + ".fuzzmanagerconf")
+    prefix = None
+    with cfg.open() as cfg_fp:
+        for line in cfg_fp:
+            if line.startswith("pathprefix = "):
+                prefix = Path(line.split(" = ", 1)[1].strip())
+                break
+    assert prefix is not None, "Path prefix not found in %s" % (str(cfg),)
+    return prefix
+
+
 def get_gcov_prefix_strip(shell):
     """Get GCOV_PREFIX_STRIP value for the jsshell binary.
 
@@ -130,17 +154,8 @@ def get_gcov_prefix_strip(shell):
     Returns:
         int: GCOV_PREFIX_STRIP value
     """
-    cfg = Path(str(shell) + ".fuzzmanagerconf")
-    prefix = None
-    with cfg.open() as cfg_fp:
-        for line in cfg_fp:
-            if line.startswith("pathprefix = "):
-                prefix = Path(line.split(" = ", 1)[1].strip())
-                break
-    assert prefix is not None, "Path prefix not found in %s" % (str(cfg),)
-
     # Path.parts is a tuple of path components. Subtract 1 because it includes / or C:\
-    return len(prefix.parts) - 1
+    return len(get_path_prefix(shell).parts) - 1
 
 
 def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
@@ -166,6 +181,16 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
 
     link_fuzzer.link_fuzzer(fuzzjs, regressionTestPrologue)
     assert fuzzjs.is_file()
+
+    env = {}  # default environment will be used
+    if ccoverage:
+        # Assumes ccoverage build from Taskcluster via fuzzfetch
+        env["GCOV_PREFIX_STRIP"] = str(get_gcov_prefix_strip(args[-2]))
+        cov_build_path = Path(args[-2]).parent.parent.parent
+        assert "cov-build" in str(cov_build_path)
+        env["GCOV_PREFIX"] = str(cov_build_path)
+        LOG.info("collecting coverage with GCOV_PREFIX_STRIP=%s and GCOV_PREFIX=%s",
+                 env["GCOV_PREFIX_STRIP"], env["GCOV_PREFIX"])
 
     iteration = 0
     while True:
@@ -193,15 +218,7 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
         iteration += 1
         log_prefix = wtmp_dir / f"w{iteration}"
 
-        env = {}  # default environment will be used
-        if ccoverage:
-            # Assumes ccoverage build from Taskcluster via fuzzfetch
-            env["GCOV_PREFIX_STRIP"] = str(get_gcov_prefix_strip(args[-2]))
-            cov_build_path = Path(args[-2]).parent.parent.parent
-            assert "cov-build" in str(cov_build_path)
-            env["GCOV_PREFIX"] = str(cov_build_path)
-
-        res, out_log = run_to_report(options, js_interesting_opts, env, log_prefix,
+        res, out_log = run_to_report(options, js_interesting_opts, env.copy(), log_prefix,
                                      fuzzjs, ccoverage, collector, target_time)
 
         # funbind - integrate with binaryen wasm project but only on Linux x86_64
@@ -210,7 +227,7 @@ def many_timed_runs(target_time, wtmp_dir, args, collector, ccoverage):
         # I do not believe binaryen x86 builds are needed since all our host OS'es are 64-bit
         if options.fuzz_wasm and platform.system() == "Linux" and "64" in platform.machine() \
                 and out_log.is_file() and not options.valgrind:
-            run_to_report_wasm(options, js_interesting_opts, env, log_prefix,
+            run_to_report_wasm(options, js_interesting_opts, env.copy(), log_prefix,
                                out_log, ccoverage, collector, target_time)
 
         # pylint: disable=no-member

@@ -7,13 +7,13 @@
 """Gathers coverage data.
 """
 
-import io
 import logging
 import platform
+import shutil
 import subprocess
 
 from ..bot import JS_SHELL_DEFAULT_TIMEOUT
-from ..js.loop import many_timed_runs
+from ..js.loop import get_path_prefix, many_timed_runs
 from ..util import create_collector
 
 RUN_COV_LOG = logging.getLogger("funfuzz")
@@ -33,6 +33,7 @@ def gather_coverage(dirpath, rev, run_cov_time, system_grcov=False):
     bin_name = f'js{".exe" if platform.system() == "Windows" else ""}'
     cov_build_bin_path = dirpath / "cov-build" / "dist" / "bin" / bin_name
     assert cov_build_bin_path.is_file()
+    path_prefix = get_path_prefix(cov_build_bin_path)
     loop_args = ["--compare-jit", "--random-flags",
                  str(JS_SHELL_DEFAULT_TIMEOUT), "KNOWNPATH", str(cov_build_bin_path), "--fuzzing-safe"]
 
@@ -42,23 +43,23 @@ def gather_coverage(dirpath, rev, run_cov_time, system_grcov=False):
 
     RUN_COV_LOG.info("Generating grcov data...")
     if system_grcov:
-        grcov = "grcov"
+        grcov = str(shutil.which("grcov"))
     else:
         grcov = str(dirpath / "grcov-bin" / "grcov")
-    cov_output = subprocess.run([grcov, str(dirpath),
-                                 "-t", "coveralls+",
-                                 "--commit-sha", rev,
-                                 "--token", "NONE",
-                                 "--guess-directory-when-missing",
-                                 "-p", "/builds/worker/workspace/build/src/"],
-                                check=True,
-                                stdout=subprocess.PIPE).stdout.decode("utf-8", errors="replace")
-    RUN_COV_LOG.info("Finished generating grcov data")
+    RUN_COV_LOG.info("> using grcov at %s", grcov)
 
-    RUN_COV_LOG.info("Writing grcov data to disk...")
     cov_output_file = dirpath / "results_cov.json"
-    with io.open(str(cov_output_file), "w", encoding="utf-8", errors="replace") as f:
-        f.write(cov_output)
-    RUN_COV_LOG.info("Finished writing grcov data to disk")
+    RUN_COV_LOG.info("> writing coverage data to %s", cov_output_file)
+
+    with cov_output_file.open("wb") as f:
+        subprocess.run([grcov, str(dirpath),
+                        "-t", "coveralls+",
+                        "--commit-sha", rev,
+                        "--token", "NONE",
+                        "--guess-directory-when-missing",
+                        "-p", str(path_prefix)],
+                        check=True,
+                        stdout=f)
+    RUN_COV_LOG.info("Finished generating grcov data")
 
     return cov_output_file
