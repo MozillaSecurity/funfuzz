@@ -52,7 +52,7 @@ def gather_coverage(dirpath, rev, run_cov_time, system_grcov=False):
     RUN_COV_LOG.info("> writing coverage data to %s", cov_output_file)
 
     with cov_output_file.open("wb") as f:
-        subprocess.run([grcov, str(dirpath),
+        subprocess.run([grcov, str(dirpath / "cov-build"),
                         "-t", "coveralls+",
                         "--commit-sha", rev,
                         "--token", "NONE",
