@@ -147,10 +147,12 @@ def add_random_ion_flags(shell_path, input_list=False):  # pylint: disable=too-c
         input_list.append("--ion-inlining=" + ("on" if chance(.1) else "off"))
     if chance(.2):  # m-c rev 105173:4ceb3e9961e4, see bug 683039
         input_list.append("--ion-eager")
-    if chance(.2):  # m-c rev 104923:8db8eef79b8c, see bug 670816
-        input_list.append("--ion-gvn=" + ("on" if chance(.1) else "off"))
-    if chance(.2):  # m-c rev 104923:8db8eef79b8c, see bug 670816
-        input_list.append("--ion-licm=" + ("on" if chance(.1) else "off"))
+
+    # Temporarily disable due to fuzz blocker in bug 1745388
+    #if chance(.2):  # m-c rev 104923:8db8eef79b8c, see bug 670816
+    #    input_list.append("--ion-gvn=" + ("on" if chance(.1) else "off"))
+    #if chance(.2):  # m-c rev 104923:8db8eef79b8c, see bug 670816
+    #    input_list.append("--ion-licm=" + ("on" if chance(.1) else "off"))
 
     return input_list
 
