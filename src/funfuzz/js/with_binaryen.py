@@ -20,6 +20,7 @@ import fasteners
 import requests
 
 from ..util import sm_compile_helpers
+from ..util.file_system_helpers import safe_tar_extractall
 
 BINARYEN_OS = platform.system().lower()
 BINARYEN_ARCH = platform.machine()
@@ -64,29 +65,7 @@ def ensure_binaryen(url, version):
                 with requests.get(url, allow_redirects=True, stream=True) as binaryen_gzip_request:
                     try:
                         with tarfile.open(fileobj=io.BytesIO(binaryen_gzip_request.content), mode="r:gz") as f:
-                            
-                            import os
-                            
-                            def is_within_directory(directory, target):
-                                
-                                abs_directory = os.path.abspath(directory)
-                                abs_target = os.path.abspath(target)
-                            
-                                prefix = os.path.commonprefix([abs_directory, abs_target])
-                                
-                                return prefix == abs_directory
-                            
-                            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
-                            
-                                for member in tar.getmembers():
-                                    member_path = os.path.join(path, member.name)
-                                    if not is_within_directory(path, member_path):
-                                        raise Exception("Attempted Path Traversal in Tar File")
-                            
-                                tar.extractall(path, members, numeric_owner=numeric_owner) 
-                                
-                            
-                            safe_extract(f, str(shell_cache.resolve()))
+                            safe_tar_extractall(f, str(shell_cache.resolve()))
                     except OSError:
                         print("binaryen tarfile threw an OSError")
                     break

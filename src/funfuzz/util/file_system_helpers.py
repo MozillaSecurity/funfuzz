@@ -8,6 +8,7 @@
 """
 
 import errno
+import os.path
 from pathlib import Path
 import platform
 import shutil
@@ -83,3 +84,28 @@ def rm_tree_incl_readonly_files(dir_tree):
         dir_tree (Path): Directory tree of files to be removed
     """
     shutil.rmtree(str(dir_tree), onerror=handle_rm_readonly_files if platform.system() == "Windows" else None)
+
+
+def safe_tar_extractall(tar, path=".", members=None, *, numeric_owner=False):
+    """Safe extract a tarfile object to avoid CVE-2007-4559.
+
+    Args:
+        tar (tarfile.TarFile): tarfile object to extractall
+        *: Remaining args passed through to TarFile.extractall
+    """
+
+    def is_within_directory(directory, target):
+
+        abs_directory = os.path.abspath(directory)
+        abs_target = os.path.abspath(target)
+
+        prefix = os.path.commonprefix([abs_directory, abs_target])
+
+        return prefix == abs_directory
+
+    for member in tar.getmembers():
+        member_path = os.path.join(path, member.name)
+        if not is_within_directory(path, member_path):
+            raise Exception("Attempted Path Traversal in Tar File")
+
+    tar.extractall(path, members, numeric_owner=numeric_owner)

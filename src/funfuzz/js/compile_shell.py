@@ -30,6 +30,7 @@ from ..util import hg_helpers
 from ..util import s3cache
 from ..util import sm_compile_helpers
 from ..util import subprocesses as sps
+from ..util.file_system_helpers import safe_tar_extractall
 from ..util.lock_dir import LockDir
 
 S3_SHELL_CACHE_DIRNAME = "shell-cache"  # Used by autobisectjs
@@ -647,26 +648,7 @@ def obtainShell(shell, updateToRev=None, updateLatestTxt=False):  # pylint: disa
                                     str(shell.get_s3_tar_with_ext_full_path())):
             print("Extracting shell...")
             with tarfile.open(str(shell.get_s3_tar_with_ext_full_path()), "r") as f:
-                def is_within_directory(directory, target):
-                    
-                    abs_directory = os.path.abspath(directory)
-                    abs_target = os.path.abspath(target)
-                
-                    prefix = os.path.commonprefix([abs_directory, abs_target])
-                    
-                    return prefix == abs_directory
-                
-                def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
-                
-                    for member in tar.getmembers():
-                        member_path = os.path.join(path, member.name)
-                        if not is_within_directory(path, member_path):
-                            raise Exception("Attempted Path Traversal in Tar File")
-                
-                    tar.extractall(path, members, numeric_owner=numeric_owner) 
-                    
-                
-                safe_extract(f, str(shell.get_shell_cache_dir()))
+                safe_tar_extractall(f, str(shell.get_shell_cache_dir()))
             # Delete tarball after downloading from S3
             shell.get_s3_tar_with_ext_full_path().unlink()
             if platform.system() == "Windows":
