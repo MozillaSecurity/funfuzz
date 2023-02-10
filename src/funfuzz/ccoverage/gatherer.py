@@ -57,7 +57,9 @@ def gather_coverage(dirpath, rev, run_cov_time, system_grcov=False):
                         "--commit-sha", rev,
                         "--token", "NONE",
                         "--guess-directory-when-missing",
-                        "-p", str(path_prefix)],
+                        "--ignore-not-existing",
+                        "-p", str(path_prefix),
+                        "-s", str(dirpath / f"mozilla-central-{rev}")],
                         check=True,
                         stdout=f)
     RUN_COV_LOG.info("Finished generating grcov data")

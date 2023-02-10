@@ -9,9 +9,10 @@
 
 import io
 import logging
-from pathlib import Path
 import platform
 import tarfile
+import zipfile
+from pathlib import Path
 
 import fuzzfetch
 import requests
@@ -72,6 +73,39 @@ def get_coverage_build(dirpath, rev):
     assert js_cov_unified_gcno.is_file()
 
     return js_cov_bin
+
+
+def get_source_archive(dirpath, rev):
+    """Gets a source archive for the specified revision.
+
+    Args:
+        dirpath (Path): Directory in which archive is to be downloaded in.
+        rev (str): Mercurial hash of the required revision
+
+    Returns:
+        Path: Path to the source archive
+    """
+    url = f"https://hg.mozilla.org/mozilla-central/archive/{rev}.zip"
+    resp = requests.get(url, stream=True)
+    resp.raise_for_status()
+
+    RUN_COV_LOG.info("Downloading source archive: %s", url)
+    zip_dest = Path(dirpath / f"{rev}.zip")
+    with zip_dest.open("wb") as file:
+        for chunk in resp.iter_content(chunk_size=128 * 1024):
+            file.write(chunk)
+
+    RUN_COV_LOG.info("Extracting source archive")
+    try:
+        with zipfile.ZipFile(zip_dest) as archive:
+            archive.extractall(path=dirpath)
+    finally:
+        zip_dest.unlink()
+
+    archive_dir = dirpath / f"mozilla-central-{rev}"
+    assert archive_dir.is_dir()
+
+    return archive_dir
 
 
 def get_grcov(dirpath, args):
