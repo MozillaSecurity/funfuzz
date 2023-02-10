@@ -73,6 +73,7 @@ def main(argparse_args=None):
         cov_revision_str = cov_revision_request.content.rstrip().decode("utf-8", errors="replace")
 
         get_build.get_coverage_build(dirpath, cov_revision_str)
+        get_build.get_source_archive(dirpath, cov_revision_str)
         if args.grcov_ver != "system":
             get_build.get_grcov(dirpath, args)
         cov_result_file = gatherer.gather_coverage(dirpath, cov_revision_str, args.target_time, args.grcov_ver == "system")
