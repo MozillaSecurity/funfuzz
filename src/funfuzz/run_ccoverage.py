@@ -69,7 +69,7 @@ def main(argparse_args=None):
     with tempfile.TemporaryDirectory(suffix="funfuzzcov") as dirpath:
         dirpath = Path(dirpath)
 
-        cov_revision_request = requests.get("https://community-tc.services.mozilla.com/api/index/v1/task/project.fuzzing.coverage-revision.latest/artifacts/public/coverage-revision.txt")
+        cov_revision_request = requests.get("https://firefox-ci-tc.services.mozilla.com/api/index/v1/task/project.fuzzing.coverage-revision.latest/artifacts/public/coverage-revision.txt")
         cov_revision_str = cov_revision_request.content.rstrip().decode("utf-8", errors="replace")
 
         get_build.get_coverage_build(dirpath, cov_revision_str)
